@@ -49,9 +49,10 @@ export function StickerPanel({ canvas, onClose }: StickerPanelProps) {
               onClick={() => setActivePack(pack)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full
                 font-bold text-sm whitespace-nowrap transition-all
-                ${activePack.id === pack.id
-                  ? 'bg-kid-purple text-white'
-                  : 'bg-gray-100 text-gray-600'
+                ${
+                  activePack.id === pack.id
+                    ? 'bg-kid-purple text-white'
+                    : 'bg-gray-100 text-gray-600'
                 }`}
             >
               <span>{pack.icon}</span>
@@ -73,9 +74,7 @@ export function StickerPanel({ canvas, onClose }: StickerPanelProps) {
                          transition-all duration-100"
             >
               <span className="text-3xl">{sticker.emoji}</span>
-              <span className="text-[10px] font-bold text-gray-500">
-                {sticker.name}
-              </span>
+              <span className="text-[10px] font-bold text-gray-500">{sticker.name}</span>
             </button>
           ))}
         </div>

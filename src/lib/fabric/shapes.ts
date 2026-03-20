@@ -11,7 +11,7 @@ function addAndSelect(canvas: Canvas, obj: any) {
   canvas.selection = true;
   canvas.add(obj);
   canvas.setActiveObject(obj);
-  canvas.requestRenderAll();
+  canvas.requestRenderAll(); // already correct, just confirming
 }
 
 export function addCircle(canvas: Canvas, color: string) {
@@ -98,9 +98,11 @@ export async function addImageToCanvas(
   imageUrl: string,
   maxSize: number = 300,
 ): Promise<void> {
-  const img = await FabricImage.fromURL(imageUrl, {
-    crossOrigin: 'anonymous',
-  });
+  const img = await FabricImage.fromURL(imageUrl);
+
+  // Explicitly store the data URL as the source
+  // Prevents Fabric from regenerating blob URLs
+  (img as any).setSrc?.(imageUrl);
 
   const scale = Math.min(
     maxSize / (img.width ?? maxSize),

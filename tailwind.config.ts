@@ -1,9 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-    content: [
-        './src/**/*.{ts,tsx,mdx}',
-    ],
+    content: ['./src/**/*.{ts,tsx,mdx}'],
     theme: {
         extend: {
             colors: {
@@ -35,16 +33,16 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                display: ['Nunito', 'sans-serif'],
-                body: ['Nunito', 'sans-serif'],
+                display: ['var(--font-nunito)', 'Nunito', 'sans-serif'],
+                body: ['var(--font-nunito)', 'Nunito', 'sans-serif'],
             },
             spacing: {
                 'touch-min': '48px',
-                'touch': '56px',
+                touch: '56px',
                 'touch-lg': '64px',
             },
             borderRadius: {
-                'kid': '16px',
+                kid: '16px',
             },
         },
     },

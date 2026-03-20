@@ -184,11 +184,7 @@ export function Toolbar({
           style={{ scrollbarWidth: 'none' }}
         >
           {/* Select/Move */}
-          <BigButton
-            onClick={enterSelectMode}
-            active={isSelectMode}
-            aria-label="Select"
-          >
+          <BigButton onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
             👆
           </BigButton>
 
@@ -261,10 +257,7 @@ export function Toolbar({
                 backgroundColor: color,
                 width: 40,
                 height: 40,
-                border:
-                  activeColor === color
-                    ? '3px solid #2D3436'
-                    : '2px solid #E0E0E0',
+                border: activeColor === color ? '3px solid #2D3436' : '2px solid #E0E0E0',
                 transform: activeColor === color ? 'scale(1.25)' : 'scale(1)',
               }}
             />

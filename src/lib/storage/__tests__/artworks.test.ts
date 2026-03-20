@@ -1,0 +1,139 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { db } from '../db';
+import {
+  saveArtwork,
+  loadArtwork,
+  listArtworksByRoom,
+  deleteArtwork,
+  renameArtwork,
+  toggleFavorite,
+  moveArtwork,
+} from '../artworks';
+
+/**
+ * Fully mocked Fabric canvas — no real Canvas 2D needed.
+ * Simulates what saveArtwork() calls on the canvas object.
+ */
+function createMockFabricCanvas() {
+  // 1x1 red pixel PNG as data URL
+  const tinyPng =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+
+  // Mock a canvas element that toBlob works on
+  const mockCanvasEl = {
+    width: 100,
+    height: 100,
+    getContext: () => ({
+      drawImage: vi.fn(),
+    }),
+    toBlob: (cb: (blob: Blob) => void) => {
+      cb(new Blob(['thumb'], { type: 'image/webp' }));
+    },
+    toDataURL: () => tinyPng,
+  };
+
+  return {
+    toJSON: () => ({
+      version: '6.0.0',
+      objects: [{ type: 'rect', left: 0, top: 0, width: 50, height: 50, fill: '#f00' }],
+    }),
+    toDataURL: () => tinyPng,
+    getElement: () => mockCanvasEl,
+    getObjects: () => [],
+  };
+}
+
+describe('Artwork CRUD', () => {
+  beforeEach(async () => {
+    await db.artworks.clear();
+    await db.blobs.clear();
+  });
+
+  it('saves a new artwork and returns it with an id', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as any);
+
+    expect(artwork.id).toBeDefined();
+    expect(artwork.id.length).toBe(12);
+    expect(artwork.title).toContain('Masterpiece');
+    expect(artwork.roomId).toBe('my-art');
+    expect(artwork.type).toBe('drawing');
+    expect(artwork.canvasJSON).toBeTruthy();
+    expect(artwork.thumbnail).toBeInstanceOf(Blob);
+  });
+
+  it('loads a saved artwork by id', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const saved = await saveArtwork(mockCanvas as any);
+
+    const loaded = await loadArtwork(saved.id);
+    expect(loaded).toBeDefined();
+    expect(loaded!.id).toBe(saved.id);
+    expect(loaded!.title).toBe(saved.title);
+  });
+
+  it('updates existing artwork preserving createdAt', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const first = await saveArtwork(mockCanvas as any);
+
+    await new Promise((r) => setTimeout(r, 15));
+    const updated = await saveArtwork(mockCanvas as any, first.id);
+
+    expect(updated.id).toBe(first.id);
+    expect(updated.createdAt).toBe(first.createdAt);
+    expect(updated.updatedAt).toBeGreaterThanOrEqual(first.updatedAt);
+  });
+
+  it('lists artworks by room in reverse chronological order', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const a1 = await saveArtwork(mockCanvas as any);
+    await new Promise((r) => setTimeout(r, 15));
+    const a2 = await saveArtwork(mockCanvas as any);
+
+    const artworks = await listArtworksByRoom('my-art');
+    expect(artworks.length).toBe(2);
+    expect(artworks[0].id).toBe(a2.id);
+  });
+
+  it('deletes artwork and its blob', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as any);
+
+    await deleteArtwork(artwork.id);
+    expect(await loadArtwork(artwork.id)).toBeUndefined();
+    expect(await db.blobs.get(artwork.id)).toBeUndefined();
+  });
+
+  it('renames an artwork', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as any);
+
+    await renameArtwork(artwork.id, 'Sunny Day');
+    const loaded = await loadArtwork(artwork.id);
+    expect(loaded!.title).toBe('Sunny Day');
+  });
+
+  it('toggles favorite tag on and off', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as any);
+    expect(artwork.tags).not.toContain('favorite');
+
+    await toggleFavorite(artwork.id);
+    let loaded = await loadArtwork(artwork.id);
+    expect(loaded!.tags).toContain('favorite');
+
+    await toggleFavorite(artwork.id);
+    loaded = await loadArtwork(artwork.id);
+    expect(loaded!.tags).not.toContain('favorite');
+  });
+
+  it('moves artwork between rooms', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as any);
+    expect(artwork.roomId).toBe('my-art');
+
+    await moveArtwork(artwork.id, 'favorites');
+    const loaded = await loadArtwork(artwork.id);
+    expect(loaded!.roomId).toBe('favorites');
+  });
+});

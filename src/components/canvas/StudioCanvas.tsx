@@ -23,9 +23,9 @@ export default function StudioCanvas() {
 
   const celebrate = useUIStore((s) => s.celebrate);
   const [saving, setSaving] = useState(false);
-  const [currentArtworkId, setCurrentArtworkId] = useState<
-    string | undefined
-  >(editId ?? undefined);
+  const [currentArtworkId, setCurrentArtworkId] = useState<string | undefined>(
+    editId ?? undefined,
+  );
   const [activePanel, setActivePanel] = useState<Panel>('none');
   const [loaded, setLoaded] = useState(false);
 
@@ -33,8 +33,7 @@ export default function StudioCanvas() {
   const [activeColor, setActiveColor] = useState<string>(KID_PALETTE[0]);
   const [isSelectMode, setIsSelectMode] = useState(false);
 
-  const { canvas, isReady, undo, redo, canUndo, canRedo } =
-    useFabricCanvas(containerRef);
+  const { canvas, isReady, undo, redo, canUndo, canRedo } = useFabricCanvas(containerRef);
 
   // Load existing artwork
   useEffect(() => {
@@ -65,17 +64,29 @@ export default function StudioCanvas() {
     if (!editId) setLoaded(true);
   }, [editId]);
 
-  // Auto-save every 30 seconds (only if already saved once)
+  // Auto-save every 30 seconds — use idle callback to avoid jank
   useEffect(() => {
     if (!canvas || !isReady || !loaded) return;
-    const interval = setInterval(async () => {
+
+    const interval = setInterval(() => {
       if (!currentArtworkId) return;
-      try {
-        await saveArtwork(canvas, currentArtworkId);
-      } catch {
-        // silent
+
+      const doSave = async () => {
+        try {
+          await saveArtwork(canvas, currentArtworkId);
+        } catch {
+          // silent
+        }
+      };
+
+      // Use requestIdleCallback if available, else just run
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => doSave(), { timeout: 5000 });
+      } else {
+        doSave();
       }
     }, 30000);
+
     return () => clearInterval(interval);
   }, [canvas, isReady, loaded, currentArtworkId]);
 
@@ -170,13 +181,9 @@ export default function StudioCanvas() {
         {showLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-studio-bg z-30">
             <div className="text-center">
-              <p className="text-5xl mb-3 animate-bounce">
-                {editId ? '🖼️' : '🎨'}
-              </p>
+              <p className="text-5xl mb-3 animate-bounce">{editId ? '🖼️' : '🎨'}</p>
               <p className="text-lg font-bold text-gray-400">
-                {editId
-                  ? 'Loading your artwork...'
-                  : 'Getting your studio ready...'}
+                {editId ? 'Loading your artwork...' : 'Getting your studio ready...'}
               </p>
             </div>
           </div>
@@ -189,10 +196,7 @@ export default function StudioCanvas() {
       </div>
 
       {activePanel === 'import' && (
-        <ImportPanel
-          onImport={handleImport}
-          onClose={() => setActivePanel('none')}
-        />
+        <ImportPanel onImport={handleImport} onClose={() => setActivePanel('none')} />
       )}
       {activePanel === 'shapes' && (
         <ShapePanel
@@ -202,16 +206,10 @@ export default function StudioCanvas() {
         />
       )}
       {activePanel === 'background' && (
-        <BackgroundPicker
-          canvas={canvas}
-          onClose={() => setActivePanel('none')}
-        />
+        <BackgroundPicker canvas={canvas} onClose={() => setActivePanel('none')} />
       )}
       {activePanel === 'stickers' && (
-        <StickerPanel
-          canvas={canvas}
-          onClose={() => setActivePanel('none')}
-        />
+        <StickerPanel canvas={canvas} onClose={() => setActivePanel('none')} />
       )}
     </div>
   );

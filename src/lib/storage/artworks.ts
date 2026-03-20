@@ -19,52 +19,127 @@ async function generateThumbnail(
   maxSize: number = 400,
 ): Promise<Blob> {
   return new Promise((resolve) => {
-    const scale = maxSize / Math.max(canvas.width, canvas.height);
+    const scale = maxSize / Math.max(canvas.width, canvas.height, 1);
     const thumb = document.createElement('canvas');
-    thumb.width = Math.round(canvas.width * scale);
-    thumb.height = Math.round(canvas.height * scale);
+    thumb.width = Math.round(canvas.width * scale) || 1;
+    thumb.height = Math.round(canvas.height * scale) || 1;
 
     const ctx = thumb.getContext('2d')!;
     ctx.drawImage(canvas, 0, 0, thumb.width, thumb.height);
 
-    thumb.toBlob((blob) => resolve(blob!), 'image/webp', 0.8);
+    thumb.toBlob(
+      (blob) => resolve(blob ?? new Blob([], { type: 'image/webp' })),
+      'image/webp',
+      0.8,
+    );
   });
+}
+
+/**
+ * Before serialization: walk all Fabric objects and convert
+ * any blob: image sources to data URLs using the live element.
+ */
+function convertBlobSourcesToDataUrl(fabricCanvas: any): void {
+  try {
+    const objects = fabricCanvas.getObjects?.() ?? [];
+    for (const obj of objects) {
+      if (obj.type !== 'image') continue;
+
+      // Get the underlying image element
+      const el = obj._element as HTMLImageElement | HTMLCanvasElement | null;
+      if (!el) continue;
+
+      // Check if source is a blob URL
+      const src =
+        (el as HTMLImageElement).src ??
+        obj._originalElement?.src ??
+        '';
+
+      if (!src.startsWith('blob:')) continue;
+
+      // Convert to data URL via temp canvas
+      try {
+        const w =
+          (el as HTMLImageElement).naturalWidth ||
+          (el as HTMLCanvasElement).width ||
+          100;
+        const h =
+          (el as HTMLImageElement).naturalHeight ||
+          (el as HTMLCanvasElement).height ||
+          100;
+
+        const tmp = document.createElement('canvas');
+        tmp.width = w;
+        tmp.height = h;
+        const ctx = tmp.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(el, 0, 0);
+          const dataUrl = tmp.toDataURL('image/png');
+          // Update the element source
+          if ((el as HTMLImageElement).src) {
+            (el as HTMLImageElement).src = dataUrl;
+          }
+        }
+      } catch {
+        // If conversion fails, we'll catch it in the string replacement below
+      }
+    }
+  } catch {
+    // Fail silently — the string replacement fallback will catch remaining blobs
+  }
+}
+
+/**
+ * Final safety net: replace any blob: URLs in the serialized JSON string.
+ * Images with removed blob sources will appear empty but the artwork
+ * structure (shapes, drawings, positions) is preserved.
+ */
+function sanitizeBlobUrls(jsonString: string): string {
+  return jsonString.replace(/"blob:http[^"]*"/g, '""');
 }
 
 // ── CRUD ──
 
 export async function saveArtwork(
-  fabricCanvas: any, // Fabric Canvas instance
+  fabricCanvas: any,
   existingId?: string,
 ): Promise<Artwork> {
   const id = existingId ?? nanoid(12);
   const now = Date.now();
 
-  // Serialize Fabric state
-  const canvasJSON = JSON.stringify(fabricCanvas.toJSON());
+  // Step 1: Convert blob sources on live objects BEFORE serialization
+  convertBlobSourcesToDataUrl(fabricCanvas);
 
-  // Generate full-res PNG
+  // Step 2: Serialize
+  const canvasJson = fabricCanvas.toJSON();
+
+  // Step 3: Nuclear sanitization — catch anything that slipped through
+  const canvasJSON = sanitizeBlobUrls(JSON.stringify(canvasJson));
+
+  // Generate exports
   const fullDataUrl = fabricCanvas.toDataURL({
     format: 'png',
     multiplier: 2,
   });
   const fullBlob = dataURLtoBlob(fullDataUrl);
 
-  // Generate thumbnail
   const canvasEl = fabricCanvas.getElement() as HTMLCanvasElement;
   const thumbnail = await generateThumbnail(canvasEl);
 
-  // Build artwork record
+  // Preserve existing metadata on update
+  const existing = existingId ? await db.artworks.get(id) : null;
+
   const artwork: Artwork = {
     id,
-    title: `Masterpiece #${Math.floor(Math.random() * 999) + 1}`,
-    roomId: 'my-art',
+    title: existing?.title ??
+      `Masterpiece #${Math.floor(Math.random() * 999) + 1}`,
+    roomId: existing?.roomId ?? 'my-art',
     type: 'drawing',
     thumbnail,
     canvasJSON,
-    createdAt: existingId ? ((await db.artworks.get(id))?.createdAt ?? now) : now,
+    createdAt: existing?.createdAt ?? now,
     updatedAt: now,
-    tags: [],
+    tags: existing?.tags ?? [],
   };
 
   const blob: ArtworkBlob = {
@@ -73,7 +148,6 @@ export async function saveArtwork(
     format: 'png',
   };
 
-  // Upsert both in a transaction
   await db.transaction('rw', db.artworks, db.blobs, async () => {
     await db.artworks.put(artwork);
     await db.blobs.put(blob);
@@ -91,7 +165,11 @@ export async function loadArtworkBlob(id: string) {
 }
 
 export async function listArtworksByRoom(roomId: string) {
-  return db.artworks.where('roomId').equals(roomId).reverse().sortBy('createdAt');
+  return db.artworks
+    .where('roomId')
+    .equals(roomId)
+    .reverse()
+    .sortBy('createdAt');
 }
 
 export async function listAllArtworks() {

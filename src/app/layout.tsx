@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import '@/styles/globals.css';
+import { Nunito } from 'next/font/google';
 import { Celebrations } from '@/components/ui/Celebrations';
+import '@/styles/globals.css';
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-nunito',
+});
 
 export const metadata: Metadata = {
   title: 'Tiny Museum',
@@ -19,22 +27,22 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1, // prevent unwanted zoom while drawing
+  maximumScale: 1,
   userScalable: false,
   themeColor: '#FECA57',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-      </head>
-      <body className="font-body bg-museum-canvas text-kid-dark antialiased">
+    <html lang="en" className={nunito.variable} suppressHydrationWarning>
+      <body
+        className="font-body bg-museum-canvas text-kid-dark antialiased"
+        suppressHydrationWarning
+      >
         <div className="app-shell">{children}</div>
         <nav className="bottom-nav">
           <a href="/gallery" className="nav-item">

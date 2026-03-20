@@ -7,16 +7,14 @@ import { attachTouchGestures } from '@/lib/fabric/touch';
 import { CanvasHistory } from '@/lib/fabric/history';
 
 export function useFabricCanvas(containerRef: React.RefObject<HTMLDivElement | null>) {
-  const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const historyRef = useRef<CanvasHistory | null>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const mountedRef = useRef(false);
 
   const [isReady, setIsReady] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
-  // Sync history UI state
   const syncHistoryState = useCallback(() => {
     if (historyRef.current) {
       setCanUndo(historyRef.current.canUndo);
@@ -24,41 +22,46 @@ export function useFabricCanvas(containerRef: React.RefObject<HTMLDivElement | n
     }
   }, []);
 
-  // Initialize
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Create the <canvas> element
+    // Strict mode guard: if canvas already exists, skip
+    if (mountedRef.current && canvasRef.current) return;
+    mountedRef.current = true;
+
+    // Clean any leftover canvas elements (from HMR)
+    const existingCanvases = container.querySelectorAll('canvas');
+    existingCanvases.forEach((c) => c.remove());
+
+    // Also clean Fabric's wrapper divs
+    const existingWrappers = container.querySelectorAll('.canvas-container');
+    existingWrappers.forEach((w) => w.remove());
+
     const el = document.createElement('canvas');
     container.appendChild(el);
-    canvasElRef.current = el;
 
-    // Size to container
     const rect = container.getBoundingClientRect();
     const canvas = createTinyCanvas({
       container: el,
-      width: rect.width,
-      height: rect.height,
+      width: rect.width || 800,
+      height: rect.height || 600,
     });
     canvasRef.current = canvas;
 
-    // History
     const history = new CanvasHistory(canvas);
     historyRef.current = history;
 
-    // Touch gestures
     const detachTouch = attachTouchGestures(canvas);
 
-    // Track changes for undo/redo
     const onChanged = () => {
       history.capture();
       syncHistoryState();
     };
     canvas.on('path:created', onChanged);
     canvas.on('object:modified', onChanged);
+    canvas.on('object:added', onChanged);
 
-    // Resize observer
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -71,25 +74,20 @@ export function useFabricCanvas(containerRef: React.RefObject<HTMLDivElement | n
 
     setIsReady(true);
 
-    // Cleanup
-    cleanupRef.current = () => {
+    return () => {
+      mountedRef.current = false;
       resizeObserver.disconnect();
       detachTouch();
       canvas.off('path:created', onChanged);
       canvas.off('object:modified', onChanged);
+      canvas.off('object:added', onChanged);
       canvas.dispose();
-      if (el.parentNode) el.parentNode.removeChild(el);
       canvasRef.current = null;
       historyRef.current = null;
-      canvasElRef.current = null;
-    };
-
-    return () => {
-      cleanupRef.current?.();
+      setIsReady(false);
     };
   }, [containerRef, syncHistoryState]);
 
-  // Undo / Redo
   const undo = useCallback(async () => {
     await historyRef.current?.undo();
     syncHistoryState();

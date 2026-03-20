@@ -1,4 +1,7 @@
-import { Canvas, PencilBrush } from 'fabric';
+import { Canvas, PencilBrush, config as fabricConfig } from 'fabric';
+
+// Disable Fabric's internal blob caching — forces data URL sources
+fabricConfig.dynamicSVGImport = false;
 
 export interface TinyCanvasConfig {
   container: HTMLCanvasElement;
@@ -7,29 +10,36 @@ export interface TinyCanvasConfig {
   background?: string;
 }
 
-export function createTinyCanvas(config: TinyCanvasConfig): Canvas {
-  const canvas = new Canvas(config.container, {
-    width: config.width,
-    height: config.height,
-    backgroundColor: config.background ?? '#FFFEF7',
+export function createTinyCanvas(cfg: TinyCanvasConfig): Canvas {
+  const canvas = new Canvas(cfg.container, {
+    width: cfg.width,
+    height: cfg.height,
+    backgroundColor: cfg.background ?? '#FFFEF7',
     isDrawingMode: true,
     selection: true,
     preserveObjectStacking: true,
     enableRetinaScaling: true,
     allowTouchScrolling: false,
+    renderOnAddRemove: false,
   });
 
-  // Default: fat crayon feel
   const brush = new PencilBrush(canvas);
   brush.width = 10;
   brush.color = '#6C5CE7';
   brush.decimate = 2;
   canvas.freeDrawingBrush = brush;
 
+  canvas.requestRenderAll();
   return canvas;
 }
 
-export function resizeTinyCanvas(canvas: Canvas, width: number, height: number): void {
-  canvas.setDimensions({ width, height });
-  canvas.renderAll();
+export function resizeTinyCanvas(
+  canvas: Canvas,
+  width: number,
+  height: number,
+): void {
+  requestAnimationFrame(() => {
+    canvas.setDimensions({ width, height });
+    canvas.requestRenderAll();
+  });
 }

@@ -8,8 +8,8 @@ interface GalleryState {
   rooms: Room[];
   activeRoomId: string;
   viewMode: 'walk' | 'grid';
+  isLoading: boolean;
 
-  // Actions
   setActiveRoom: (roomId: string) => void;
   toggleViewMode: () => void;
   refresh: () => Promise<void>;
@@ -20,9 +20,10 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   rooms: [],
   activeRoomId: 'my-art',
   viewMode: 'walk',
+  isLoading: true,
 
   setActiveRoom: (roomId) => {
-    set({ activeRoomId: roomId });
+    set({ activeRoomId: roomId, isLoading: true });
     get().refresh();
   },
 
@@ -31,14 +32,19 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   },
 
   refresh: async () => {
-    const rooms = await listRooms();
-    const { activeRoomId } = get();
+    try {
+      const rooms = await listRooms();
+      const { activeRoomId } = get();
 
-    const artworks =
-      activeRoomId === 'all'
-        ? await listAllArtworks()
-        : await listArtworksByRoom(activeRoomId);
+      const artworks =
+        activeRoomId === 'all'
+          ? await listAllArtworks()
+          : await listArtworksByRoom(activeRoomId);
 
-    set({ artworks, rooms });
+      set({ artworks, rooms, isLoading: false });
+    } catch (err) {
+      console.error('Gallery refresh failed:', err);
+      set({ isLoading: false });
+    }
   },
 }));

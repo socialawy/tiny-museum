@@ -42,5 +42,5 @@ export async function addStickerToCanvas(
   canvas.selection = true;
   canvas.add(img);
   canvas.setActiveObject(img);
-  canvas.renderAll();
+  canvas.requestRenderAll();
 }
