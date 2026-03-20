@@ -24,7 +24,8 @@ export async function publishArtwork(artwork: Artwork, imageBlob: Blob): Promise
     title: artwork.title,
     type: artwork.type,
     image_url: imageUrl,
-    room_name: null,
+    room_name: artwork.roomId,
+    published_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
 

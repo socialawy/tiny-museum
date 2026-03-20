@@ -99,4 +99,24 @@ describe('fetchPublishedArtworks', () => {
     const result = await fetchPublishedArtworks();
     expect(result).toEqual([]);
   });
+
+  it('returns artworks array from Supabase', async () => {
+    // Override mock for this test to return data
+    const mockData = [{ id: 'a1', title: 'Test', type: 'drawing', image_url: 'https://example.com/a1.png', room_name: 'my-art', published_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }];
+    mockSelect.mockReturnValueOnce({
+      order: vi.fn().mockResolvedValueOnce({ data: mockData, error: null }),
+    });
+    const { fetchPublishedArtworks: fetchAgain } = await import('../gallery');
+    const result = await fetchAgain();
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('a1');
+  });
+
+  it('throws when Supabase returns an error', async () => {
+    mockSelect.mockReturnValueOnce({
+      order: vi.fn().mockResolvedValueOnce({ data: null, error: new Error('DB error') }),
+    });
+    const { fetchPublishedArtworks: fetchError } = await import('../gallery');
+    await expect(fetchError()).rejects.toThrow('DB error');
+  });
 });
