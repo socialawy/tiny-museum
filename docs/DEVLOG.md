@@ -515,6 +515,9 @@ FILES CREATED (2):
 
 ---
 
+![alt text](image-1.png)
+
+
 IMMEDIATE (should do now if time):
   ☐ Test the full draw → save → gallery → exhibit flow
   ☐ Fix any runtime issues from first real usage
@@ -526,3 +529,168 @@ WEEK 2 SPRINT:
   ☐ Eraser that actually erases (not bg-color paint)
   ☐ Auto-save every 30 seconds
   ☐ Re-open existing artwork from gallery
+
+  ---
+
+  ## QUALITY GATES (interwoven, not deferred)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NOW (after this sprint):
+    ☐ ESLint + Prettier config
+    ☐ Pre-commit hook (lint-staged + husky)
+    ☐ TypeScript strict mode audit (fix all 'any')
+
+  AFTER IMPORT PIPELINE (Sprint 3):
+    ☐ Vitest setup + first unit tests
+       → storage CRUD (artworks, rooms)
+       → history (undo/redo state machine)
+       → thumbnail generation
+    ☐ Playwright install + smoke tests
+       → draw → save → gallery → exhibit (the core loop)
+       → import image → canvas → save
+       → parent gate blocks without answer
+
+  BEFORE SHARING FEATURES (Sprint 4):
+    ☐ Full component test coverage
+    ☐ Accessibility audit (screen reader, color contrast)
+    ☐ Lighthouse PWA audit pass
+    ☐ Mobile device matrix test (iOS Safari, Android Chrome)
+
+  WHY THIS ORDER:
+    Tests on unstable APIs waste time.
+    Import pipeline changes canvas + storage contracts.
+    Once those stabilize → lock them with tests.
+
+---
+
+## The Big Picture — Still On Track
+PHASE 1  ✅ Sketchbook     ← WE ARE HERE (core loop works)
+PHASE 2  🔨 Import Studio   ← THIS SPRINT
+PHASE 3  ⬜ Flipbook/Animation
+PHASE 4  ⬜ Gallery Sharing (family links, publishable)
+
+The "publishable gallery" is Phase 4 but it's
+ARCHITECTURALLY PREPARED from day 1:
+  → Each artwork has a unique ID
+  → Full-res blobs stored separately
+  → Room structure = shareable collections
+  → Share = generate token → family-only link
+  → Parent gate guards all sharing
+
+Import/edit of personal artworks = THIS SPRINT.
+That's the thing that makes it HER app, not a toy.
+
+---
+
+## Sprint 3: Import Pipeline + Canvas Upgrades
+
+- What we're building:
+
+```
+┌─────────────────────────────────────────┐
+│           IMPORT SOURCES                │
+│                                         │
+│  📷 Camera ──┐                          │
+│              ├──► Import Flow ──► Canvas │
+│  📁 Files ──┘    (crop/clean)           │
+│                                         │
+│           CANVAS UPGRADES               │
+│                                         │
+│  🎨 Background picker (colors+textures) │
+│  ⭕ Shapes (circle, square, star, heart)│
+│  🖼️ Images as canvas objects            │
+│  👆 Select/Move/Resize mode             │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### 1. Import — Camera Capture
+
+- src/lib/import/camera.ts
+- src/lib/import/file.ts
+- src/lib/import/cleanup.ts — Image Enhancement for Scanned Drawings
+
+### 2. Import UI Components
+- src/components/canvas/ImportPanel.tsx
+
+### 3. Canvas Upgrades — Shapes + Images + Select Mode
+- src/lib/fabric/shapes.ts — NEW
+- src/components/canvas/BackgroundPicker.tsx — NEW
+- src/components/canvas/ShapePanel.tsx — NEW
+
+### 4. Updated Toolbar — All New Tools
+
+- // src/components/canvas/Toolbar.tsx — REPLACE ENTIRE FILE
+
+### 5. Updated StudioCanvas — Everything Wired
+
+- // src/components/canvas/StudioCanvas.tsx — REPLACED ENTIRE FILE
+
+### 6. Quality Gate — Lint + Prettier Setup
+
+- Terminal
+```bash
+npm install -D prettier eslint-config-prettier @typescript-eslint/eslint-plugin
+```
+- .prettierrc
+- .prettierignore
+- Update package.json scripts 
+```json
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+        "typecheck": "tsc --noEmit",
+        "quality": "npm run typecheck && npm run lint && npm run format:check"
+    },
+```
+- Run
+```bash
+npm run format
+npm run typecheck
+```
+
+---
+
+### PHASE 1 — Sketchbook              ✅ DONE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ Freehand drawing (5 brushes)
+  ✅ Color palette (12 colors)
+  ✅ Brush size control
+  ✅ Undo / Redo
+  ✅ Save to IndexedDB
+  ✅ Gallery grid + museum walk
+  ✅ Room tabs
+  ✅ Exhibit view with gold frame
+  ✅ Rename, favorite, download, delete
+  ✅ Parent gate + friendly dialog
+  ✅ Celebration animation
+  ✅ PWA manifest
+
+PHASE 2 — Import Studio           🔨 THIS BATCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ Camera capture (photo of hand drawing)
+  ✅ File import (PNG, JPEG, WebP, SVG)
+  ✅ Auto-enhance (contrast, crop)
+  ✅ Image placement on canvas
+  ✅ Background picker (6 options)
+  ✅ Shape insertion (circle, square, star, heart)
+  ✅ Select/Move/Resize mode (👆)
+  ✅ Delete selected objects
+  ✅ Prettier + format scripts
+  ☐ Edit existing artwork from gallery (next)
+  ☐ Sticker packs (next)
+
+QUALITY GATE — Plant Now, Grow Soon
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ Prettier config + format command
+  ✅ TypeScript strict checks
+  ☐ Vitest (after this sprint stabilizes)
+  ☐ Playwright smoke tests
+
+  ---
+
+  ## Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons

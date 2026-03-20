@@ -4,41 +4,41 @@ import { listAllArtworks, listArtworksByRoom } from '@/lib/storage/artworks';
 import { listRooms } from '@/lib/storage/rooms';
 
 interface GalleryState {
-    artworks: Artwork[];
-    rooms: Room[];
-    activeRoomId: string;
-    viewMode: 'walk' | 'grid';
+  artworks: Artwork[];
+  rooms: Room[];
+  activeRoomId: string;
+  viewMode: 'walk' | 'grid';
 
-    // Actions
-    setActiveRoom: (roomId: string) => void;
-    toggleViewMode: () => void;
-    refresh: () => Promise<void>;
+  // Actions
+  setActiveRoom: (roomId: string) => void;
+  toggleViewMode: () => void;
+  refresh: () => Promise<void>;
 }
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
-    artworks: [],
-    rooms: [],
-    activeRoomId: 'my-art',
-    viewMode: 'walk',
+  artworks: [],
+  rooms: [],
+  activeRoomId: 'my-art',
+  viewMode: 'walk',
 
-    setActiveRoom: (roomId) => {
-        set({ activeRoomId: roomId });
-        get().refresh();
-    },
+  setActiveRoom: (roomId) => {
+    set({ activeRoomId: roomId });
+    get().refresh();
+  },
 
-    toggleViewMode: () => {
-        set((s) => ({ viewMode: s.viewMode === 'walk' ? 'grid' : 'walk' }));
-    },
+  toggleViewMode: () => {
+    set((s) => ({ viewMode: s.viewMode === 'walk' ? 'grid' : 'walk' }));
+  },
 
-    refresh: async () => {
-        const rooms = await listRooms();
-        const { activeRoomId } = get();
+  refresh: async () => {
+    const rooms = await listRooms();
+    const { activeRoomId } = get();
 
-        const artworks =
-            activeRoomId === 'all'
-                ? await listAllArtworks()
-                : await listArtworksByRoom(activeRoomId);
+    const artworks =
+      activeRoomId === 'all'
+        ? await listAllArtworks()
+        : await listArtworksByRoom(activeRoomId);
 
-        set({ artworks, rooms });
-    },
+    set({ artworks, rooms });
+  },
 }));

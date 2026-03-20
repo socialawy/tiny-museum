@@ -19,16 +19,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,           // prevent unwanted zoom while drawing
+  maximumScale: 1, // prevent unwanted zoom while drawing
   userScalable: false,
   themeColor: '#FECA57',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -39,9 +35,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-body bg-museum-canvas text-kid-dark antialiased">
-        <div className="app-shell">
-          {children}
-        </div>
+        <div className="app-shell">{children}</div>
         <nav className="bottom-nav">
           <a href="/gallery" className="nav-item">
             <span className="nav-icon">🏛️</span>

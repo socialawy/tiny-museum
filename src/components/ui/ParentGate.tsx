@@ -40,9 +40,7 @@ export function ParentGate({ onUnlock, onCancel, message }: ParentGateProps) {
         role="dialog"
         aria-label="Parent verification"
       >
-        <h2 className="text-2xl font-extrabold mb-2">
-          👋 Grown-Up Check
-        </h2>
+        <h2 className="text-2xl font-extrabold mb-2">👋 Grown-Up Check</h2>
         <p className="text-gray-500 mb-4 text-base">
           {message ?? 'This needs a grown-up. Solve to continue:'}
         </p>

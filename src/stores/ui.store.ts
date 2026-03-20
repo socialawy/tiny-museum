@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 
 interface UIState {
-    soundEnabled: boolean;
-    toggleSound: () => void;
-    celebrating: boolean;
-    celebrate: () => void;
+  soundEnabled: boolean;
+  toggleSound: () => void;
+  celebrating: boolean;
+  celebrate: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-    soundEnabled: true,
-    toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+  soundEnabled: true,
+  toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
 
-    celebrating: false,
-    celebrate: () => {
-        set({ celebrating: true });
-        setTimeout(() => set({ celebrating: false }), 2000);
-    },
+  celebrating: false,
+  celebrate: () => {
+    set({ celebrating: true });
+    setTimeout(() => set({ celebrating: false }), 2000);
+  },
 }));
