@@ -1,5 +1,3 @@
-// src/app/gallery/[artworkId]/page.tsx — REPLACE ENTIRE FILE
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +10,7 @@ import {
   toggleFavorite,
 } from '@/lib/storage/artworks';
 import type { Artwork, ArtworkBlob } from '@/lib/storage/db';
+import { useBlobUrl } from '@/hooks/useBlobUrl';
 import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
@@ -25,14 +24,15 @@ export default function ExhibitPage() {
 
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [blob, setBlob] = useState<ArtworkBlob | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>('');
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState('');
   const [modal, setModal] = useState<ModalState>('none');
 
+  // Proper blob URL management
+  const imageUrl = useBlobUrl(blob?.fullRes ?? null);
+
   useEffect(() => {
-    let revoke = '';
-    async function load() {
+    (async () => {
       const [a, b] = await Promise.all([
         loadArtwork(artworkId),
         loadArtworkBlob(artworkId),
@@ -43,15 +43,8 @@ export default function ExhibitPage() {
       }
       if (b) {
         setBlob(b);
-        const url = URL.createObjectURL(b.fullRes);
-        revoke = url;
-        setImageUrl(url);
       }
-    }
-    load();
-    return () => {
-      if (revoke) URL.revokeObjectURL(revoke);
-    };
+    })();
   }, [artworkId]);
 
   if (!artwork) {
@@ -83,7 +76,6 @@ export default function ExhibitPage() {
   }
 
   function handleDeleteConfirmed() {
-    // After friendly dialog, require parent gate
     setModal('delete-gate');
   }
 
@@ -103,7 +95,8 @@ export default function ExhibitPage() {
     a.href = url;
     a.download = `${artwork!.title.replace(/\s+/g, '-')}.png`;
     a.click();
-    URL.revokeObjectURL(url);
+    // Revoke after a short delay to ensure download starts
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
   }
 
   return (
@@ -180,8 +173,7 @@ export default function ExhibitPage() {
               onBlur={handleRename}
               onKeyDown={(e) => e.key === 'Enter' && handleRename()}
               autoFocus
-              className="bg-transparent text-center text-lg font-bold w-full
-                         outline-none border-b-2 border-white/30"
+              className="bg-transparent text-center text-lg font-bold w-full outline-none border-b-2 border-white/30"
               style={{ color: '#F5E6D3' }}
             />
           ) : (
@@ -203,8 +195,7 @@ export default function ExhibitPage() {
         </div>
       </div>
 
-      {/* ── Modals ── */}
-
+      {/* Modals */}
       {modal === 'delete-confirm' && (
         <FriendlyDialog
           emoji="🥺"

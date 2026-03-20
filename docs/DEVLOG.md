@@ -693,4 +693,106 @@ QUALITY GATE — Plant Now, Grow Soon
 
   ---
 
-  ## Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons
+## Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons
+Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons
+### Issue Map
+1. Edit opens empty canvas     → StudioCanvas never reads ?id= param
+2. Blob URL ERR_FILE_NOT_FOUND → ArtworkCard creates URLs that leak on unmount
+3. icon-192.png 404            → manifest references files that don't exist
+
+### Fix 1: Edit Existing Artwork — The Big One
+
+- StudioCanvas has no load logic. Let's add it properly.
+src/components/canvas/StudioCanvas.tsx — REPLACED ENTIRE FILE ✅
+
+- src/app/studio/canvas/page.tsx — Wrap in Suspense for useSearchParams ✅
+```tsx
+'use client';
+
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+const StudioCanvas = dynamic(
+  () => import('@/components/canvas/StudioCanvas'),
+  {
+    ssr: false,
+    loading: () => <StudioLoading />,
+  },
+);
+
+function StudioLoading() {
+  return (
+    <div className="flex items-center justify-center h-[100dvh] bg-studio-bg">
+      <div className="text-center">
+        <p className="text-5xl mb-3 animate-bounce">🎨</p>
+        <p className="text-xl font-bold text-kid-purple">Opening Studio...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function StudioCanvasPage() {
+  return (
+    <Suspense fallback={<StudioLoading />}>
+      <StudioCanvas />
+    </Suspense>
+  );
+}
+```
+
+###  Fix 2: Blob URL Lifecycle — No More Leaks
+
+- The problem: ArtworkCard creates blob URLs on every render, and when React re-renders or unmounts, old URLs leak. The ExhibitPage has the same issue.
+src/hooks/useBlobUrl.ts — NEW (Centralized Blob URL Management) ✅
+
+- src/components/gallery/ArtworkCard.tsx — REPLACED ENTIRE FILE ✅
+
+- src/app/gallery/[artworkId]/page.tsx — Fixed Blob Lifecycle ✅
+
+### Fix 3: PWA Icons — Generate from SVG
+
+- The simplest fix: generate proper PNG icons inline. Since we don't have an image tool in the pipeline, let's create canvas-generated icons at build time. But for now — fix the manifest to not reference files that don't exist.
+
+- public/manifest.json — Point to favicon only
+- Generate Real PNG Icons — scripts/generate-icons.mjs
+- update manifest to use SVG icons
+
+#### Or the fast path — just created the icon files manually:
+
+```bash
+New-Item -ItemType Directory -Force -Path public/icons
+```
+
+- Created public/icons/icon-192.svg and public/icons/icon-512.svg
+
+### Fix Summary
+ISSUE                          FIX                              FILE(S)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Edit opens empty canvas         Load artwork from Dexie          StudioCanvas.tsx
+                                via ?id= searchParam             studio/canvas/page.tsx
+
+Blob URL leaks                  useBlobUrl hook with             hooks/useBlobUrl.ts
+(ERR_FILE_NOT_FOUND)            proper cleanup on unmount        ArtworkCard.tsx
+                                                                 [artworkId]/page.tsx
+
+icon-192.png 404                SVG icons + fixed manifest       manifest.json
+                                                                 public/icons/*.svg
+
+Suspense boundary missing       Wrapped dynamic import           studio/canvas/page.tsx
+for useSearchParams             in <Suspense>
+
+FILES CHANGED: 5
+FILES CREATED: 3
+  └─ src/hooks/useBlobUrl.ts
+  └─ public/icons/icon-192.svg
+  └─ public/icons/icon-512.svg
+
+### Test Checklist
+
+1. npm run dev
+2. Go to /studio/canvas → draw something → hit 💾
+3. Hit 🏛️ → see it in gallery (no blob errors in console)
+4. Tap the artwork → exhibit view loads image
+5. Tap ✏️ → studio opens WITH YOUR DRAWING LOADED
+6. Make edits → 💾 → back to gallery → changes visible
+7. Console should be clean — no 404s, no blob errors
