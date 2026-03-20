@@ -1,20 +1,18 @@
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 
-// happy-dom doesn't implement Canvas 2D — mock it globally for tests
-
 const mockCtx = {
-  drawImage: () => {},
-  fillRect: () => {},
-  clearRect: () => {},
-  scale: () => {},
-  fillText: () => {},
-  save: () => {},
-  restore: () => {},
+  drawImage: () => { },
+  fillRect: () => { },
+  clearRect: () => { },
+  scale: () => { },
+  fillText: () => { },
+  save: () => { },
+  restore: () => { },
   getImageData: () => ({
     data: new Uint8ClampedArray(4),
   }),
-  putImageData: () => {},
+  putImageData: () => { },
   fillStyle: '#000',
   strokeStyle: '#000',
   font: '10px sans-serif',
@@ -24,14 +22,19 @@ const mockCtx = {
   canvas: null as any,
 };
 
-HTMLCanvasElement.prototype.getContext = function (type: string) {
+HTMLCanvasElement.prototype.getContext = function (
+  this: HTMLCanvasElement,
+  type: string,
+) {
   if (type === '2d') {
     return { ...mockCtx, canvas: this } as any;
   }
   return null;
 } as any;
 
-HTMLCanvasElement.prototype.toBlob = function (cb: (blob: Blob | null) => void) {
+HTMLCanvasElement.prototype.toBlob = function (
+  cb: (blob: Blob | null) => void,
+) {
   cb(new Blob(['mock-image'], { type: 'image/png' }));
 } as any;
 

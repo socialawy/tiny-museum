@@ -1253,4 +1253,36 @@ Add at the bottom
 ### 6. Home Page — Add Sound Toggle + Quick Stats
 
 - src/app/page.tsx — REPLACED ENTIRE FILE
- Git Commit — Phase 2 Milestone
+
+### Git Commit — Phase 2 Milestone
+
+### Files Summary
+
+NEW:
+  src/lib/audio/sounds.ts           ← Procedural sound library
+  src/components/ui/SoundToggle.tsx  ← Mute button
+
+UPDATED:
+  src/hooks/useSounds.ts             ← Real sound playback
+  src/components/canvas/ShapePanel.tsx   ← Sparkle sound
+  src/components/canvas/StickerPanel.tsx ← Sparkle sound
+  src/components/gallery/RoomSelector.tsx ← Room switch sound
+  src/components/gallery/GalleryGrid.tsx  ← Entrance animation
+  src/components/gallery/MuseumWalk.tsx   ← Entrance animation
+  src/app/page.tsx                    ← Stats + sound toggle
+  src/app/gallery/page.tsx            ← Sound toggle in header
+  src/styles/globals.css              ← Gallery card animation
+
+### Fix TypeScript Error — fabricConfig.dynamicSVGImport
+
+src/lib/fabric/setup.ts — REPLACED ENTIRE FILE
+
+### Fix TypeScript Error — this in Test Setup
+
+- src/test/setup.ts — REPLACED ENTIRE FILE
+
+### Fix Gallery Not Loading — SoundToggle Import Missing
+
+- src/app/gallery/page.tsx — REPLACED ENTIRE FILE
+The key change: useEffect dependency is [] instead of [refresh]. The refresh function from Zustand is stable, but including it in the dependency array was causing an infinite loop — refresh() updates the store → component re-renders → new refresh ref → effect re-fires → infinite.
+

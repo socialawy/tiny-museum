@@ -1,7 +1,4 @@
-import { Canvas, PencilBrush, config as fabricConfig } from 'fabric';
-
-// Disable Fabric's internal blob caching — forces data URL sources
-fabricConfig.dynamicSVGImport = false;
+import { Canvas, PencilBrush } from 'fabric';
 
 export interface TinyCanvasConfig {
   container: HTMLCanvasElement;
@@ -33,7 +30,11 @@ export function createTinyCanvas(cfg: TinyCanvasConfig): Canvas {
   return canvas;
 }
 
-export function resizeTinyCanvas(canvas: Canvas, width: number, height: number): void {
+export function resizeTinyCanvas(
+  canvas: Canvas,
+  width: number,
+  height: number,
+): void {
   requestAnimationFrame(() => {
     canvas.setDimensions({ width, height });
     canvas.requestRenderAll();
