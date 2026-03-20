@@ -15,7 +15,7 @@ import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
 
-type ModalState = 'none' | 'delete-confirm' | 'delete-gate';
+type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
 
 export default function ExhibitPage() {
   const router = useRouter();
@@ -71,6 +71,21 @@ export default function ExhibitPage() {
   async function handleDeleteFinal() {
     await deleteArtwork(artworkId);
     router.push('/gallery');
+  }
+
+  async function handleUnpublish() {
+    if (!artwork) return;
+    try {
+      const { unpublishArtwork } = await import('@/lib/cloud/publish');
+      const { updatePublishedUrl } = await import('@/lib/storage/artworks');
+      await unpublishArtwork(artwork.id);
+      await updatePublishedUrl(artwork.id, undefined);
+      setArtwork({ ...artwork, publishedUrl: undefined });
+    } catch (err) {
+      console.error('Unpublish failed:', err);
+    } finally {
+      setModal('none');
+    }
   }
 
   function handleEdit() {
@@ -180,6 +195,28 @@ export default function ExhibitPage() {
         </div>
       </div>
 
+      {artwork.publishedUrl && (
+        <div className="mt-4 px-6 pb-2 flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-kid-purple font-bold">🌐 Published online</span>
+            <a
+              href="/gallery/published"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 underline text-xs"
+            >
+              View gallery →
+            </a>
+          </div>
+          <BigButton
+            onClick={() => setModal('unpublish-gate')}
+            aria-label="Unpublish"
+          >
+            🌐 Unpublish
+          </BigButton>
+        </div>
+      )}
+
       {modal === 'delete-confirm' && (
         <FriendlyDialog
           emoji="🥺"
@@ -198,6 +235,14 @@ export default function ExhibitPage() {
         <ParentGate
           message="A grown-up needs to confirm this deletion."
           onUnlock={handleDeleteFinal}
+          onCancel={() => setModal('none')}
+        />
+      )}
+
+      {modal === 'unpublish-gate' && (
+        <ParentGate
+          message="A grown-up needs to confirm unpublishing."
+          onUnlock={handleUnpublish}
           onCancel={() => setModal('none')}
         />
       )}
