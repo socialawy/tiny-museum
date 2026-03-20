@@ -10,7 +10,7 @@ import {
   toggleFavorite,
 } from '@/lib/storage/artworks';
 import type { Artwork, ArtworkBlob } from '@/lib/storage/db';
-import { useBlobUrl } from '@/hooks/useBlobUrl';
+import { useLargeBlob } from '@/hooks/useBlobUrl';
 import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
@@ -28,8 +28,7 @@ export default function ExhibitPage() {
   const [title, setTitle] = useState('');
   const [modal, setModal] = useState<ModalState>('none');
 
-  // Proper blob URL management
-  const imageUrl = useBlobUrl(blob?.fullRes ?? null);
+  const imageUrl = useLargeBlob(blob?.fullRes ?? null);
 
   useEffect(() => {
     (async () => {
@@ -41,9 +40,7 @@ export default function ExhibitPage() {
         setArtwork(a);
         setTitle(a.title);
       }
-      if (b) {
-        setBlob(b);
-      }
+      if (b) setBlob(b);
     })();
   }, [artworkId]);
 
@@ -71,14 +68,6 @@ export default function ExhibitPage() {
     if (updated) setArtwork(updated);
   }
 
-  function handleDeleteTap() {
-    setModal('delete-confirm');
-  }
-
-  function handleDeleteConfirmed() {
-    setModal('delete-gate');
-  }
-
   async function handleDeleteFinal() {
     await deleteArtwork(artworkId);
     router.push('/gallery');
@@ -95,8 +84,7 @@ export default function ExhibitPage() {
     a.href = url;
     a.download = `${artwork!.title.replace(/\s+/g, '-')}.png`;
     a.click();
-    // Revoke after a short delay to ensure download starts
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
   return (
@@ -106,7 +94,6 @@ export default function ExhibitPage() {
         background: 'linear-gradient(180deg, #F5E6D3 0%, #E8D5BE 100%)',
       }}
     >
-      {/* Top bar */}
       <div className="flex items-center justify-between px-4 pt-4">
         <BigButton onClick={() => router.push('/gallery')} aria-label="Back">
           ←
@@ -121,13 +108,12 @@ export default function ExhibitPage() {
           <BigButton onClick={handleDownload} aria-label="Download">
             📥
           </BigButton>
-          <BigButton onClick={handleDeleteTap} aria-label="Delete">
+          <BigButton onClick={() => setModal('delete-confirm')} aria-label="Delete">
             🗑️
           </BigButton>
         </div>
       </div>
 
-      {/* Framed artwork */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="relative max-w-md w-full">
           <div
@@ -155,7 +141,6 @@ export default function ExhibitPage() {
         </div>
       </div>
 
-      {/* Plaque */}
       <div className="flex flex-col items-center pb-8 px-6">
         <div
           className="px-8 py-4 rounded-xl text-center shadow-lg"
@@ -195,7 +180,6 @@ export default function ExhibitPage() {
         </div>
       </div>
 
-      {/* Modals */}
       {modal === 'delete-confirm' && (
         <FriendlyDialog
           emoji="🥺"
@@ -205,7 +189,7 @@ export default function ExhibitPage() {
           confirmEmoji="🗑️"
           cancelLabel="Keep it"
           danger
-          onConfirm={handleDeleteConfirmed}
+          onConfirm={() => setModal('delete-gate')}
           onCancel={() => setModal('none')}
         />
       )}

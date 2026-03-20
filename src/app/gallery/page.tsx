@@ -65,8 +65,13 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Room selector */}
-      <RoomSelector rooms={rooms} activeRoomId={activeRoomId} onSelect={setActiveRoom} />
+      {/* Room selector with create */}
+      <RoomSelector
+        rooms={rooms}
+        activeRoomId={activeRoomId}
+        onSelect={setActiveRoom}
+        onRoomCreated={() => refresh()}
+      />
 
       {/* Artwork display */}
       <div className="flex-1">

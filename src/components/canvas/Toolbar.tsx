@@ -1,8 +1,6 @@
-// src/components/canvas/Toolbar.tsx — REPLACE ENTIRE FILE
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PencilBrush, SprayBrush } from 'fabric';
 import type { Canvas } from 'fabric';
 import { BRUSHES, KID_PALETTE, type BrushKey } from '@/lib/fabric/tools';
@@ -11,6 +9,10 @@ import { useSounds } from '@/hooks/useSounds';
 
 interface ToolbarProps {
   canvas: Canvas | null;
+  activeColor: string;
+  onColorChange: (color: string) => void;
+  isSelectMode: boolean;
+  onSelectModeChange: (isSelect: boolean) => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -20,6 +22,7 @@ interface ToolbarProps {
   onOpenImport: () => void;
   onOpenShapes: () => void;
   onOpenBackground: () => void;
+  onOpenStickers: () => void;
 }
 
 const DRAW_TOOLS: Record<BrushKey, { emoji: string; label: string }> = {
@@ -32,6 +35,10 @@ const DRAW_TOOLS: Record<BrushKey, { emoji: string; label: string }> = {
 
 export function Toolbar({
   canvas,
+  activeColor,
+  onColorChange,
+  isSelectMode,
+  onSelectModeChange,
   onUndo,
   onRedo,
   canUndo,
@@ -41,47 +48,76 @@ export function Toolbar({
   onOpenImport,
   onOpenShapes,
   onOpenBackground,
+  onOpenStickers,
 }: ToolbarProps) {
   const [activeTool, setActiveTool] = useState<BrushKey>('crayon');
-  const [activeColor, setActiveColor] = useState<string>(KID_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(10);
-  const [isSelectMode, setIsSelectMode] = useState(false);
   const { playSound } = useSounds();
+
+  // Listen for canvas switching to select mode externally
+  // (e.g. after shape/sticker add)
+  useEffect(() => {
+    if (!canvas) return;
+
+    const checkMode = () => {
+      if (!canvas.isDrawingMode && !isSelectMode) {
+        onSelectModeChange(true);
+      }
+    };
+
+    canvas.on('selection:created', checkMode);
+    canvas.on('selection:updated', checkMode);
+
+    return () => {
+      canvas.off('selection:created', checkMode);
+      canvas.off('selection:updated', checkMode);
+    };
+  }, [canvas, isSelectMode, onSelectModeChange]);
+
+  const applyBrush = useCallback(
+    (toolKey: BrushKey, color: string) => {
+      if (!canvas) return;
+
+      canvas.isDrawingMode = true;
+      canvas.selection = false;
+      canvas.discardActiveObject();
+
+      const tool = BRUSHES[toolKey];
+
+      if (toolKey === 'eraser') {
+        const brush = new PencilBrush(canvas);
+        brush.width = tool.width;
+        brush.color = (canvas.backgroundColor as string) ?? '#FFFEF7';
+        canvas.freeDrawingBrush = brush;
+      } else if (tool.type === 'spray') {
+        const brush = new SprayBrush(canvas);
+        brush.width = tool.width;
+        brush.color = color;
+        canvas.freeDrawingBrush = brush;
+      } else {
+        const brush = new PencilBrush(canvas);
+        brush.width = tool.width;
+        brush.color = color;
+        brush.decimate = 2;
+        canvas.freeDrawingBrush = brush;
+      }
+      canvas.renderAll();
+    },
+    [canvas],
+  );
 
   function enterDrawMode(toolKey: BrushKey) {
     if (!canvas) return;
     setActiveTool(toolKey);
-    setIsSelectMode(false);
+    onSelectModeChange(false);
     setBrushSize(BRUSHES[toolKey].width);
     playSound('toolSwitch');
-
-    canvas.isDrawingMode = true;
-    canvas.selection = false;
-    canvas.discardActiveObject();
-
-    if (toolKey === 'eraser') {
-      const brush = new PencilBrush(canvas);
-      brush.width = BRUSHES[toolKey].width;
-      brush.color = (canvas.backgroundColor as string) ?? '#FFFEF7';
-      canvas.freeDrawingBrush = brush;
-    } else if (BRUSHES[toolKey].type === 'spray') {
-      const brush = new SprayBrush(canvas);
-      brush.width = BRUSHES[toolKey].width;
-      brush.color = activeColor;
-      canvas.freeDrawingBrush = brush;
-    } else {
-      const brush = new PencilBrush(canvas);
-      brush.width = BRUSHES[toolKey].width;
-      brush.color = activeColor;
-      brush.decimate = 2;
-      canvas.freeDrawingBrush = brush;
-    }
-    canvas.renderAll();
+    applyBrush(toolKey, activeColor);
   }
 
   function enterSelectMode() {
     if (!canvas) return;
-    setIsSelectMode(true);
+    onSelectModeChange(true);
     playSound('toolSwitch');
     canvas.isDrawingMode = false;
     canvas.selection = true;
@@ -90,8 +126,9 @@ export function Toolbar({
 
   function selectColor(color: string) {
     if (!canvas) return;
-    setActiveColor(color);
-    if (canvas.freeDrawingBrush) {
+    onColorChange(color);
+    // If in draw mode, update the brush color immediately
+    if (!isSelectMode && canvas.freeDrawingBrush) {
       canvas.freeDrawingBrush.color = color;
     }
     playSound('colorPop');
@@ -115,16 +152,10 @@ export function Toolbar({
     playSound('toolSwitch');
   }
 
-  // Expose activeColor for shape panel
-  (Toolbar as any).__activeColor = activeColor;
-
   return (
     <div className="flex flex-col w-full pointer-events-auto">
-      {/* ── Top Bar ── */}
-      <div
-        className="flex items-center justify-between px-3 py-2
-                      bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
-      >
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
         <div className="flex gap-1.5">
           <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
             ↩️
@@ -134,21 +165,20 @@ export function Toolbar({
           </BigButton>
         </div>
         <div className="flex gap-1.5">
-          <BigButton onClick={onOpenImport} aria-label="Import image">
+          <BigButton onClick={onOpenImport} aria-label="Import">
             📥
           </BigButton>
           <BigButton onClick={onSave} aria-label="Save">
             💾
           </BigButton>
-          <BigButton onClick={onSendToGallery} aria-label="Send to Gallery">
+          <BigButton onClick={onSendToGallery} aria-label="Gallery">
             🏛️
           </BigButton>
         </div>
       </div>
 
-      {/* ── Bottom Tools ── */}
+      {/* Bottom Tools */}
       <div className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100">
-        {/* Tool row 1: Mode tools */}
         <div
           className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto"
           style={{ scrollbarWidth: 'none' }}
@@ -157,12 +187,11 @@ export function Toolbar({
           <BigButton
             onClick={enterSelectMode}
             active={isSelectMode}
-            aria-label="Select & Move"
+            aria-label="Select"
           >
             👆
           </BigButton>
 
-          {/* Divider */}
           <div className="w-px h-8 bg-gray-200 mx-1" />
 
           {/* Drawing tools */}
@@ -177,18 +206,20 @@ export function Toolbar({
             </BigButton>
           ))}
 
-          {/* Divider */}
           <div className="w-px h-8 bg-gray-200 mx-1" />
 
           {/* Extras */}
-          <BigButton onClick={onOpenShapes} aria-label="Add shape">
+          <BigButton onClick={onOpenShapes} aria-label="Shapes">
             ✨
+          </BigButton>
+          <BigButton onClick={onOpenStickers} aria-label="Stickers">
+            🎯
           </BigButton>
           <BigButton onClick={onOpenBackground} aria-label="Background">
             🎨
           </BigButton>
 
-          {/* Delete selected (only visible in select mode) */}
+          {/* Delete selected */}
           {isSelectMode && (
             <BigButton
               onClick={deleteSelected}
@@ -200,7 +231,7 @@ export function Toolbar({
           )}
         </div>
 
-        {/* Brush size (only in draw mode) */}
+        {/* Brush size — only in draw mode */}
         {!isSelectMode && (
           <div className="flex items-center gap-3 px-6 pb-1">
             <span className="text-xs font-bold text-gray-400">thin</span>
@@ -211,7 +242,6 @@ export function Toolbar({
               value={brushSize}
               onChange={(e) => changeBrushSize(Number(e.target.value))}
               className="flex-1 h-8 accent-kid-purple"
-              aria-label="Brush size"
             />
             <span className="text-xs font-bold text-gray-400">thick</span>
           </div>
@@ -226,13 +256,15 @@ export function Toolbar({
             <button
               key={color}
               onClick={() => selectColor(color)}
-              aria-label={`Color ${color}`}
               className="flex-shrink-0 rounded-full transition-transform duration-100"
               style={{
                 backgroundColor: color,
                 width: 40,
                 height: 40,
-                border: activeColor === color ? '3px solid #2D3436' : '2px solid #E0E0E0',
+                border:
+                  activeColor === color
+                    ? '3px solid #2D3436'
+                    : '2px solid #E0E0E0',
                 transform: activeColor === color ? 'scale(1.25)' : 'scale(1)',
               }}
             />
@@ -242,6 +274,3 @@ export function Toolbar({
     </div>
   );
 }
-
-// Export a way for parent to get activeColor
-Toolbar.getActiveColor = () => (Toolbar as any).__activeColor ?? '#FF6B6B';

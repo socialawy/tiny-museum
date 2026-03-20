@@ -3,25 +3,36 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Creates a blob URL from a Blob and properly revokes it on unmount
- * or when the blob reference changes.
+ * Converts a Blob to a stable data URL.
+ * Immune to React strict mode, HMR, and re-render cycles.
+ * Works for any size — modern browsers handle large data URLs fine.
  */
 export function useBlobUrl(blob: Blob | null | undefined): string {
-    const [url, setUrl] = useState<string>('');
+  const [url, setUrl] = useState<string>('');
 
-    useEffect(() => {
-        if (!blob) {
-            setUrl('');
-            return;
-        }
+  useEffect(() => {
+    if (!blob) {
+      setUrl('');
+      return;
+    }
 
-        const objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
+    let cancelled = false;
 
-        return () => {
-            URL.revokeObjectURL(objectUrl);
-        };
-    }, [blob]);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (!cancelled && typeof reader.result === 'string') {
+        setUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(blob);
 
-    return url;
+    return () => {
+      cancelled = true;
+    };
+  }, [blob]);
+
+  return url;
 }
+
+// Keep backward compat — same implementation now
+export const useLargeBlob = useBlobUrl;

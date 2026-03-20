@@ -5,13 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { saveArtwork, loadArtwork } from '@/lib/storage/artworks';
 import { addImageToCanvas } from '@/lib/fabric/shapes';
+import { KID_PALETTE } from '@/lib/fabric/tools';
 import { useUIStore } from '@/stores/ui.store';
 import { Toolbar } from './Toolbar';
 import { ImportPanel } from './ImportPanel';
 import { ShapePanel } from './ShapePanel';
 import { BackgroundPicker } from './BackgroundPicker';
+import { StickerPanel } from './StickerPanel';
 
-type Panel = 'none' | 'import' | 'shapes' | 'background';
+type Panel = 'none' | 'import' | 'shapes' | 'background' | 'stickers';
 
 export default function StudioCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,49 +27,73 @@ export default function StudioCanvas() {
     string | undefined
   >(editId ?? undefined);
   const [activePanel, setActivePanel] = useState<Panel>('none');
-  const [activeColor, setActiveColor] = useState('#FF6B6B');
   const [loaded, setLoaded] = useState(false);
+
+  // Lifted state — shared between toolbar, shapes, stickers
+  const [activeColor, setActiveColor] = useState<string>(KID_PALETTE[0]);
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   const { canvas, isReady, undo, redo, canUndo, canRedo } =
     useFabricCanvas(containerRef);
 
-  // ── Load existing artwork when editing ──
+  // Load existing artwork
   useEffect(() => {
     if (!canvas || !isReady || !editId || loaded) return;
-
     let cancelled = false;
-
     (async () => {
       try {
         const artwork = await loadArtwork(editId);
         if (cancelled || !artwork) {
-          console.warn('Artwork not found:', editId);
           setLoaded(true);
           return;
         }
-
-        const json = JSON.parse(artwork.canvasJSON);
-        await canvas.loadFromJSON(json);
+        await canvas.loadFromJSON(JSON.parse(artwork.canvasJSON));
         canvas.renderAll();
         setCurrentArtworkId(editId);
-        setLoaded(true);
       } catch (err) {
-        console.error('Failed to load artwork:', err);
-        setLoaded(true);
+        console.error('Load failed:', err);
+      } finally {
+        if (!cancelled) setLoaded(true);
       }
     })();
-
     return () => {
       cancelled = true;
     };
   }, [canvas, isReady, editId, loaded]);
 
-  // ── If no editId, mark as loaded immediately ──
   useEffect(() => {
     if (!editId) setLoaded(true);
   }, [editId]);
 
-  // ── Save ──
+  // Auto-save every 30 seconds (only if already saved once)
+  useEffect(() => {
+    if (!canvas || !isReady || !loaded) return;
+    const interval = setInterval(async () => {
+      if (!currentArtworkId) return;
+      try {
+        await saveArtwork(canvas, currentArtworkId);
+      } catch {
+        // silent
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [canvas, isReady, loaded, currentArtworkId]);
+
+  // When panels add objects, canvas exits drawing mode.
+  // Sync our state to reflect that.
+  useEffect(() => {
+    if (!canvas) return;
+    const syncMode = () => {
+      if (!canvas.isDrawingMode && !isSelectMode) {
+        setIsSelectMode(true);
+      }
+    };
+    canvas.on('object:added', syncMode);
+    return () => {
+      canvas.off('object:added', syncMode);
+    };
+  }, [canvas, isSelectMode]);
+
   const handleSave = useCallback(async () => {
     if (!canvas || saving) return;
     setSaving(true);
@@ -82,7 +108,6 @@ export default function StudioCanvas() {
     }
   }, [canvas, saving, currentArtworkId, celebrate]);
 
-  // ── Send to Gallery ──
   const handleSendToGallery = useCallback(async () => {
     if (!canvas || saving) return;
     setSaving(true);
@@ -97,24 +122,34 @@ export default function StudioCanvas() {
     }
   }, [canvas, saving, currentArtworkId, celebrate, router]);
 
-  // ── Import handler ──
   const handleImport = useCallback(
     async (imageUrl: string) => {
       if (!canvas) return;
       await addImageToCanvas(canvas, imageUrl, 300);
       setActivePanel('none');
+      setIsSelectMode(true);
     },
     [canvas],
   );
 
-  // ── Loading state for edit mode ──
+  const handleShapePanelClose = useCallback(() => {
+    setActivePanel('none');
+    // Shape was added → canvas is in select mode now
+    if (canvas && !canvas.isDrawingMode) {
+      setIsSelectMode(true);
+    }
+  }, [canvas]);
+
   const showLoading = !isReady || (editId && !loaded);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-studio-bg">
-      {/* Toolbar */}
       <Toolbar
         canvas={canvas}
+        activeColor={activeColor}
+        onColorChange={setActiveColor}
+        isSelectMode={isSelectMode}
+        onSelectModeChange={setIsSelectMode}
         onUndo={undo}
         onRedo={redo}
         canUndo={canUndo}
@@ -124,9 +159,9 @@ export default function StudioCanvas() {
         onOpenImport={() => setActivePanel('import')}
         onOpenShapes={() => setActivePanel('shapes')}
         onOpenBackground={() => setActivePanel('background')}
+        onOpenStickers={() => setActivePanel('stickers')}
       />
 
-      {/* Canvas */}
       <div
         ref={containerRef}
         className="flex-1 relative overflow-hidden"
@@ -139,7 +174,9 @@ export default function StudioCanvas() {
                 {editId ? '🖼️' : '🎨'}
               </p>
               <p className="text-lg font-bold text-gray-400">
-                {editId ? 'Loading your artwork...' : 'Getting your studio ready...'}
+                {editId
+                  ? 'Loading your artwork...'
+                  : 'Getting your studio ready...'}
               </p>
             </div>
           </div>
@@ -151,7 +188,6 @@ export default function StudioCanvas() {
         )}
       </div>
 
-      {/* Panels */}
       {activePanel === 'import' && (
         <ImportPanel
           onImport={handleImport}
@@ -162,11 +198,17 @@ export default function StudioCanvas() {
         <ShapePanel
           canvas={canvas}
           activeColor={activeColor}
-          onClose={() => setActivePanel('none')}
+          onClose={handleShapePanelClose}
         />
       )}
       {activePanel === 'background' && (
         <BackgroundPicker
+          canvas={canvas}
+          onClose={() => setActivePanel('none')}
+        />
+      )}
+      {activePanel === 'stickers' && (
+        <StickerPanel
           canvas={canvas}
           onClose={() => setActivePanel('none')}
         />

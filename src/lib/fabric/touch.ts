@@ -1,15 +1,17 @@
 import type { Canvas } from 'fabric';
 
 interface GestureState {
-  mode: 'draw' | 'pinch';
+  mode: 'idle' | 'pinch';
+  wasDrawingBeforePinch: boolean;
   lastPinchDist: number;
   lastPanPoint: { x: number; y: number } | null;
 }
 
 export function attachTouchGestures(canvas: Canvas): () => void {
-  const el = canvas.upperCanvasEl; // Fabric v6 uses upperCanvasEl
+  const el = canvas.upperCanvasEl;
   const state: GestureState = {
-    mode: 'draw',
+    mode: 'idle',
+    wasDrawingBeforePinch: false,
     lastPinchDist: 0,
     lastPanPoint: null,
   };
@@ -21,12 +23,15 @@ export function attachTouchGestures(canvas: Canvas): () => void {
 
   function onTouchStart(e: TouchEvent) {
     if (e.touches.length === 2) {
+      // Remember what mode we were in BEFORE pinch
+      state.wasDrawingBeforePinch = canvas.isDrawingMode;
       state.mode = 'pinch';
       state.lastPinchDist = getTouchDist(e);
       state.lastPanPoint = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
       };
+      // Temporarily disable drawing for pinch
       canvas.isDrawingMode = false;
       canvas.selection = false;
     }
@@ -57,10 +62,11 @@ export function attachTouchGestures(canvas: Canvas): () => void {
   }
 
   function onTouchEnd(e: TouchEvent) {
-    if (e.touches.length < 2) {
-      state.mode = 'draw';
-      canvas.isDrawingMode = true;
-      canvas.selection = true;
+    if (e.touches.length < 2 && state.mode === 'pinch') {
+      // Restore EXACTLY the mode we were in before pinch
+      canvas.isDrawingMode = state.wasDrawingBeforePinch;
+      canvas.selection = !state.wasDrawingBeforePinch;
+      state.mode = 'idle';
     }
   }
 

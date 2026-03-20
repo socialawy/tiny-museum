@@ -3,13 +3,10 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-const StudioCanvas = dynamic(
-  () => import('@/components/canvas/StudioCanvas'),
-  {
-    ssr: false,
-    loading: () => <StudioLoading />,
-  },
-);
+const StudioCanvas = dynamic(() => import('@/components/canvas/StudioCanvas'), {
+  ssr: false,
+  loading: () => <StudioLoading />,
+});
 
 function StudioLoading() {
   return (

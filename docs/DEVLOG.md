@@ -4,7 +4,7 @@
 
 ---
 
-## Phase 1: Bootstrap Execution Plan — Git Init → Running Canvas
+## Phase 0.5: Bootstrap Execution Plan — Git Init → Running Canvas
 
 ### Step 1: Restructure & Scaffold (Terminal)
 ```bash
@@ -82,7 +82,7 @@ npm install
 
 ---
 
-## Current State → Next Target
+### Current State → Next Target
  ✅ Project scaffolded & compiling
  ✅ Canvas renders with drawing tools
  ✅ Undo/redo wired
@@ -95,7 +95,7 @@ npm install
 
 **The magic moment** we're building toward: a kid draws something, taps 🏛️, and walks into a gallery to see art hanging on the wall. Everything below serves that.
 
-## Phase 2 (2026-03-20)
+## 🧱 Phase 1 — "The Sketchbook" (MVP) (2026-03-20)
 
 ### 1. Storage Layer — src/lib/storage/db.ts
 
@@ -139,7 +139,7 @@ import { Celebrations } from '@/components/ui/Celebrations';
 ```
 ---
 
-## Phase 2.5 Let's Go (2026-03-20)
+## Phase 1.5 First Run (2026-03-20)
 
 ```bash
 PS E:\co\tiny-museum> npm run dev
@@ -582,7 +582,7 @@ That's the thing that makes it HER app, not a toy.
 
 ---
 
-## Sprint 3: Import Pipeline + Canvas Upgrades
+## PHASE 2: Import Pipeline + Canvas Upgrades
 
 - What we're building:
 
@@ -693,7 +693,7 @@ QUALITY GATE — Plant Now, Grow Soon
 
   ---
 
-## Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons
+## Phase 2.5 Fix Batch — Edit Flow + Blob Leaks + Icons
 Phase 3.5 Fix Batch — Edit Flow + Blob Leaks + Icons
 ### Issue Map
 1. Edit opens empty canvas     → StudioCanvas never reads ?id= param
@@ -796,3 +796,148 @@ FILES CREATED: 3
 5. Tap ✏️ → studio opens WITH YOUR DRAWING LOADED
 6. Make edits → 💾 → back to gallery → changes visible
 7. Console should be clean — no 404s, no blob errors
+
+---
+
+## Phase 2.6 Blob Leak Fix + Next Feature Sprint
+
+- The console tells the story — blob URLs are still getting revoked before images finish loading. Let's kill this class of bug permanently, then push forward.
+
+### Root Cause
+React Strict Mode (dev) + useBlobUrl = double mount/unmount
+
+  Mount 1 → createObjectURL(blob-A) → img starts loading
+  Unmount 1 → revokeObjectURL(blob-A) → img gets ERR_FILE_NOT_FOUND
+  Mount 2 → createObjectURL(blob-B) → works, but ghost error already logged
+
+- Also: gallery refresh() triggers re-render → new blob URLs → old ones revoked while <img> still decoding.
+
+### The Permanent Fix: Data URLs for Thumbnails
+
+- Thumbnails are small (~30-50KB webp). Convert once, no lifecycle issues, no revocation needed.
+src/hooks/useBlobUrl.ts — REPLACED ENTIRE FILE ✅
+
+- src/app/gallery/[artworkId]/page.tsx — Use useLargeBlob for Full-Res
+- Full file — replaced the import and the one line ✅
+
+---
+
+## Phase 2.7 Stickers + Room Management + Auto-Save
+This completes Phase 2 and makes the app genuinely fun for a 7-year-old.
+
+### 1. Sticker System
+- Bundled SVG Stickers — src/assets/stickers/index.ts
+
+- src/lib/fabric/stickers.ts — NEW
+- src/components/canvas/StickerPanel.tsx — NEW
+
+### 2. Room Management — Create & Organize
+- src/components/gallery/CreateRoomDialog.tsx — NEW
+- src/components/gallery/RoomSelector.tsx — Added Create Button
+
+- src/app/gallery/page.tsx — Wired onRoomCreated
+
+### 3. Wire Stickers Into Toolbar + StudioCanvas
+
+- StudioCanvas — Add sticker panel state
+In src/components/canvas/StudioCanvas.tsx, updated the Panel type and add the sticker panel 
+
+#### Toolbar — Add stickers button
+
+- In src/components/canvas/Toolbar.tsx, added to the interface
+
+- Addd to destructured props, then in the extras section after the shapes button
+
+### Files Summary
+FIXED:
+  src/hooks/useBlobUrl.ts          ← data URL for thumbs, deferred revoke for large
+  src/app/gallery/[artworkId]/page.tsx  ← uses useLargeBlob
+
+NEW:
+  src/assets/stickers/index.ts     ← 3 sticker packs (24 stickers)
+  src/lib/fabric/stickers.ts       ← addStickerToCanvas()
+  src/components/canvas/StickerPanel.tsx
+  src/components/gallery/CreateRoomDialog.tsx
+
+UPDATED:
+  src/components/canvas/StudioCanvas.tsx  ← stickers + auto-save
+  src/components/canvas/Toolbar.tsx       ← stickers button
+  src/components/gallery/RoomSelector.tsx  ← "+ New Room" button
+  src/app/gallery/page.tsx               ← onRoomCreated wiring
+
+---
+
+## Phase 2.8 Bug Fix Batch — Stickers, Shapes, Select Mode, Blobs
+
+### Bug Analysis
+BUG                        ROOT CAUSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Stickers empty              Fabric can't render emoji-in-SVG <text>
+Shapes not editable         Canvas stays in drawingMode after add
+Select mode doesn't stick   touch.ts forces drawingMode=true on touchEnd
+Blob errors in exhibit      useLargeBlob revoked by React strict mode
+Color not shared            activeColor lives in Toolbar, not parent
+
+### Fix 1: Stickers — Render Emoji to Canvas Bitmap
+src/lib/fabric/stickers.ts — REPLACED ENTIRE FILE
+
+- src/assets/stickers/index.ts — Simplified to Emoji Strings
+- src/components/canvas/StickerPanel.tsx — REPLACED ENTIRE FILE
+
+### Fix 2: Touch Handler — Respect Select Mode
+
+- The onTouchEnd in touch.ts blindly sets canvas.isDrawingMode = true. This kills select mode every time you lift a finger.
+src/lib/fabric/touch.ts — REPLACED ENTIRE FILE
+
+### Fix 3: Shapes — Properly Enter Select Mode After Add
+
+- src/lib/fabric/shapes.ts — REPLACED ENTIRE FILE
+
+### Fix 4: Toolbar + StudioCanvas — Lift Color State, Sync Select Mode
+
+- The toolbar needs to know when shapes/stickers switch to select mode, and vice versa.
+src/components/canvas/Toolbar.tsx — REPLACED ENTIRE FILE
+
+### Fix 5: StudioCanvas — Lifted State, Mode Sync
+
+- src/components/canvas/StudioCanvas.tsx — REPLACED ENTIRE FILE
+
+### Fix 6: Blob Errors in Exhibit — Use Data URL for Full-Res Too
+
+- src/hooks/useBlobUrl.ts — REPLACED ENTIRE FILE
+
+### Summary
+BUG                     FIX                              FILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Stickers empty          Render emoji to canvas bitmap     lib/fabric/stickers.ts
+                        Simplify data model to emoji str  assets/stickers/index.ts
+                                                         StickerPanel.tsx
+
+Shapes not editable     addAndSelect() helper             lib/fabric/shapes.ts
+                        Exit drawing mode after add
+
+Select mode broken      Don't force drawingMode=true      lib/fabric/touch.ts
+                        Remember pre-pinch mode
+
+Mode not synced         Lift isSelectMode to parent        StudioCanvas.tsx
+                        Toolbar reads/writes via props     Toolbar.tsx
+
+Color not shared        Lift activeColor to parent         StudioCanvas.tsx
+                        Toolbar reads/writes via props     Toolbar.tsx
+
+Blob errors             Data URL everywhere                hooks/useBlobUrl.ts
+                        No more object URLs to revoke
+
+FILES CHANGED: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### Test checklist:
+
+Studio → tap 🎯 → add cat sticker → visible emoji on canvas
+Tap 👆 → can select, move, resize the sticker
+Tap ✨ → add circle → immediately selectable and movable
+Tap 🖍️ → back to drawing, doesn't interfere with objects
+Gallery → exhibit → no blob errors in console
+Gallery grid → no blob errors
+
+---

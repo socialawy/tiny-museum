@@ -1,6 +1,19 @@
 import { Circle, Rect, Polygon, FabricImage } from 'fabric';
 import type { Canvas } from 'fabric';
 
+/**
+ * Shared helper: adds an object, switches to select mode,
+ * and makes the new object active so the user can immediately
+ * move/resize it.
+ */
+function addAndSelect(canvas: Canvas, obj: any) {
+  canvas.isDrawingMode = false;
+  canvas.selection = true;
+  canvas.add(obj);
+  canvas.setActiveObject(obj);
+  canvas.requestRenderAll();
+}
+
 export function addCircle(canvas: Canvas, color: string) {
   const circle = new Circle({
     radius: 50,
@@ -10,9 +23,7 @@ export function addCircle(canvas: Canvas, color: string) {
     strokeWidth: 2,
     stroke: '#2D3436',
   });
-  canvas.add(circle);
-  canvas.setActiveObject(circle);
-  canvas.renderAll();
+  addAndSelect(canvas, circle);
 }
 
 export function addSquare(canvas: Canvas, color: string) {
@@ -27,9 +38,7 @@ export function addSquare(canvas: Canvas, color: string) {
     rx: 8,
     ry: 8,
   });
-  canvas.add(rect);
-  canvas.setActiveObject(rect);
-  canvas.renderAll();
+  addAndSelect(canvas, rect);
 }
 
 export function addStar(canvas: Canvas, color: string) {
@@ -54,13 +63,10 @@ export function addStar(canvas: Canvas, color: string) {
     strokeWidth: 2,
     stroke: '#2D3436',
   });
-  canvas.add(star);
-  canvas.setActiveObject(star);
-  canvas.renderAll();
+  addAndSelect(canvas, star);
 }
 
 export function addHeart(canvas: Canvas, color: string) {
-  // Heart as SVG path rendered to polygon points
   const scale = 0.12;
   const heartPath = [
     { x: 300 * scale, y: 540 * scale },
@@ -84,9 +90,7 @@ export function addHeart(canvas: Canvas, color: string) {
     strokeWidth: 2,
     stroke: '#2D3436',
   });
-  canvas.add(heart);
-  canvas.setActiveObject(heart);
-  canvas.renderAll();
+  addAndSelect(canvas, heart);
 }
 
 export async function addImageToCanvas(
@@ -98,7 +102,6 @@ export async function addImageToCanvas(
     crossOrigin: 'anonymous',
   });
 
-  // Scale down if needed
   const scale = Math.min(
     maxSize / (img.width ?? maxSize),
     maxSize / (img.height ?? maxSize),
@@ -106,12 +109,8 @@ export async function addImageToCanvas(
   );
   img.scaleX = scale;
   img.scaleY = scale;
-
-  // Center on canvas
   img.left = (canvas.getWidth() - (img.width ?? 0) * scale) / 2;
   img.top = (canvas.getHeight() - (img.height ?? 0) * scale) / 2;
 
-  canvas.add(img);
-  canvas.setActiveObject(img);
-  canvas.renderAll();
+  addAndSelect(canvas, img);
 }
