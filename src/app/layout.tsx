@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Tiny Museum',
   description: 'Create, collect, and share your art!',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -33,6 +36,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
           rel="stylesheet"
         />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-body bg-museum-canvas text-kid-dark antialiased">
         <div className="app-shell">

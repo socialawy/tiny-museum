@@ -1,73 +1,22 @@
-/* styles/globals.css */
-:root {
-    /* Touch targets — never below 48px, prefer 56-64 */
-  --touch-min: 48px;
-  --touch-preferred: 56px;
-  --touch-large: 64px;
-
-  /* Spacing scale */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-
-  /* Typography — readable for early readers */
-  --font-size-label: 1rem;
-  --font-size-title: 1.5rem;
-  --font-size-hero: 2rem;
-
-  /* Museum palette */
-  --color-wall: #F5E6D3;
-  --color-wall-deep: #E8D5BE;
-  --color-frame: #8B6914;
-  --color-plaque: #2D1B69;
-  --color-canvas-bg: #FFFEF7;
-
-  /* Studio palette */
-  --color-studio-bg: #F0F4FF;
-  --color-toolbar: #FFFFFF;
-  --color-toolbar-active: #FECA57;
-}
-/* Mobile first — small phones */
-/* Default styles = phone layout */
-/* Medium devices — large phones, small tablets */
-@media (min-width: 640px) {
-    :root {
-    --touch-preferred: 52px; /* slightly smaller OK */
+{
+  "name": "Tiny Museum",
+  "short_name": "Tiny Museum",
+  "description": "Create, collect, and share your art!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#FECA57",
+  "background_color": "#FFFEF7",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  .studio-toolbar .toolbar-tools {
-    gap: 12px;
-    }
-  .museum-walk {
-    padding: 2.5rem;
-    }
-}
-/* Tablets */
-@media (min-width: 768px) {
-  .bottom-nav {
-    display: none; /* switch to side nav */
-    }
-  .side-nav {
-    display: flex;
-    }
-  .studio-canvas-area {
-        /* Toolbar moves to left side */
-    flex-direction: row;
-    }
-  .gallery-grid {
-    grid-template-columns: repeat(3,
-        1fr);
-    }
-}
-/* Desktop / large tablets */
-@media (min-width: 1024px) {
-  .gallery-grid {
-    grid-template-columns: repeat(4,
-        1fr);
-    }
-  .studio-canvas-area {
-        /* Extra panel space for layers, stickers */
-    grid-template-columns: 72px 1fr 280px;
-    }
+  ]
 }

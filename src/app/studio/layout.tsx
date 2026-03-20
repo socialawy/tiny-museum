@@ -1,15 +1,19 @@
+'use client';
+
+import { useEffect } from 'react';
+
 export default function StudioLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  return (
-    <div className="studio-active">
-      <style>{`
-        .studio-active ~ .bottom-nav { display: none; }
-        .studio-active { height: 100dvh; }
-      `}</style>
-      {children}
-    </div>
-  );
+}) {
+  // Add class to body so global CSS can hide the nav
+  useEffect(() => {
+    document.body.classList.add('studio-active');
+    return () => {
+      document.body.classList.remove('studio-active');
+    };
+  }, []);
+
+  return <>{children}</>;
 }

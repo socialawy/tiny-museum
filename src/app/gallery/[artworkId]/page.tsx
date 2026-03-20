@@ -1,3 +1,5 @@
+// src/app/gallery/[artworkId]/page.tsx — REPLACE ENTIRE FILE
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,6 +13,10 @@ import {
 } from '@/lib/storage/artworks';
 import type { Artwork, ArtworkBlob } from '@/lib/storage/db';
 import { BigButton } from '@/components/ui/BigButton';
+import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
+import { ParentGate } from '@/components/ui/ParentGate';
+
+type ModalState = 'none' | 'delete-confirm' | 'delete-gate';
 
 export default function ExhibitPage() {
     const router = useRouter();
@@ -22,9 +28,10 @@ export default function ExhibitPage() {
     const [imageUrl, setImageUrl] = useState<string>('');
     const [editing, setEditing] = useState(false);
     const [title, setTitle] = useState('');
+    const [modal, setModal] = useState<ModalState>('none');
 
-    // Load
     useEffect(() => {
+        let revoke = '';
         async function load() {
             const [a, b] = await Promise.all([
                 loadArtwork(artworkId),
@@ -36,15 +43,16 @@ export default function ExhibitPage() {
             }
             if (b) {
                 setBlob(b);
-                setImageUrl(URL.createObjectURL(b.fullRes));
+                const url = URL.createObjectURL(b.fullRes);
+                revoke = url;
+                setImageUrl(url);
             }
         }
         load();
-
         return () => {
-            if (imageUrl) URL.revokeObjectURL(imageUrl);
+            if (revoke) URL.revokeObjectURL(revoke);
         };
-    }, [artworkId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [artworkId]);
 
     if (!artwork) {
         return (
@@ -70,12 +78,22 @@ export default function ExhibitPage() {
         if (updated) setArtwork(updated);
     }
 
-    async function handleDelete() {
-        // Simple confirm for now — will be FriendlyDialog later
-        if (confirm('Move this artwork to the bin?')) {
-            await deleteArtwork(artworkId);
-            router.push('/gallery');
-        }
+    function handleDeleteTap() {
+        setModal('delete-confirm');
+    }
+
+    function handleDeleteConfirmed() {
+        // After friendly dialog, require parent gate
+        setModal('delete-gate');
+    }
+
+    async function handleDeleteFinal() {
+        await deleteArtwork(artworkId);
+        router.push('/gallery');
+    }
+
+    function handleEdit() {
+        router.push(`/studio/canvas?id=${artworkId}`);
     }
 
     function handleDownload() {
@@ -104,19 +122,21 @@ export default function ExhibitPage() {
                     <BigButton onClick={handleFavorite} aria-label="Favorite">
                         {isFavorite ? '⭐' : '☆'}
                     </BigButton>
+                    <BigButton onClick={handleEdit} aria-label="Edit">
+                        ✏️
+                    </BigButton>
                     <BigButton onClick={handleDownload} aria-label="Download">
                         📥
                     </BigButton>
-                    <BigButton onClick={handleDelete} aria-label="Delete">
+                    <BigButton onClick={handleDeleteTap} aria-label="Delete">
                         🗑️
                     </BigButton>
                 </div>
             </div>
 
-            {/* Artwork display — full frame */}
+            {/* Framed artwork */}
             <div className="flex-1 flex items-center justify-center p-6">
                 <div className="relative max-w-md w-full">
-                    {/* Gold frame */}
                     <div
                         className="rounded-xl p-3 shadow-2xl"
                         style={{
@@ -124,7 +144,6 @@ export default function ExhibitPage() {
                                 'linear-gradient(135deg, #D4A843 0%, #8B6914 30%, #D4A843 50%, #8B6914 70%, #D4A843 100%)',
                         }}
                     >
-                        {/* White mat */}
                         <div className="bg-white p-2 rounded-lg">
                             {imageUrl ? (
                                 <img
@@ -161,13 +180,15 @@ export default function ExhibitPage() {
                             onBlur={handleRename}
                             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
                             autoFocus
-                            className="bg-transparent text-center text-lg font-bold w-full outline-none border-b-2 border-white/30"
+                            className="bg-transparent text-center text-lg font-bold w-full
+                         outline-none border-b-2 border-white/30"
                             style={{ color: '#F5E6D3' }}
                         />
                     ) : (
                         <button
                             onClick={() => setEditing(true)}
                             className="text-lg font-bold hover:underline"
+                            style={{ color: '#F5E6D3' }}
                         >
                             {artwork.title} ✏️
                         </button>
@@ -181,6 +202,30 @@ export default function ExhibitPage() {
                     </p>
                 </div>
             </div>
+
+            {/* ── Modals ── */}
+
+            {modal === 'delete-confirm' && (
+                <FriendlyDialog
+                    emoji="🥺"
+                    title="Delete this artwork?"
+                    message="It will be gone forever! Are you sure?"
+                    confirmLabel="Yes, delete"
+                    confirmEmoji="🗑️"
+                    cancelLabel="Keep it"
+                    danger
+                    onConfirm={handleDeleteConfirmed}
+                    onCancel={() => setModal('none')}
+                />
+            )}
+
+            {modal === 'delete-gate' && (
+                <ParentGate
+                    message="A grown-up needs to confirm this deletion."
+                    onUnlock={handleDeleteFinal}
+                    onCancel={() => setModal('none')}
+                />
+            )}
         </div>
     );
 }

@@ -85,13 +85,19 @@ body {
     font-weight: 700;
 }
 
-/* ── Studio-specific: hide bottom nav ── */
-.studio-active .bottom-nav {
-    display: none;
+/* ── Studio: hide bottom nav, full height ── */
+body.studio-active .bottom-nav {
+  display: none !important;
+}
+body.studio-active .app-shell {
+  height: 100dvh;
 }
 
-.studio-active .app-shell {
-    height: 100dvh;
+/* Tablet override too */
+@media (min-width: 768px) {
+  body.studio-active .app-shell {
+    margin-left: 0;
+  }
 }
 
 /* ── Tablet+: Switch to side nav ── */

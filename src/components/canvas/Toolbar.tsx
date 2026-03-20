@@ -1,3 +1,5 @@
+// src/components/canvas/Toolbar.tsx — REPLACE ENTIRE FILE
+
 'use client';
 
 import { useState } from 'react';
@@ -17,7 +19,7 @@ interface ToolbarProps {
     onSendToGallery: () => void;
 }
 
-const TOOL_ICONS: Record<string, { emoji: string; label: string }> = {
+const TOOL_ICONS: Record<BrushKey, { emoji: string; label: string }> = {
     crayon: { emoji: '🖍️', label: 'Crayon' },
     pencil: { emoji: '✏️', label: 'Pencil' },
     marker: { emoji: '🖌️', label: 'Marker' },
@@ -49,7 +51,6 @@ export function Toolbar({
         canvas.isDrawingMode = true;
 
         if (toolKey === 'eraser') {
-            // Simple eraser: draw with background color
             const brush = new PencilBrush(canvas);
             brush.width = tool.width;
             brush.color = (canvas.backgroundColor as string) ?? '#FFFEF7';
@@ -71,19 +72,23 @@ export function Toolbar({
     function selectColor(color: string) {
         if (!canvas) return;
         setActiveColor(color);
-        canvas.freeDrawingBrush.color = color;
+        if (canvas.freeDrawingBrush) {
+            canvas.freeDrawingBrush.color = color;
+        }
         playSound('colorPop');
     }
 
     function changeBrushSize(newSize: number) {
         if (!canvas) return;
         setBrushSize(newSize);
-        canvas.freeDrawingBrush.width = newSize;
+        if (canvas.freeDrawingBrush) {
+            canvas.freeDrawingBrush.width = newSize;
+        }
     }
 
     return (
         <div className="flex flex-col w-full pointer-events-auto">
-            {/* ── Top Bar: Undo/Redo + Actions ── */}
+            {/* Top Bar */}
             <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
                 <div className="flex gap-2">
                     <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
@@ -103,27 +108,25 @@ export function Toolbar({
                 </div>
             </div>
 
-            {/* ── Bottom: Tools + Colors ── */}
+            {/* Bottom: Tools + Size + Colors */}
             <div className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100">
                 {/* Tool belt */}
                 <div className="flex items-center justify-center gap-2 px-3 py-2">
-                    {(Object.entries(TOOL_ICONS) as [BrushKey, typeof TOOL_ICONS[string]][]).map(
-                        ([key, { emoji, label }]) => (
-                            <BigButton
-                                key={key}
-                                onClick={() => selectTool(key)}
-                                active={activeTool === key}
-                                aria-label={label}
-                            >
-                                {emoji}
-                            </BigButton>
-                        )
-                    )}
+                    {(Object.keys(TOOL_ICONS) as BrushKey[]).map((key) => (
+                        <BigButton
+                            key={key}
+                            onClick={() => selectTool(key)}
+                            active={activeTool === key}
+                            aria-label={TOOL_ICONS[key].label}
+                        >
+                            {TOOL_ICONS[key].emoji}
+                        </BigButton>
+                    ))}
                 </div>
 
-                {/* Brush size slider */}
+                {/* Brush size */}
                 <div className="flex items-center gap-3 px-6 pb-1">
-                    <span className="text-xs">thin</span>
+                    <span className="text-xs font-bold text-gray-400">thin</span>
                     <input
                         type="range"
                         min={1}
@@ -133,7 +136,7 @@ export function Toolbar({
                         className="flex-1 h-8 accent-kid-purple"
                         aria-label="Brush size"
                     />
-                    <span className="text-xs">thick</span>
+                    <span className="text-xs font-bold text-gray-400">thick</span>
                 </div>
 
                 {/* Color strip */}

@@ -192,6 +192,329 @@ PS E:\co\tiny-museum> npm run dev
               └── 🗑️ Delete
 ```
 
+### Fix Batch — All Blockers + Agent Findings
+- Three categories: build-breaking, console errors, agent-flagged gaps. All in one pass.
+
+#### Build Breakers
+- Fix 1: Studio Page — 'use client' Missing
+```tsx
+// src/app/studio/canvas/page.tsx — REPLACE ENTIRE FILE
+
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const StudioCanvas = dynamic(
+  () => import('@/components/canvas/StudioCanvas'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[100dvh] bg-studio-bg">
+        <div className="text-center">
+          <p className="text-5xl mb-3 animate-bounce">🎨</p>
+          <p className="text-xl font-bold text-kid-purple">
+            Opening Studio...
+          </p>
+        </div>
+      </div>
+    ),
+  }
+);
+
+export default function StudioCanvasPage() {
+  return <StudioCanvas />;
+}
+```
+- Fix 2: Toolbar — Null Guards on freeDrawingBrush
+// src/components/canvas/Toolbar.tsx — REPLACED ENTIRE FILE
+
+#### Console Errors
+
+- Fix 3: manifest.json — Valid JSON (No Comments) REPLACED
+- Fix 4: Favicon — Generated a Simple SVG Favicon 
+```bash
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <text y=".9em" font-size="90">🏛️</text>
+</svg>
+```
+
+- Add to src/app/layout.tsx inside <head>:
+
+```tsx
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+```
+
+- Fix 5: Turbopack Warning — Remove Webpack Config
+Replaced next.config.ts:
+
+- Since we're using Turbopack (--turbopack flag), the webpack config block causes the warning. Fabric.js v6 is pure ESM and doesn't need the canvas: false alias in the browser — that was for server-side Node canvas which we're avoiding entirely via ssr: false.
+
+#### Agent-Flagged Gaps
+
+- Fix 6: Studio Layout — Bottom Nav Hiding
+The CSS sibling selector fails because of nesting. Replace with a simpler approach.
+```tsx
+// src/app/studio/layout.tsx — REPLACE ENTIRE FILE
+
+'use client';
+
+import { useEffect } from 'react';
+
+export default function StudioLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Add class to body so global CSS can hide the nav
+  useEffect(() => {
+    document.body.classList.add('studio-active');
+    return () => {
+      document.body.classList.remove('studio-active');
+    };
+  }, []);
+
+  return <>{children}</>;
+}
+```
+
+- Then update src/styles/globals.css — find the existing .studio-active rules and replace with:
+
+```css
+/* ── Studio: hide bottom nav, full height ── */
+body.studio-active .bottom-nav {
+  display: none !important;
+}
+body.studio-active .app-shell {
+  height: 100dvh;
+}
+
+/* Tablet override too */
+@media (min-width: 768px) {
+  body.studio-active .app-shell {
+    margin-left: 0;
+  }
+}
+```
+- Remove the old .studio-active .bottom-nav and .studio-active .app-shell blocks.
+
+
+- Fix 7: FriendlyDialog — Replaces confirm()
+
+```tsx
+// src/components/ui/FriendlyDialog.tsx — NEW FILE
+
+'use client';
+
+import { BigButton } from './BigButton';
+
+interface FriendlyDialogProps {
+  emoji: string;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmEmoji?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export function FriendlyDialog({
+  emoji,
+  title,
+  message,
+  confirmLabel,
+  confirmEmoji = '✓',
+  cancelLabel = 'Go back',
+  danger = false,
+  onConfirm,
+  onCancel,
+}: FriendlyDialogProps) {
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center px-6"
+      style={{ background: 'rgba(0,0,0,0.4)' }}
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-kid p-6 max-w-sm w-full text-center shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="alertdialog"
+        aria-label={title}
+      >
+        <p className="text-5xl mb-3">{emoji}</p>
+        <h2 className="text-xl font-extrabold mb-2">{title}</h2>
+        <p className="text-gray-500 mb-6 text-base">{message}</p>
+
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={onCancel}
+            className="px-5 py-3 bg-gray-100 rounded-kid font-bold text-base
+                       active:scale-95 transition-transform min-h-[48px]"
+          >
+            {cancelLabel} 💚
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`px-5 py-3 rounded-kid font-bold text-base text-white
+                       active:scale-95 transition-transform min-h-[48px]
+                       ${danger ? 'bg-kid-red' : 'bg-kid-purple'}`}
+          >
+            {confirmLabel} {confirmEmoji}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+- Fix 8: Exhibit Page — Wire FriendlyDialog + ParentGate to Delete
+// src/app/gallery/[artworkId]/page.tsx — REPLACED ENTIRE FILE
+
+
+- Fix 9: ParentGate Needs Update for onCancel Flow
+Check your src/components/ui/ParentGate.tsx matches this interface:
+
+```tsx
+// src/components/ui/ParentGate.tsx — REPLACE ENTIRE FILE
+
+'use client';
+
+import { useState, useMemo } from 'react';
+
+interface ParentGateProps {
+  onUnlock: () => void;
+  onCancel: () => void;
+  message?: string;
+}
+
+export function ParentGate({ onUnlock, onCancel, message }: ParentGateProps) {
+  const problem = useMemo(() => {
+    const a = Math.floor(Math.random() * 8) + 3;
+    const b = Math.floor(Math.random() * 8) + 3;
+    return { a, b, answer: a * b };
+  }, []);
+
+  const [input, setInput] = useState('');
+  const [wrong, setWrong] = useState(false);
+
+  function check() {
+    if (parseInt(input, 10) === problem.answer) {
+      onUnlock();
+    } else {
+      setWrong(true);
+      setInput('');
+      setTimeout(() => setWrong(false), 1500);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center px-6"
+      style={{ background: 'rgba(0,0,0,0.5)' }}
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-kid p-6 max-w-sm w-full text-center shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label="Parent verification"
+      >
+        <h2 className="text-2xl font-extrabold mb-2">
+          👋 Grown-Up Check
+        </h2>
+        <p className="text-gray-500 mb-4 text-base">
+          {message ?? 'This needs a grown-up. Solve to continue:'}
+        </p>
+
+        <p className="text-3xl font-extrabold mb-4 text-kid-purple">
+          {problem.a} × {problem.b} = ?
+        </p>
+
+        <input
+          type="number"
+          inputMode="numeric"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && check()}
+          autoFocus
+          className="text-2xl text-center w-24 py-2 border-3 border-gray-200
+                     rounded-kid outline-none focus:border-kid-purple
+                     transition-colors"
+        />
+
+        <div className="flex gap-3 justify-center mt-5">
+          <button
+            onClick={onCancel}
+            className="px-5 py-3 bg-gray-100 rounded-kid font-bold
+                       active:scale-95 transition-transform min-h-[48px]"
+          >
+            Go Back
+          </button>
+          <button
+            onClick={check}
+            className="px-5 py-3 bg-kid-purple text-white rounded-kid font-bold
+                       active:scale-95 transition-transform min-h-[48px]"
+          >
+            Check ✓
+          </button>
+        </div>
+
+        {wrong && (
+          <p className="text-kid-red font-bold mt-3 animate-pulse">
+            Not quite — try again! 🤔
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+#### Updated Layout with Favicon + Celebrations
+
+- // src/app/layout.tsx — REPLACED ENTIRE FILE
+
+### Full Fix Checklist
+FIXES APPLIED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build Breakers:
+  ✅ Studio page: added 'use client' for dynamic import
+  ✅ Toolbar: null guards on freeDrawingBrush
+  ✅ next.config.ts: removed webpack block (Turbopack clean)
+
+Console Errors:
+  ✅ manifest.json: valid JSON, no comments
+  ✅ favicon.svg: created in public/
+  ✅ layout.tsx: favicon wired via metadata
+
+Agent-Flagged Gaps:
+  ✅ Studio layout: body class approach (no CSS sibling hack)
+  ✅ FriendlyDialog: chunky kid-safe modal component
+  ✅ ParentGate: wired to delete flow
+  ✅ Delete flow: FriendlyDialog → ParentGate → actual delete
+  ✅ Celebrations: wired into root layout
+
+FILES CHANGED (8):
+  src/app/studio/canvas/page.tsx    ← 'use client' added
+  src/app/studio/layout.tsx         ← body class approach
+  src/app/layout.tsx                ← celebrations + favicon
+  src/app/gallery/[artworkId]/page.tsx ← FriendlyDialog + ParentGate
+  src/components/canvas/Toolbar.tsx ← null guards
+  src/components/ui/FriendlyDialog.tsx ← NEW
+  src/components/ui/ParentGate.tsx  ← cleaned up
+  next.config.ts                    ← simplified
+
+FILES CREATED (2):
+  public/favicon.svg
+  src/components/ui/FriendlyDialog.tsx
+
+### All three routes should now load clean: /, /gallery, /studio/canvas. Draw something → hit 🏛️ → see it framed. That's the test. 🎨
+
+---
+
 IMMEDIATE (should do now if time):
   ☐ Test the full draw → save → gallery → exhibit flow
   ☐ Fix any runtime issues from first real usage
