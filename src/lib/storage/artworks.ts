@@ -143,6 +143,7 @@ export async function saveArtwork(
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
     tags: existing?.tags ?? [],
+    ...(existing?.publishedUrl !== undefined && { publishedUrl: existing.publishedUrl }),
   };
 
   const blob: ArtworkBlob = {
@@ -211,5 +212,11 @@ export async function updatePublishedUrl(
   id: string,
   publishedUrl: string | undefined,
 ): Promise<void> {
-  await db.artworks.update(id, { publishedUrl });
+  if (publishedUrl === undefined) {
+    await db.artworks.where('id').equals(id).modify((record) => {
+      delete (record as unknown as Record<string, unknown>).publishedUrl;
+    });
+  } else {
+    await db.artworks.update(id, { publishedUrl });
+  }
 }

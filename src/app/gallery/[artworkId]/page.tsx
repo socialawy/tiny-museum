@@ -14,6 +14,7 @@ import { useLargeBlob } from '@/hooks/useBlobUrl';
 import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
+import Link from 'next/link';
 
 type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
 
@@ -27,6 +28,7 @@ export default function ExhibitPage() {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState('');
   const [modal, setModal] = useState<ModalState>('none');
+  const [unpublishError, setUnpublishError] = useState<string | null>(null);
 
   const imageUrl = useLargeBlob(blob?.fullRes ?? null);
 
@@ -83,6 +85,7 @@ export default function ExhibitPage() {
       setArtwork({ ...artwork, publishedUrl: undefined });
     } catch (err) {
       console.error('Unpublish failed:', err);
+      setUnpublishError('Could not unpublish. Please try again.');
     } finally {
       setModal('none');
     }
@@ -199,17 +202,18 @@ export default function ExhibitPage() {
         <div className="mt-4 px-6 pb-2 flex flex-col items-center gap-2">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-kid-purple font-bold">🌐 Published online</span>
-            <a
+            <Link
               href="/gallery/published"
-              target="_blank"
-              rel="noreferrer"
               className="text-blue-600 underline text-xs"
             >
               View gallery →
-            </a>
+            </Link>
           </div>
+          {unpublishError && (
+            <p className="text-red-500 text-xs">{unpublishError}</p>
+          )}
           <BigButton
-            onClick={() => setModal('unpublish-gate')}
+            onClick={() => { setUnpublishError(null); setModal('unpublish-gate'); }}
             aria-label="Unpublish"
           >
             🌐 Unpublish
