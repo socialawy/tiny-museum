@@ -3,7 +3,7 @@ import { db, type Artwork, type ArtworkBlob } from './db';
 
 // ── Helpers ──
 
-function dataURLtoBlob(dataUrl: string): Blob {
+export function dataURLtoBlob(dataUrl: string): Blob {
   const [header, base64] = dataUrl.split(',');
   const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
   const binary = atob(base64);
@@ -39,18 +39,21 @@ async function generateThumbnail(
  * Before serialization: walk all Fabric objects and convert
  * any blob: image sources to data URLs using the live element.
  */
-function convertBlobSourcesToDataUrl(fabricCanvas: any): void {
+function convertBlobSourcesToDataUrl(fabricCanvas: Record<string, unknown>): void {
   try {
-    const objects = fabricCanvas.getObjects?.() ?? [];
+    const getObjectsFn = fabricCanvas.getObjects as ((
+    ) => unknown[]) | undefined;
+    const objects = (getObjectsFn?.() ?? []) as unknown[];
     for (const obj of objects) {
-      if (obj.type !== 'image') continue;
+      const objRecord = obj as Record<string, unknown>;
+      if (objRecord.type !== 'image') continue;
 
       // Get the underlying image element
-      const el = obj._element as HTMLImageElement | HTMLCanvasElement | null;
+      const el = objRecord._element as HTMLImageElement | HTMLCanvasElement | null;
       if (!el) continue;
 
       // Check if source is a blob URL
-      const src = (el as HTMLImageElement).src ?? obj._originalElement?.src ?? '';
+      const src = (el as HTMLImageElement).src ?? (objRecord._originalElement as Record<string, unknown> | null)?.src ?? '';
 
       if (!src.startsWith('blob:')) continue;
 
@@ -96,7 +99,7 @@ function sanitizeBlobUrls(jsonString: string): string {
 // ── CRUD ──
 
 export async function saveArtwork(
-  fabricCanvas: any,
+  fabricCanvas: Record<string, unknown>,
   existingId?: string,
 ): Promise<Artwork> {
   const id = existingId ?? nanoid(12);
@@ -106,19 +109,25 @@ export async function saveArtwork(
   convertBlobSourcesToDataUrl(fabricCanvas);
 
   // Step 2: Serialize
-  const canvasJson = fabricCanvas.toJSON();
+  const toJSONFn = fabricCanvas.toJSON as (() => unknown) | undefined;
+  const canvasJson = toJSONFn?.() ?? {};
 
   // Step 3: Nuclear sanitization — catch anything that slipped through
   const canvasJSON = sanitizeBlobUrls(JSON.stringify(canvasJson));
 
   // Generate exports
-  const fullDataUrl = fabricCanvas.toDataURL({
+  const toDataURLFn = fabricCanvas.toDataURL as ((options: Record<string, unknown>) => string) | undefined;
+  const fullDataUrl = toDataURLFn?.({
     format: 'png',
     multiplier: 2,
-  });
+  }) ?? '';
   const fullBlob = dataURLtoBlob(fullDataUrl);
 
-  const canvasEl = fabricCanvas.getElement() as HTMLCanvasElement;
+  const getElementFn = fabricCanvas.getElement as (() => unknown) | undefined;
+  const canvasEl = getElementFn?.() as HTMLCanvasElement | undefined;
+  if (!canvasEl) {
+    throw new Error('Failed to get canvas element');
+  }
   const thumbnail = await generateThumbnail(canvasEl);
 
   // Preserve existing metadata on update
@@ -196,4 +205,11 @@ export async function toggleFavorite(id: string) {
     : [...artwork.tags, 'favorite'];
 
   await db.artworks.update(id, { tags, updatedAt: Date.now() });
+}
+
+export async function updatePublishedUrl(
+  id: string,
+  publishedUrl: string | undefined,
+): Promise<void> {
+  await db.artworks.update(id, { publishedUrl });
 }

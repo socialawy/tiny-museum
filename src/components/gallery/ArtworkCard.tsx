@@ -39,16 +39,16 @@ export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProp
         }}
       >
         {/* Type badge */}
-        {artwork.type === 'flipbook' && (
+        {artwork.type === 'flipbook' ? (
           <div className="absolute top-2 right-2 z-10 bg-black/60 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
             🎬
           </div>
-        )}
-        {(artwork as any).publishedUrl && (
+        ) : null}
+        {artwork.publishedUrl ? (
           <div className="absolute top-2 left-2 z-10 bg-kid-purple/80 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
             🌐
           </div>
-        )}
+        ) : null}
         {/* Outer frame */}
         <div
           className="absolute inset-0 rounded-lg"

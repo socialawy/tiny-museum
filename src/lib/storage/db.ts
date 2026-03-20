@@ -5,23 +5,32 @@ export interface Artwork {
   title: string;
   roomId: string;
   type: 'drawing' | 'collage' | 'flipbook';
-  thumbnail: Blob; // compressed 400px preview
-  canvasJSON: string; // Fabric.js serialized state
+  thumbnail: Blob;
+  canvasJSON: string;
   createdAt: number;
   updatedAt: number;
   tags: string[];
+  publishedUrl?: string; // set when artwork is published to Supabase
 }
 
 export interface ArtworkBlob {
-  id: string; // matches artwork.id
-  fullRes: Blob; // full resolution PNG
-  format: 'png' | 'svg';
+  id: string;
+  fullRes: Blob;
+  format: 'png' | 'svg' | 'gif';
+}
+
+export interface FlipbookFrame {
+  id: string; // artworkId + '_frame_' + index
+  artworkId: string; // parent flipbook
+  index: number; // frame order
+  canvasJSON: string; // Fabric.js state for this frame
+  thumbnail: Blob; // small preview
 }
 
 export interface Room {
   id: string;
   name: string;
-  icon: string; // emoji
+  icon: string;
   color: string;
   order: number;
   createdAt: number;
@@ -35,6 +44,7 @@ export interface AppSettings {
 class TinyMuseumDB extends Dexie {
   artworks!: Table<Artwork>;
   blobs!: Table<ArtworkBlob>;
+  frames!: Table<FlipbookFrame>;
   rooms!: Table<Room>;
   settings!: Table<AppSettings>;
 
@@ -48,7 +58,15 @@ class TinyMuseumDB extends Dexie {
       settings: 'key',
     });
 
-    // Seed default room on first open
+    // Version 2: Add frames table for flipbooks
+    this.version(2).stores({
+      artworks: 'id, roomId, type, createdAt, *tags',
+      blobs: 'id',
+      frames: 'id, artworkId, index',
+      rooms: 'id, order',
+      settings: 'key',
+    });
+
     this.on('populate', (tx) => {
       tx.table('rooms').add({
         id: 'my-art',
