@@ -28,6 +28,7 @@ export default function StudioCanvas() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishedLink, setPublishedLink] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [currentArtworkId, setCurrentArtworkId] = useState<string | undefined>(
     editId ?? undefined,
   );
@@ -140,9 +141,20 @@ export default function StudioCanvas() {
     }
   }, [canvas, saving, currentArtworkId, celebrate, playSound, router]);
 
+  // Auto-dismiss toast after 6 seconds
+  useEffect(() => {
+    if (!publishedLink && !publishError) return;
+    const timer = setTimeout(() => {
+      setPublishedLink(null);
+      setPublishError(null);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [publishedLink, publishError]);
+
   const handlePublish = useCallback(async () => {
     if (!canvas || !currentArtworkId || publishing) return;
     setPublishing(true);
+    setPublishError(null);
     try {
       const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 1 });
       const imageBlob = dataURLtoBlob(dataUrl);
@@ -154,6 +166,7 @@ export default function StudioCanvas() {
       playSound('celebrate');
     } catch (err) {
       console.error('Publish failed:', err);
+      setPublishError('Could not publish. Please try again.');
     } finally {
       setPublishing(false);
     }
@@ -240,14 +253,33 @@ export default function StudioCanvas() {
       {activePanel === 'stickers' && (
         <StickerPanel canvas={canvas} onClose={() => setActivePanel('none')} />
       )}
-      {publishedLink && (
+      {(publishedLink || publishError) && (
         <div className="absolute top-16 right-2 z-50 bg-white rounded-kid shadow-lg p-3 text-sm max-w-[220px]">
-          <p className="font-bold text-kid-purple mb-1">Published! 🎉</p>
-          <a href="/gallery/published" target="_blank" className="text-blue-600 underline text-xs">
-            View online gallery →
-          </a>
+          {publishedLink ? (
+            <>
+              <p className="font-bold text-kid-purple mb-1">Published! 🎉</p>
+              <a
+                href="/gallery/published"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-blue-600 underline text-xs mb-1"
+              >
+                View online gallery →
+              </a>
+              <a
+                href={publishedLink}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-blue-400 underline text-xs"
+              >
+                Open image →
+              </a>
+            </>
+          ) : (
+            <p className="text-red-500 text-xs">{publishError}</p>
+          )}
           <button
-            onClick={() => setPublishedLink(null)}
+            onClick={() => { setPublishedLink(null); setPublishError(null); }}
             className="absolute top-1 right-2 text-gray-400 text-xs"
           >
             ✕
