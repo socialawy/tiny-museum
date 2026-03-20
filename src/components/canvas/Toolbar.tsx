@@ -87,7 +87,9 @@ export function Toolbar({
       if (toolKey === 'eraser') {
         const brush = new PencilBrush(canvas);
         brush.width = tool.width;
-        brush.color = (canvas.backgroundColor as string) ?? '#FFFEF7';
+        // Reverting to solid/pattern painting as requested
+        // Supports both hex colors and fabric.Pattern
+        brush.color = (canvas.backgroundColor as any) ?? '#FFFEF7';
         canvas.freeDrawingBrush = brush;
       } else if (tool.type === 'spray') {
         const brush = new SprayBrush(canvas);

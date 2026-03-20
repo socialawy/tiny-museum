@@ -24,10 +24,12 @@ export const KID_PALETTE = [
 ] as const;
 
 export const BACKGROUNDS = [
-  { name: 'Paper', value: '#FFFEF7' },
-  { name: 'Sky Blue', value: '#E8F4FD' },
-  { name: 'Mint', value: '#E8FFF5' },
-  { name: 'Lavender', value: '#F0E8FF' },
-  { name: 'Sunset', value: '#FFF0E8' },
-  { name: 'Dark', value: '#2D3436' },
+  { name: 'Paper', value: '#FFFEF7', type: 'color' },
+  { name: 'Sky Blue', value: '#E8F4FD', type: 'color' },
+  { name: 'Mint', value: '#E8FFF5', type: 'color' },
+  { name: 'Lavender', value: '#F0E8FF', type: 'color' },
+  { name: 'Sunset', value: '#FFF0E8', type: 'color' },
+  { name: 'Dark', value: '#2D3436', type: 'color' },
+  { name: 'Canvas', value: 'canvas-texture', type: 'texture' },
+  { name: 'Grid', value: 'grid-texture', type: 'texture' },
 ] as const;

@@ -2,17 +2,17 @@ import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 
 const mockCtx = {
-  drawImage: () => { },
-  fillRect: () => { },
-  clearRect: () => { },
-  scale: () => { },
-  fillText: () => { },
-  save: () => { },
-  restore: () => { },
+  drawImage: () => {},
+  fillRect: () => {},
+  clearRect: () => {},
+  scale: () => {},
+  fillText: () => {},
+  save: () => {},
+  restore: () => {},
   getImageData: () => ({
     data: new Uint8ClampedArray(4),
   }),
-  putImageData: () => { },
+  putImageData: () => {},
   fillStyle: '#000',
   strokeStyle: '#000',
   font: '10px sans-serif',
@@ -32,9 +32,7 @@ HTMLCanvasElement.prototype.getContext = function (
   return null;
 } as any;
 
-HTMLCanvasElement.prototype.toBlob = function (
-  cb: (blob: Blob | null) => void,
-) {
+HTMLCanvasElement.prototype.toBlob = function (cb: (blob: Blob | null) => void) {
   cb(new Blob(['mock-image'], { type: 'image/png' }));
 } as any;
 

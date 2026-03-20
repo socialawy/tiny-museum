@@ -62,9 +62,7 @@ export default function GalleryPage() {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <h1 className="text-2xl font-extrabold text-museum-plaque">
-          🏛️ Gallery
-        </h1>
+        <h1 className="text-2xl font-extrabold text-museum-plaque">🏛️ Gallery</h1>
         <div className="flex gap-2">
           <SoundToggle />
           <button

@@ -31,3 +31,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Folders
+local-files/
+
+# Test logs
+/test-logs
+test_output.txt

@@ -13,6 +13,8 @@ interface GalleryState {
   setActiveRoom: (roomId: string) => void;
   toggleViewMode: () => void;
   refresh: () => Promise<void>;
+  totalCount: number;
+  favoriteCount: number;
 }
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
@@ -21,6 +23,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   activeRoomId: 'my-art',
   viewMode: 'walk',
   isLoading: true,
+  totalCount: 0,
+  favoriteCount: 0,
 
   setActiveRoom: (roomId) => {
     set({ activeRoomId: roomId, isLoading: true });
@@ -36,12 +40,14 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       const rooms = await listRooms();
       const { activeRoomId } = get();
 
-      const artworks =
-        activeRoomId === 'all'
-          ? await listAllArtworks()
-          : await listArtworksByRoom(activeRoomId);
+      const allArtworks = await listAllArtworks();
+      const totalCount = allArtworks.length;
+      const favoriteCount = allArtworks.filter((a) => a.tags.includes('favorite')).length;
 
-      set({ artworks, rooms, isLoading: false });
+      const artworks =
+        activeRoomId === 'all' ? allArtworks : await listArtworksByRoom(activeRoomId);
+
+      set({ artworks, rooms, totalCount, favoriteCount, isLoading: false });
     } catch (err) {
       console.error('Gallery refresh failed:', err);
       set({ isLoading: false });
