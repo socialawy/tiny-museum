@@ -19,6 +19,9 @@ interface ToolbarProps {
   canRedo: boolean;
   onSave: () => void;
   onSendToGallery: () => void;
+  onPublish?: () => void;
+  publishing?: boolean;
+  publishedLink?: string | null;
   onOpenImport: () => void;
   onOpenShapes: () => void;
   onOpenBackground: () => void;
@@ -45,6 +48,9 @@ export function Toolbar({
   canRedo,
   onSave,
   onSendToGallery,
+  onPublish,
+  publishing = false,
+  publishedLink = null,
   onOpenImport,
   onOpenShapes,
   onOpenBackground,
@@ -89,7 +95,8 @@ export function Toolbar({
         brush.width = tool.width;
         // Reverting to solid/pattern painting as requested
         // Supports both hex colors and fabric.Pattern
-        brush.color = (canvas.backgroundColor as any) ?? '#FFFEF7';
+        const bgColor = (canvas.backgroundColor as string | null) ?? '#FFFEF7';
+        brush.color = bgColor;
         canvas.freeDrawingBrush = brush;
       } else if (tool.type === 'spray') {
         const brush = new SprayBrush(canvas);
@@ -176,6 +183,11 @@ export function Toolbar({
           <BigButton onClick={onSendToGallery} aria-label="Gallery">
             🏛️
           </BigButton>
+          {onPublish && (
+            <BigButton onClick={onPublish} disabled={publishing} aria-label="Publish online">
+              {publishing ? '⏳' : publishedLink ? '✅' : '🌐'}
+            </BigButton>
+          )}
         </div>
       </div>
 

@@ -3,7 +3,8 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
-import { saveArtwork, loadArtwork } from '@/lib/storage/artworks';
+import { saveArtwork, loadArtwork, updatePublishedUrl, dataURLtoBlob } from '@/lib/storage/artworks';
+import { publishArtwork } from '@/lib/cloud/publish';
 import { addImageToCanvas } from '@/lib/fabric/shapes';
 import { KID_PALETTE } from '@/lib/fabric/tools';
 import { useUIStore } from '@/stores/ui.store';
@@ -25,6 +26,8 @@ export default function StudioCanvas() {
   const celebrate = useUIStore((s) => s.celebrate);
   const { playSound } = useSounds();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishedLink, setPublishedLink] = useState<string | null>(null);
   const [currentArtworkId, setCurrentArtworkId] = useState<string | undefined>(
     editId ?? undefined,
   );
@@ -75,7 +78,7 @@ export default function StudioCanvas() {
 
       const doSave = async () => {
         try {
-          await saveArtwork(canvas, currentArtworkId);
+          await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
         } catch {
           // silent
         }
@@ -111,7 +114,7 @@ export default function StudioCanvas() {
     if (!canvas || saving) return;
     setSaving(true);
     try {
-      const artwork = await saveArtwork(canvas, currentArtworkId);
+      const artwork = await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
       setCurrentArtworkId(artwork.id);
       celebrate();
       playSound('save');
@@ -126,7 +129,7 @@ export default function StudioCanvas() {
     if (!canvas || saving) return;
     setSaving(true);
     try {
-      const artwork = await saveArtwork(canvas, currentArtworkId);
+      const artwork = await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
       setCurrentArtworkId(artwork.id);
       celebrate();
       playSound('celebrate');
@@ -136,6 +139,25 @@ export default function StudioCanvas() {
       setSaving(false);
     }
   }, [canvas, saving, currentArtworkId, celebrate, playSound, router]);
+
+  const handlePublish = useCallback(async () => {
+    if (!canvas || !currentArtworkId || publishing) return;
+    setPublishing(true);
+    try {
+      const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 1 });
+      const imageBlob = dataURLtoBlob(dataUrl);
+      const artwork = await loadArtwork(currentArtworkId);
+      if (!artwork) throw new Error('Artwork not found');
+      const url = await publishArtwork(artwork, imageBlob);
+      await updatePublishedUrl(currentArtworkId, url);
+      setPublishedLink(url);
+      playSound('celebrate');
+    } catch (err) {
+      console.error('Publish failed:', err);
+    } finally {
+      setPublishing(false);
+    }
+  }, [canvas, currentArtworkId, publishing, playSound]);
 
   const handleImport = useCallback(
     async (imageUrl: string) => {
@@ -158,7 +180,7 @@ export default function StudioCanvas() {
   const showLoading = !isReady || (editId && !loaded);
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-studio-bg">
+    <div className="relative flex flex-col h-[100dvh] bg-studio-bg">
       <Toolbar
         canvas={canvas}
         activeColor={activeColor}
@@ -171,6 +193,9 @@ export default function StudioCanvas() {
         canRedo={canRedo}
         onSave={handleSave}
         onSendToGallery={handleSendToGallery}
+        onPublish={currentArtworkId ? handlePublish : undefined}
+        publishing={publishing}
+        publishedLink={publishedLink}
         onOpenImport={() => setActivePanel('import')}
         onOpenShapes={() => setActivePanel('shapes')}
         onOpenBackground={() => setActivePanel('background')}
@@ -214,6 +239,20 @@ export default function StudioCanvas() {
       )}
       {activePanel === 'stickers' && (
         <StickerPanel canvas={canvas} onClose={() => setActivePanel('none')} />
+      )}
+      {publishedLink && (
+        <div className="absolute top-16 right-2 z-50 bg-white rounded-kid shadow-lg p-3 text-sm max-w-[220px]">
+          <p className="font-bold text-kid-purple mb-1">Published! 🎉</p>
+          <a href="/gallery/published" target="_blank" className="text-blue-600 underline text-xs">
+            View online gallery →
+          </a>
+          <button
+            onClick={() => setPublishedLink(null)}
+            className="absolute top-1 right-2 text-gray-400 text-xs"
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );
