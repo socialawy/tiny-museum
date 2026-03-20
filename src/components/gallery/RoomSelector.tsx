@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Room } from '@/lib/storage/db';
 import { CreateRoomDialog } from './CreateRoomDialog';
+import { useSounds } from '@/hooks/useSounds';
 
 interface RoomSelectorProps {
   rooms: Room[];
@@ -18,6 +19,7 @@ export function RoomSelector({
   onRoomCreated,
 }: RoomSelectorProps) {
   const [showCreate, setShowCreate] = useState(false);
+  const { playSound } = useSounds();
 
   return (
     <>
@@ -28,7 +30,10 @@ export function RoomSelector({
         {rooms.map((room) => (
           <button
             key={room.id}
-            onClick={() => onSelect(room.id)}
+            onClick={() => {
+              onSelect(room.id);
+              playSound('roomSwitch');
+            }}
             className={`
               flex items-center gap-1.5 px-4 py-2 rounded-full
               font-bold text-sm whitespace-nowrap
@@ -46,7 +51,6 @@ export function RoomSelector({
           </button>
         ))}
 
-        {/* Add room button */}
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-1 px-3 py-2 rounded-full

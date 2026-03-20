@@ -18,7 +18,7 @@ export function StickerPanel({ canvas, onClose }: StickerPanelProps) {
   async function handleSticker(emoji: string) {
     if (!canvas) return;
     await addStickerToCanvas(canvas, emoji, 80);
-    playSound('toolSwitch');
+    playSound('sparkle');
   }
 
   return (

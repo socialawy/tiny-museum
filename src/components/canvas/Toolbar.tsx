@@ -215,6 +215,13 @@ export function Toolbar({
             🎨
           </BigButton>
 
+          {/* Eraser mode indicator */}
+          {!isSelectMode && activeTool === 'eraser' && (
+            <span className="text-xs font-bold text-kid-red ml-2 animate-pulse">
+              Erasing
+            </span>
+          )}
+
           {/* Delete selected */}
           {isSelectMode && (
             <BigButton

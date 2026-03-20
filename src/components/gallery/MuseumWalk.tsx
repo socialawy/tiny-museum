@@ -33,8 +33,15 @@ export function MuseumWalk({ artworks, onArtworkTap }: MuseumWalkProps) {
       {/* Leading spacer for centered first item */}
       <div className="flex-shrink-0 w-8" />
 
-      {artworks.map((artwork) => (
-        <div key={artwork.id} style={{ scrollSnapAlign: 'center' }}>
+      {artworks.map((artwork, i) => (
+        <div
+          key={artwork.id}
+          className="gallery-card-enter"
+          style={{
+            scrollSnapAlign: 'center',
+            animationDelay: `${i * 0.1}s`,
+          }}
+        >
           <ArtworkCard
             artwork={artwork}
             size="walk"

@@ -50,19 +50,14 @@ function convertBlobSourcesToDataUrl(fabricCanvas: any): void {
       if (!el) continue;
 
       // Check if source is a blob URL
-      const src =
-        (el as HTMLImageElement).src ??
-        obj._originalElement?.src ??
-        '';
+      const src = (el as HTMLImageElement).src ?? obj._originalElement?.src ?? '';
 
       if (!src.startsWith('blob:')) continue;
 
       // Convert to data URL via temp canvas
       try {
         const w =
-          (el as HTMLImageElement).naturalWidth ||
-          (el as HTMLCanvasElement).width ||
-          100;
+          (el as HTMLImageElement).naturalWidth || (el as HTMLCanvasElement).width || 100;
         const h =
           (el as HTMLImageElement).naturalHeight ||
           (el as HTMLCanvasElement).height ||
@@ -131,8 +126,7 @@ export async function saveArtwork(
 
   const artwork: Artwork = {
     id,
-    title: existing?.title ??
-      `Masterpiece #${Math.floor(Math.random() * 999) + 1}`,
+    title: existing?.title ?? `Masterpiece #${Math.floor(Math.random() * 999) + 1}`,
     roomId: existing?.roomId ?? 'my-art',
     type: 'drawing',
     thumbnail,
@@ -165,11 +159,7 @@ export async function loadArtworkBlob(id: string) {
 }
 
 export async function listArtworksByRoom(roomId: string) {
-  return db.artworks
-    .where('roomId')
-    .equals(roomId)
-    .reverse()
-    .sortBy('createdAt');
+  return db.artworks.where('roomId').equals(roomId).reverse().sortBy('createdAt');
 }
 
 export async function listAllArtworks() {

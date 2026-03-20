@@ -1,16 +1,27 @@
 'use client';
 
 import { useCallback } from 'react';
+import { sounds, type SoundName } from '@/lib/audio/sounds';
+import { useUIStore } from '@/stores/ui.store';
 
-// Phase 1 stub — will wire up real sounds in Week 6
 export function useSounds() {
-  const playSound = useCallback((name: string) => {
-    // TODO: load from /assets/sounds/
-    // For now, optional vibration feedback on mobile
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  }, []);
+  const soundEnabled = useUIStore((s) => s.soundEnabled);
+
+  const playSound = useCallback(
+    (name: SoundName) => {
+      if (!soundEnabled) return;
+      if (typeof window === 'undefined') return;
+
+      const fn = sounds[name];
+      if (fn) fn();
+
+      // Also try haptic feedback on mobile
+      if (navigator.vibrate) {
+        navigator.vibrate(8);
+      }
+    },
+    [soundEnabled],
+  );
 
   return { playSound };
 }

@@ -12,6 +12,7 @@ import { ImportPanel } from './ImportPanel';
 import { ShapePanel } from './ShapePanel';
 import { BackgroundPicker } from './BackgroundPicker';
 import { StickerPanel } from './StickerPanel';
+import { useSounds } from '@/hooks/useSounds';
 
 type Panel = 'none' | 'import' | 'shapes' | 'background' | 'stickers';
 
@@ -22,6 +23,7 @@ export default function StudioCanvas() {
   const editId = searchParams.get('id');
 
   const celebrate = useUIStore((s) => s.celebrate);
+  const { playSound } = useSounds();
   const [saving, setSaving] = useState(false);
   const [currentArtworkId, setCurrentArtworkId] = useState<string | undefined>(
     editId ?? undefined,
@@ -112,12 +114,13 @@ export default function StudioCanvas() {
       const artwork = await saveArtwork(canvas, currentArtworkId);
       setCurrentArtworkId(artwork.id);
       celebrate();
+      playSound('save');
     } catch (err) {
       console.error('Save failed:', err);
     } finally {
       setSaving(false);
     }
-  }, [canvas, saving, currentArtworkId, celebrate]);
+  }, [canvas, saving, currentArtworkId, celebrate, playSound]);
 
   const handleSendToGallery = useCallback(async () => {
     if (!canvas || saving) return;
@@ -126,12 +129,13 @@ export default function StudioCanvas() {
       const artwork = await saveArtwork(canvas, currentArtworkId);
       setCurrentArtworkId(artwork.id);
       celebrate();
+      playSound('celebrate');
       setTimeout(() => router.push('/gallery'), 600);
     } catch (err) {
       console.error('Save failed:', err);
       setSaving(false);
     }
-  }, [canvas, saving, currentArtworkId, celebrate, router]);
+  }, [canvas, saving, currentArtworkId, celebrate, playSound, router]);
 
   const handleImport = useCallback(
     async (imageUrl: string) => {

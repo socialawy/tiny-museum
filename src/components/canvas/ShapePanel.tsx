@@ -24,7 +24,7 @@ export function ShapePanel({ canvas, activeColor, onClose }: ShapePanelProps) {
     if (!canvas) return;
     canvas.isDrawingMode = false;
     fn(canvas, activeColor);
-    playSound('toolSwitch');
+    playSound('sparkle');
     onClose();
   }
 

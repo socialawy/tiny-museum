@@ -203,3 +203,19 @@ body.studio-active .app-shell {
 .celebrate {
   animation: celebrate-pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
+
+/* ── Gallery entrance animation ── */
+@keyframes galleryCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gallery-card-enter {
+  animation: galleryCardEnter 0.3s ease-out backwards;
+}

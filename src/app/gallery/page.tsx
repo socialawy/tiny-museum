@@ -1,87 +1,66 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useGalleryStore } from '@/stores/gallery.store';
-import { cleanExpiredBlobUrls } from '@/lib/storage/migrate';
-import { MuseumWalk } from '@/components/gallery/MuseumWalk';
-import { GalleryGrid } from '@/components/gallery/GalleryGrid';
-import { RoomSelector } from '@/components/gallery/RoomSelector';
 import Link from 'next/link';
+import { db } from '@/lib/storage/db';
+import { SoundToggle } from '@/components/ui/SoundToggle';
 
-export default function GalleryPage() {
-  const router = useRouter();
-  const {
-    artworks,
-    rooms,
-    activeRoomId,
-    viewMode,
-    setActiveRoom,
-    toggleViewMode,
-    refresh,
-  } = useGalleryStore();
-
-  const [loaded, setLoaded] = useState(false);
+export default function HomePage() {
+  const [artCount, setArtCount] = useState(0);
 
   useEffect(() => {
-    (async () => {
-      await cleanExpiredBlobUrls();
-      await refresh();
-      setLoaded(true);
-    })();
-  }, [refresh]);
-
-  function handleArtworkTap(id: string) {
-    router.push(`/gallery/${id}`);
-  }
-
-  if (!loaded) {
-    return (
-      <div className="flex items-center justify-center min-h-full">
-        <p className="text-4xl animate-bounce">🏛️</p>
-      </div>
-    );
-  }
+    db.artworks
+      .count()
+      .then(setArtCount)
+      .catch(() => {});
+  }, []);
 
   return (
-    <div
-      className="flex flex-col min-h-full"
-      style={{
-        background: 'linear-gradient(180deg, #F5E6D3 0%, #EDE0CF 100%)',
-      }}
-    >
-      <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <h1 className="text-2xl font-extrabold text-museum-plaque">🏛️ Gallery</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={toggleViewMode}
-            className="kid-button text-lg"
-            aria-label={viewMode === 'walk' ? 'Grid view' : 'Walk view'}
-          >
-            {viewMode === 'walk' ? '⊞' : '🚶'}
-          </button>
-          <Link
-            href="/studio/canvas"
-            className="kid-button text-lg active:scale-90 no-underline"
-          >
-            ✨ New
-          </Link>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-full px-6 py-12 text-center">
+      {/* Sound toggle */}
+      <div className="absolute top-4 right-4">
+        <SoundToggle />
       </div>
 
-      <RoomSelector
-        rooms={rooms}
-        activeRoomId={activeRoomId}
-        onSelect={setActiveRoom}
-        onRoomCreated={() => refresh()}
-      />
-
-      <div className="flex-1">
-        {viewMode === 'walk' ? (
-          <MuseumWalk artworks={artworks} onArtworkTap={handleArtworkTap} />
-        ) : (
-          <GalleryGrid artworks={artworks} onArtworkTap={handleArtworkTap} />
+      {/* Museum entrance */}
+      <div className="mb-8">
+        <h1 className="text-6xl mb-3">🏛️</h1>
+        <h2 className="text-3xl font-extrabold" style={{ color: '#2D1B69' }}>
+          Tiny Museum
+        </h2>
+        <p className="text-lg mt-2 text-gray-500 font-semibold">Your art. Your museum.</p>
+        {artCount > 0 && (
+          <p className="text-sm mt-1 text-kid-purple font-bold">
+            {artCount} masterpiece{artCount !== 1 ? 's' : ''} and counting ✨
+          </p>
         )}
+      </div>
+
+      {/* Two big doors */}
+      <div className="flex flex-col sm:flex-row gap-6 w-full max-w-md">
+        <Link
+          href="/gallery"
+          className="flex-1 flex flex-col items-center gap-3 p-8 rounded-kid
+                     bg-museum-wall border-4 border-museum-frame
+                     hover:scale-105 active:scale-95
+                     transition-transform duration-150 no-underline"
+        >
+          <span className="text-5xl">🖼️</span>
+          <span className="text-xl font-bold text-museum-plaque">Gallery</span>
+          <span className="text-sm text-gray-500">Explore your art</span>
+        </Link>
+
+        <Link
+          href="/studio/canvas"
+          className="flex-1 flex flex-col items-center gap-3 p-8 rounded-kid
+                     bg-studio-bg border-4 border-kid-purple
+                     hover:scale-105 active:scale-95
+                     transition-transform duration-150 no-underline"
+        >
+          <span className="text-5xl">🎨</span>
+          <span className="text-xl font-bold text-kid-purple">Studio</span>
+          <span className="text-sm text-gray-500">Create something new</span>
+        </Link>
       </div>
     </div>
   );

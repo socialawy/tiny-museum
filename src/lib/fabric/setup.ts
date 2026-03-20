@@ -33,11 +33,7 @@ export function createTinyCanvas(cfg: TinyCanvasConfig): Canvas {
   return canvas;
 }
 
-export function resizeTinyCanvas(
-  canvas: Canvas,
-  width: number,
-  height: number,
-): void {
+export function resizeTinyCanvas(canvas: Canvas, width: number, height: number): void {
   requestAnimationFrame(() => {
     canvas.setDimensions({ width, height });
     canvas.requestRenderAll();

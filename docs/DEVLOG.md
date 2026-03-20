@@ -1152,3 +1152,105 @@ PHASE STATUS:
 ---
 
 ## Phase 3 Polish Sprint
+IMPACT vs EFFORT for a 7-year-old:
+
+  🔊 Sound effects         ████████████ HIGH impact, LOW effort
+  ✨ Better eraser          ██████████   HIGH impact, LOW effort  
+  🎨 Undo stickers/shapes  ████████     (already works from history fix)
+  📱 Bottom toolbar mobile  ██████████   HIGH impact, MEDIUM effort
+  🏛️ Gallery animation      ████████     MEDIUM impact, LOW effort
+
+### 1. Sound Effects — The Dopamine Layer
+
+- src/lib/audio/sounds.ts — NEW
+- src/hooks/useSounds.ts — REPLACED ENTIRE FILE
+
+### 2. Wire Sounds Into Everything
+
+- src/components/canvas/StudioCanvas.tsx — Add Sound to Save/Gallery
+Find handleSave and add sound after celebrate():
+
+```ts
+// In handleSave, after celebrate():
+import { useSounds } from '@/hooks/useSounds';
+
+// Inside the component:
+const { playSound } = useSounds();
+
+// In handleSave try block, after celebrate():
+playSound('save');
+
+// In handleSendToGallery try block, after celebrate():
+playSound('celebrate');
+```
+
+- Here's the complete updated handleSave and handleSendToGallery sections — just replace these two functions in existing StudioCanvas:
+```ts
+  const { playSound } = useSounds();
+
+  const handleSave = useCallback(async () => {
+    if (!canvas || saving) return;
+    setSaving(true);
+    try {
+      const artwork = await saveArtwork(canvas, currentArtworkId);
+      setCurrentArtworkId(artwork.id);
+      celebrate();
+      playSound('save');
+    } catch (err) {
+      console.error('Save failed:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [canvas, saving, currentArtworkId, celebrate, playSound]);
+
+  const handleSendToGallery = useCallback(async () => {
+    if (!canvas || saving) return;
+    setSaving(true);
+    try {
+      const artwork = await saveArtwork(canvas, currentArtworkId);
+      setCurrentArtworkId(artwork.id);
+      celebrate();
+      playSound('celebrate');
+      setTimeout(() => router.push('/gallery'), 600);
+    } catch (err) {
+      console.error('Save failed:', err);
+      setSaving(false);
+    }
+  }, [canvas, saving, currentArtworkId, celebrate, playSound, router]);
+```
+- src/components/canvas/StickerPanel.tsx — Sparkle Sound
+Replace playSound('toolSwitch') with:
+
+```ts
+playSound('sparkle');
+```
+
+- src/components/canvas/ShapePanel.tsx — Sparkle Sound
+- src/components/gallery/RoomSelector.tsx — Room Switch Sound
+Add to the room button onClick:
+
+### 3. Sound Toggle — Mute Button
+
+- src/components/ui/SoundToggle.tsx — NEW
+- Wire into gallery header — add next to the view toggle:
+
+In src/app/gallery/page.tsx, add import and button
+In the header <div className="flex gap-2">
+
+### 4. Better Eraser — Visual Feedback
+
+- src/components/canvas/Toolbar.tsx — Add Eraser Active Indicator
+
+### 5. Gallery Grid View Polish — Entrance Animation
+
+- src/styles/globals.css — Add entrance animation
+Add at the bottom
+
+- src/components/gallery/GalleryGrid.tsx — Add Staggered Animation
+
+- src/components/gallery/MuseumWalk.tsx — Add Entrance too
+
+### 6. Home Page — Add Sound Toggle + Quick Stats
+
+- src/app/page.tsx — REPLACED ENTIRE FILE
+ Git Commit — Phase 2 Milestone

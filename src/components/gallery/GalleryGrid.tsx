@@ -25,13 +25,18 @@ export function GalleryGrid({ artworks, onArtworkTap }: GalleryGridProps) {
         gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
       }}
     >
-      {artworks.map((artwork) => (
-        <ArtworkCard
+      {artworks.map((artwork, i) => (
+        <div
           key={artwork.id}
-          artwork={artwork}
-          size="grid"
-          onClick={() => onArtworkTap(artwork.id)}
-        />
+          className="gallery-card-enter"
+          style={{ animationDelay: `${i * 0.06}s` }}
+        >
+          <ArtworkCard
+            artwork={artwork}
+            size="grid"
+            onClick={() => onArtworkTap(artwork.id)}
+          />
+        </div>
       ))}
     </div>
   );
