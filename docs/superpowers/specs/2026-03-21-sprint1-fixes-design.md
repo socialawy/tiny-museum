@@ -23,67 +23,87 @@ Fav save — investigated, code is correct. Verify manually before any work; ski
 **Storage** (`src/lib/storage/rooms.ts`)
 - Add `renameRoom(id: string, name: string): Promise<void>`
 - Single `db.rooms.update(id, { name })` call
+- Guard: if `id === 'my-art' || id === 'favorites'`, throw or silently return — default rooms must not be renamed (the delete flow and flipbook creation depend on `my-art` as a stable fallback ID)
 
 **UI** (`src/components/gallery/RoomSelector.tsx`)
-- Long-press (500ms) on a room pill triggers inline rename
-- Pill text becomes a text `<input>` pre-filled with current name
-- Confirm: Enter key or blur — calls `renameRoom()`, reverts to pill
-- Cancel: Escape key — reverts without saving
-- Guard: wrap in the existing parent-gate (multiplication check) to prevent accidental rename by a child
+- Long-press (500ms) on a non-default room pill triggers the sequence below
+- Default rooms (`my-art`, `favorites`) do not respond to long-press
+- **Sequence**:
+  1. Long-press → `ParentGate` modal appears (existing multiplication-check component, full-screen)
+  2. Parent solves the gate → modal closes → the pill becomes an inline `<input>` pre-filled with the current name
+  3. Confirm: Enter or blur → calls `renameRoom()` → calls `onRoomRenamed()` callback → reverts to pill display
+  4. Cancel: Escape → reverts without saving
+
+**Props interface**
+- Add `onRoomRenamed: () => void` to `RoomSelectorProps`
+- The gallery page (`src/app/gallery/page.tsx`) passes a handler that calls `listRooms()` and refreshes state — same pattern as the existing `onRoomCreated` callback
 
 ### Files changed
 - `src/lib/storage/rooms.ts` — add `renameRoom()`
-- `src/components/gallery/RoomSelector.tsx` — add long-press + inline edit
+- `src/components/gallery/RoomSelector.tsx` — long-press + gate + inline edit + `onRoomRenamed` prop
+- `src/app/gallery/page.tsx` — pass `onRoomRenamed` handler that refreshes room list
 
 ---
 
 ## 2. Flipbook Playback & Export from Gallery
 
 ### Problem
-Flipbook artworks appear as gallery cards but the exhibit view (`/gallery/[artworkId]`) has no Play or Export action. The only GIF export entry point is the PlaybackOverlay inside FlipbookStudio — the "purple drawer".
+Flipbook artworks appear as gallery cards but the exhibit view (`/gallery/[artworkId]`) has no Play or Export action. The only GIF export entry point is inside `PlaybackOverlay` in FlipbookStudio.
+
+### Detection
+- `artwork.type === 'flipbook'` — this is the correct field; there is no `flipbookId`.
+- Frames are loaded with `loadAllFrames(artwork.id)`.
+- FPS is read from `JSON.parse(artwork.canvasJSON).fps`.
 
 ### Design
 
-**Detect flipbook in exhibit view** (`src/app/gallery/[artworkId]/page.tsx`)
-- Check `artwork.flipbookId` (or equivalent field). If present, render flipbook-specific actions instead of the regular PNG download.
+**Loading state** (`src/app/gallery/[artworkId]/page.tsx`)
+- When `artwork.type === 'flipbook'`, show a **▶ Play** button instead of the PNG download button.
+- On click: set `isLoadingFrames = true`, call `loadAllFrames(artwork.id)`, then mount `PlaybackOverlay`.
+- While loading: show a spinner on the Play button (disable the button, replace label with "Loading…").
+- On error: toast "Couldn't load animation — try opening in Studio", reset loading state.
 
-**Actions added to exhibit view**
-- **▶ Play** button — mounts `PlaybackOverlay` in-place (already handles its own frame loading and dismiss). Pass `flipbookId` as prop.
-- **💾 Save GIF** button — loads frames via `getFlipbook(artwork.flipbookId)`, calls `exportToGif(frames, fps)`, triggers browser download. Show a loading spinner during export (GIF encoding takes ~1–3s).
+**Canvas dimensions**
+- Read `canvasWidth` and `canvasHeight` from the Fabric JSON of the first loaded frame: `JSON.parse(frames[0].canvasJSON)` contains `width` and `height` at the top level (standard Fabric serialisation). Fall back to `400` / `300` (the FlipbookStudio runtime defaults) if the fields are absent.
+- Do **not** hardcode 800×600.
 
-**Error handling**
-- If flipbook frames are missing or export fails, show a brief toast ("Couldn't export — try opening in Studio").
+**Empty-frames guard**
+- If `loadAllFrames()` resolves but returns `[]`, show the error toast and do **not** mount `PlaybackOverlay`.
 
-### Files changed
-- `src/app/gallery/[artworkId]/page.tsx` — add Play + Save GIF actions for flipbooks
-- No changes to `PlaybackOverlay` or `exportToGif` — reuse as-is
+**Mounting PlaybackOverlay**
+- `PlaybackOverlay` requires: `frames: FlipbookFrame[]`, `fps: number`, `canvasWidth: number`, `canvasHeight: number`, `onClose: () => void`.
+- Derive dimensions as above. No live canvas exists in the gallery page.
+- The overlay already contains its own **💾 Save GIF** button — no separate export path is needed. Reuse as-is.
+
+**Files changed**
+- `src/app/gallery/[artworkId]/page.tsx` — add Play button, async frame load, mount PlaybackOverlay
 
 ---
 
 ## 3. Flipbook Mobile Layout
 
 ### Problem
-Two distinct layout bugs on mobile:
-- **Portrait**: play button is cut off / hidden below viewport
-- **Landscape**: canvas/player is too narrow, doesn't fill available width
-
-Both are in FlipbookStudio (`src/components/flipbook/FlipbookStudio.tsx`) and/or PlaybackOverlay.
+Two distinct layout bugs in `FlipbookStudio`:
+- **Portrait**: play button (and other controls) are cut off below the viewport
+- **Landscape**: canvas is too narrow, doesn't fill available width
 
 ### Design
 
-**Portrait fix**
-- Root cause: canvas flex child is growing to fill all space, pushing the control strip off-screen.
-- Fix: give the canvas `flex-1 min-h-0` so it yields space to the control strip. Give the control strip `flex-shrink-0`.
-- Ensure the outer container is `h-[100dvh]` (dynamic viewport height) to handle mobile browser chrome correctly.
+**Portrait fix** (`src/components/flipbook/FlipbookStudio.tsx`)
+- Outer container: change from `h-screen` to `h-[100dvh]` to account for mobile browser chrome
+- Canvas flex child: `flex-1 min-h-0` — yields space rather than overflowing
+- Control strip: `flex-shrink-0` — always visible, never pushed off-screen
+- Frame strip: `flex-shrink-0` — same
 
-**Landscape fix**
-- Root cause: container has a fixed or max-width constraint that doesn't account for landscape orientation where width > height.
-- Fix: in landscape (`@media (orientation: landscape)`), let the canvas fill `100vw` minus the frame strip width. Remove or override any conflicting max-width.
-- Frame strip repositions to the side (vertical) in landscape for better use of the wider viewport.
+**Landscape fix** (`src/components/flipbook/FlipbookStudio.tsx`)
+- Keep `FrameStrip` horizontal (no vertical mode needed — the simpler fix)
+- In landscape (`@media (orientation: landscape)` or Tailwind `landscape:` variant): the canvas fills the full width minus any side chrome, and the frame strip sits at the bottom at a reduced height (e.g., `h-20` instead of default)
+- Remove any `max-w-*` or fixed-width constraint on the canvas container that fires only in landscape
+- `PlaybackOverlay` (`src/components/flipbook/PlaybackOverlay.tsx`): apply the same `h-[100dvh]` and portrait/landscape treatment if it has the same layout constraints
 
 ### Files changed
-- `src/components/flipbook/FlipbookStudio.tsx` — layout fixes (dvh, flex, landscape orientation)
-- `src/components/flipbook/PlaybackOverlay.tsx` — same portrait/landscape treatment if affected
+- `src/components/flipbook/FlipbookStudio.tsx` — dvh, flex fixes, landscape override
+- `src/components/flipbook/PlaybackOverlay.tsx` — same treatment if affected
 
 ---
 
@@ -91,11 +111,13 @@ Both are in FlipbookStudio (`src/components/flipbook/FlipbookStudio.tsx`) and/or
 
 | Item | How to verify |
 |------|---------------|
-| Room rename | Long-press a room → rename → refresh page → name persists |
+| Room rename | Long-press a non-default room → parent gate → rename → refresh → name persists |
+| Default rooms | Long-press "My Art" or "Favorites" → nothing happens |
 | Fav save | Toggle fav in exhibit → navigate away → return → still favorited |
-| Flipbook in gallery | Open a flipbook artwork in exhibit → Play works, Save GIF downloads a valid file |
-| Portrait layout | Mobile Chrome, portrait — all controls visible without scrolling |
-| Landscape layout | Mobile Chrome, landscape — canvas fills the screen width properly |
+| Flipbook play in gallery | Open flipbook exhibit → ▶ Play → overlay opens and animates |
+| Flipbook GIF from gallery | Inside overlay → 💾 Save GIF → valid .gif downloads |
+| Portrait layout | Mobile Chrome portrait — all controls visible, no scrolling needed |
+| Landscape layout | Mobile Chrome landscape — canvas fills width, frame strip visible at bottom |
 
 ---
 
