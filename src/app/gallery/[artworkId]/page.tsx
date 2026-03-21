@@ -15,8 +15,30 @@ import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
 import Link from 'next/link';
+import { loadAllFrames } from '@/lib/storage/flipbook';
+import type { FlipbookFrame } from '@/lib/storage/db';
+import { PlaybackOverlay } from '@/components/flipbook/PlaybackOverlay';
 
 type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
+
+function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!artwork.thumbnail) return;
+    const url = URL.createObjectURL(artwork.thumbnail);
+    setThumbUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [artwork.thumbnail]);
+
+  return thumbUrl ? (
+    <img src={thumbUrl} alt={artwork.title} className="w-full rounded" draggable={false} />
+  ) : (
+    <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded">
+      <span className="text-5xl">🎬</span>
+    </div>
+  );
+}
 
 export default function ExhibitPage() {
   const router = useRouter();
@@ -29,6 +51,8 @@ export default function ExhibitPage() {
   const [title, setTitle] = useState('');
   const [modal, setModal] = useState<ModalState>('none');
   const [unpublishError, setUnpublishError] = useState<string | null>(null);
+  const [isLoadingFrames, setIsLoadingFrames] = useState(false);
+  const [flipbookFrames, setFlipbookFrames] = useState<FlipbookFrame[] | null>(null);
 
   const imageUrl = useLargeBlob(blob?.fullRes ?? null);
 
@@ -92,7 +116,28 @@ export default function ExhibitPage() {
   }
 
   function handleEdit() {
-    router.push(`/studio/canvas?id=${artworkId}`);
+    if (artwork!.type === 'flipbook') {
+      router.push(`/studio/flipbook?id=${artworkId}`);
+    } else {
+      router.push(`/studio/canvas?id=${artworkId}`);
+    }
+  }
+
+  async function handlePlay() {
+    setIsLoadingFrames(true);
+    try {
+      const frames = await loadAllFrames(artworkId);
+      if (frames.length === 0) {
+        alert("Couldn't load animation — try opening in Studio");
+        return;
+      }
+      setFlipbookFrames(frames);
+    } catch (err) {
+      console.error('Frame load failed:', err);
+      alert("Couldn't load animation — try opening in Studio");
+    } finally {
+      setIsLoadingFrames(false);
+    }
   }
 
   function handleDownload() {
@@ -123,9 +168,19 @@ export default function ExhibitPage() {
           <BigButton onClick={handleEdit} aria-label="Edit">
             ✏️
           </BigButton>
-          <BigButton onClick={handleDownload} aria-label="Download">
-            📥
-          </BigButton>
+          {artwork.type === 'flipbook' ? (
+            <BigButton
+              onClick={handlePlay}
+              disabled={isLoadingFrames}
+              aria-label="Play animation"
+            >
+              {isLoadingFrames ? '⏳' : '▶️'}
+            </BigButton>
+          ) : (
+            <BigButton onClick={handleDownload} aria-label="Download">
+              📥
+            </BigButton>
+          )}
           <BigButton onClick={() => setModal('delete-confirm')} aria-label="Delete">
             🗑️
           </BigButton>
@@ -142,7 +197,10 @@ export default function ExhibitPage() {
             }}
           >
             <div className="bg-white p-2 rounded-lg">
-              {imageUrl ? (
+              {/* Display area */}
+              {artwork.type === 'flipbook' ? (
+                <FlipbookThumbnail artwork={artwork} />
+              ) : imageUrl ? (
                 <img
                   src={imageUrl}
                   alt={artwork.title}
@@ -250,6 +308,26 @@ export default function ExhibitPage() {
           onCancel={() => setModal('none')}
         />
       )}
+
+      {flipbookFrames && (() => {
+        // Canvas dims are NOT stored in frame JSON — use the same hardcoded defaults
+        // that FlipbookStudio uses: 400×300.
+        const canvasWidth = 400;
+        const canvasHeight = 300;
+        const fps = (() => {
+          try { return JSON.parse(artwork!.canvasJSON).fps ?? 4; }
+          catch { return 4; }
+        })();
+        return (
+          <PlaybackOverlay
+            frames={flipbookFrames}
+            fps={fps}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            onClose={() => setFlipbookFrames(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
