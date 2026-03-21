@@ -264,13 +264,20 @@ Deployed to Vercel. Added a Publish flow so artwork from any device can appear i
 
 ---
 
+## Post-Sprint 1 Fix
+*2026-03-21*
+
+- **Flipbook thumbnail aspect ratio**: `sendToGallery` was hardcoding 400×300, squishing any canvas wider or taller than 4:3. Fixed: captures at `canvas.getWidth()` × `canvas.getHeight()` (actual logical dimensions). Width/height now stored in `canvasJSON` so `PlaybackOverlay` in the exhibit view also uses the correct dimensions instead of the 400×300 fallback.
+
+---
+
 ## Next Actions (backlog)
 
 ### Anyone finds the link, can use Supabase to publish artwork
 Low risk (free tier quota is generous for casual use) but worth a simple passcode gate on the Publish button eventually.
 
 ### Sprint 2: Make It Showable
-- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio)
+- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio) - Actually, code is welcome to add demo content, to show how this can be advanced.
 - **Gallery thumbnail polish** — switch `object-contain` → `object-cover` + migrate to `next/image`
 - **Mobile polish** — safe-area insets, keyboard avoidance
 
