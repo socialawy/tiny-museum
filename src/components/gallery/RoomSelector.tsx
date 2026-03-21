@@ -30,13 +30,13 @@ export function RoomSelector({
   const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wasLongPress = useRef(false);
+  const wasLongPressFor = useRef<string | null>(null);
   const { playSound } = useSounds();
 
   function handlePointerDown(room: Room) {
     if (DEFAULT_ROOM_IDS.includes(room.id)) return;
     pressTimer.current = setTimeout(() => {
-      wasLongPress.current = true;
+      wasLongPressFor.current = room.id;
       setGateForRoomId(room.id);
       pressTimer.current = null;
     }, LONG_PRESS_MS);
@@ -59,12 +59,17 @@ export function RoomSelector({
 
   async function handleRenameConfirm(roomId: string) {
     const trimmed = editValue.trim();
-    if (trimmed) {
-      await renameRoom(roomId, trimmed);
-      onRoomRenamed();
-    }
+    // Clear state immediately (before await) — prevents double-call issues
     setEditingRoomId(null);
     setEditValue('');
+    if (trimmed) {
+      try {
+        await renameRoom(roomId, trimmed);
+        onRoomRenamed();
+      } catch (err) {
+        console.error('Rename failed:', err);
+      }
+    }
   }
 
   function handleRenameCancel() {
@@ -85,7 +90,7 @@ export function RoomSelector({
                 autoFocus
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                onBlur={() => handleRenameConfirm(room.id)}
+                onBlur={() => handleRenameCancel()}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleRenameConfirm(room.id);
                   if (e.key === 'Escape') handleRenameCancel();
@@ -96,9 +101,8 @@ export function RoomSelector({
             ) : (
               <button
                 onClick={() => {
-                  // If this click was the tail of a long-press, swallow it
-                  if (wasLongPress.current) {
-                    wasLongPress.current = false;
+                  if (wasLongPressFor.current === room.id) {
+                    wasLongPressFor.current = null;
                     return;
                   }
                   onSelect(room.id);
