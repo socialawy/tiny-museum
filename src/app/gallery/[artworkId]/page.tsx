@@ -25,7 +25,7 @@ function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!artwork.thumbnail) return;
+    if (!artwork.thumbnail || artwork.thumbnail.size === 0) return;
     const url = URL.createObjectURL(artwork.thumbnail);
     setThumbUrl(url);
     return () => URL.revokeObjectURL(url);
@@ -95,7 +95,12 @@ export default function ExhibitPage() {
   }
 
   async function handleDeleteFinal() {
-    await deleteArtwork(artworkId);
+    if (artwork!.type === 'flipbook') {
+      const { deleteFlipbook } = await import('@/lib/storage/flipbook');
+      await deleteFlipbook(artworkId);
+    } else {
+      await deleteArtwork(artworkId);
+    }
     router.push('/gallery');
   }
 
