@@ -44,8 +44,14 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       const totalCount = allArtworks.length;
       const favoriteCount = allArtworks.filter((a) => a.tags.includes('favorite')).length;
 
+      // 'favorites' is a virtual room — artworks keep their original roomId and are
+      // tagged with 'favorite', so we filter by tag rather than roomId.
       const artworks =
-        activeRoomId === 'all' ? allArtworks : await listArtworksByRoom(activeRoomId);
+        activeRoomId === 'all'
+          ? allArtworks
+          : activeRoomId === 'favorites'
+            ? allArtworks.filter((a) => a.tags.includes('favorite'))
+            : await listArtworksByRoom(activeRoomId);
 
       set({ artworks, rooms, totalCount, favoriteCount, isLoading: false });
     } catch (err) {
