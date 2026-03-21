@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { db } from '../db';
-import { listRooms, createRoom, deleteRoom } from '../rooms';
+import { listRooms, createRoom, deleteRoom, renameRoom } from '../rooms';
 
 describe('Room CRUD', () => {
   beforeEach(async () => {
@@ -66,5 +66,21 @@ describe('Room CRUD', () => {
 
     const artwork = await db.artworks.get('orphan-art');
     expect(artwork!.roomId).toBe('my-art');
+  });
+
+  it('renames a custom room', async () => {
+    const room = await createRoom('Old Name', '🌊', '#48DBFB');
+    await renameRoom(room.id, 'New Name');
+    const all = await listRooms();
+    const updated = all.find((r) => r.id === room.id);
+    expect(updated?.name).toBe('New Name');
+  });
+
+  it('silently ignores rename of default rooms', async () => {
+    await renameRoom('my-art', 'Hacked');
+    await renameRoom('favorites', 'Hacked');
+    const rooms = await listRooms();
+    expect(rooms.find((r) => r.id === 'my-art')?.name).toBe('My Art');
+    expect(rooms.find((r) => r.id === 'favorites')?.name).toBe('Favorites');
   });
 });

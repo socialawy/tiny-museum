@@ -5,7 +5,10 @@ import type { Artwork } from '@/lib/storage/db';
 const mockUpload = vi.fn().mockResolvedValue({ error: null });
 const mockRemove = vi.fn().mockResolvedValue({ error: null });
 const mockGetPublicUrl = vi.fn().mockReturnValue({
-  data: { publicUrl: 'https://example.supabase.co/storage/v1/object/public/artwork-files/test-id.png' },
+  data: {
+    publicUrl:
+      'https://example.supabase.co/storage/v1/object/public/artwork-files/test-id.png',
+  },
 });
 const mockUpsert = vi.fn().mockResolvedValue({ error: null });
 const mockEq = vi.fn().mockReturnValue({ error: null });
@@ -102,7 +105,17 @@ describe('fetchPublishedArtworks', () => {
 
   it('returns artworks array from Supabase', async () => {
     // Override mock for this test to return data
-    const mockData = [{ id: 'a1', title: 'Test', type: 'drawing', image_url: 'https://example.com/a1.png', room_name: 'my-art', published_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }];
+    const mockData = [
+      {
+        id: 'a1',
+        title: 'Test',
+        type: 'drawing',
+        image_url: 'https://example.com/a1.png',
+        room_name: 'my-art',
+        published_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      },
+    ];
     mockSelect.mockReturnValueOnce({
       order: vi.fn().mockResolvedValueOnce({ data: mockData, error: null }),
     });

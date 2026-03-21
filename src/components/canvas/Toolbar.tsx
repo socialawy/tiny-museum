@@ -184,7 +184,11 @@ export function Toolbar({
             🏛️
           </BigButton>
           {onPublish && (
-            <BigButton onClick={onPublish} disabled={publishing} aria-label="Publish online">
+            <BigButton
+              onClick={onPublish}
+              disabled={publishing}
+              aria-label="Publish online"
+            >
               {publishing ? '⏳' : publishedLink ? '✅' : '🌐'}
             </BigButton>
           )}

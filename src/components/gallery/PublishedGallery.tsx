@@ -39,7 +39,8 @@ export function PublishedGallery({ artworks }: Props) {
           <div
             className="relative"
             style={{
-              background: 'linear-gradient(135deg, #C9A84C 0%, #8B6914 50%, #C9A84C 100%)',
+              background:
+                'linear-gradient(135deg, #C9A84C 0%, #8B6914 50%, #C9A84C 100%)',
               padding: 8,
               aspectRatio: '4 / 5',
             }}

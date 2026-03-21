@@ -34,7 +34,9 @@ next-env.d.ts
 
 # Folders
 local-files/
+.worktrees/
 
 # Test logs
 /test-logs
 test_output.txt
+coverage/

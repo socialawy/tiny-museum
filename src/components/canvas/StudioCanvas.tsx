@@ -3,7 +3,12 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
-import { saveArtwork, loadArtwork, updatePublishedUrl, dataURLtoBlob } from '@/lib/storage/artworks';
+import {
+  saveArtwork,
+  loadArtwork,
+  updatePublishedUrl,
+  dataURLtoBlob,
+} from '@/lib/storage/artworks';
 import { publishArtwork } from '@/lib/cloud/publish';
 import { addImageToCanvas } from '@/lib/fabric/shapes';
 import { KID_PALETTE } from '@/lib/fabric/tools';
@@ -79,7 +84,10 @@ export default function StudioCanvas() {
 
       const doSave = async () => {
         try {
-          await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
+          await saveArtwork(
+            canvas as unknown as Record<string, unknown>,
+            currentArtworkId,
+          );
         } catch {
           // silent
         }
@@ -115,7 +123,10 @@ export default function StudioCanvas() {
     if (!canvas || saving) return;
     setSaving(true);
     try {
-      const artwork = await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
+      const artwork = await saveArtwork(
+        canvas as unknown as Record<string, unknown>,
+        currentArtworkId,
+      );
       setCurrentArtworkId(artwork.id);
       celebrate();
       playSound('save');
@@ -130,7 +141,10 @@ export default function StudioCanvas() {
     if (!canvas || saving) return;
     setSaving(true);
     try {
-      const artwork = await saveArtwork(canvas as unknown as Record<string, unknown>, currentArtworkId);
+      const artwork = await saveArtwork(
+        canvas as unknown as Record<string, unknown>,
+        currentArtworkId,
+      );
       setCurrentArtworkId(artwork.id);
       celebrate();
       playSound('celebrate');
@@ -279,7 +293,10 @@ export default function StudioCanvas() {
             <p className="text-red-500 text-xs">{publishError}</p>
           )}
           <button
-            onClick={() => { setPublishedLink(null); setPublishError(null); }}
+            onClick={() => {
+              setPublishedLink(null);
+              setPublishError(null);
+            }}
             className="absolute top-1 right-2 text-gray-400 text-xs"
           >
             ✕

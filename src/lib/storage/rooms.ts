@@ -28,3 +28,8 @@ export async function deleteRoom(id: string) {
   await db.artworks.where('roomId').equals(id).modify({ roomId: 'my-art' });
   await db.rooms.delete(id);
 }
+
+export async function renameRoom(id: string, name: string): Promise<void> {
+  if (id === 'my-art' || id === 'favorites') return;
+  await db.rooms.update(id, { name });
+}

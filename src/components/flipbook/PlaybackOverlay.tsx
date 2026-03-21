@@ -27,6 +27,27 @@ export function PlaybackOverlay({
   const [isExporting, setIsExporting] = useState(false);
   const { playSound } = useSounds();
 
+  // Compute display size that fits within the viewport on any screen size.
+  // Reserve ~45% of viewport height for controls + safe areas.
+  const [displaySize, setDisplaySize] = useState(() => {
+    const w = Math.min(canvasWidth, 360);
+    return { width: w, height: Math.round((w / canvasWidth) * canvasHeight) };
+  });
+  useEffect(() => {
+    function compute() {
+      const maxW = window.innerWidth - 32;
+      const maxH = window.innerHeight * 0.55;
+      const scale = Math.min(maxW / canvasWidth, maxH / canvasHeight, 1);
+      setDisplaySize({
+        width: Math.round(canvasWidth * scale),
+        height: Math.round(canvasHeight * scale),
+      });
+    }
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, [canvasWidth, canvasHeight]);
+
   // Render frame to canvas
   const renderFrame = useCallback(
     async (index: number) => {
@@ -128,13 +149,10 @@ export function PlaybackOverlay({
     }
   }, [frames, fps, canvasWidth, canvasHeight, playSound]);
 
-  // Display size
-  const displayWidth = Math.min(canvasWidth, 360);
-  const displayHeight = (displayWidth / canvasWidth) * canvasHeight;
-
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80"
+      style={{ height: '100dvh' }}
       onClick={onClose}
     >
       <div
@@ -148,10 +166,10 @@ export function PlaybackOverlay({
         >
           <canvas
             ref={canvasRef}
-            width={displayWidth}
-            height={displayHeight}
+            width={displaySize.width}
+            height={displaySize.height}
             className="rounded"
-            style={{ width: displayWidth, height: displayHeight }}
+            style={{ width: displaySize.width, height: displaySize.height }}
           />
         </div>
 

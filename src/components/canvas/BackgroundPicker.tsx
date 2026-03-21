@@ -28,7 +28,8 @@ export function BackgroundPicker({ canvas, onClose }: BackgroundPickerProps) {
       const img = new Image();
       img.onload = () => {
         const fabricWindow = window as unknown as Record<string, unknown>;
-        const PatternClass = (fabricWindow.fabric as Record<string, unknown>).Pattern as unknown as new (options: Record<string, unknown>) => unknown;
+        const PatternClass = (fabricWindow.fabric as Record<string, unknown>)
+          .Pattern as unknown as new (options: Record<string, unknown>) => unknown;
         const pattern = new PatternClass({
           source: img,
           repeat: 'repeat',

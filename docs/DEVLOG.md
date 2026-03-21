@@ -172,132 +172,11 @@ Added a third option below the two big doors:
 
 **Navigate to /studio/flipbook** 
 - should see a frame-by-frame animation studio with frame strip, navigation, speed control, and a play button. Draw on frame 1, tap ＋, draw on frame 2, hit ▶️
-```bash
-PS E:\co\tiny-museum> npm run format
-
-> tiny-museum@0.1.0 format
-> prettier --write "src/**/*.{ts,tsx,css}"
-
-src/app/gallery/[artworkId]/page.tsx 84ms (unchanged)
-src/app/gallery/page.tsx 19ms (unchanged)
-src/app/layout.tsx 11ms (unchanged)
-src/app/page.tsx 13ms
-src/app/studio/canvas/page.tsx 6ms (unchanged)
-src/app/studio/flipbook/page.tsx 6ms
-src/app/studio/layout.tsx 6ms (unchanged)
-src/assets/stickers/index.ts 16ms (unchanged)
-src/components/canvas/BackgroundPicker.tsx 16ms (unchanged)
-src/components/canvas/ImportPanel.tsx 43ms (unchanged)
-src/components/canvas/ShapePanel.tsx 8ms (unchanged)
-src/components/canvas/StickerPanel.tsx 14ms (unchanged)
-src/components/canvas/StudioCanvas.tsx 45ms (unchanged)
-src/components/canvas/Toolbar.tsx 31ms (unchanged)
-src/components/flipbook/FlipbookStudio.tsx 39ms
-src/components/flipbook/FrameStrip.tsx 5ms (unchanged)
-src/components/flipbook/PlaybackOverlay.tsx 20ms (unchanged)
-src/components/gallery/ArtworkCard.tsx 19ms (unchanged)
-src/components/gallery/CreateRoomDialog.tsx 9ms (unchanged)
-src/components/gallery/GalleryGrid.tsx 85ms (unchanged)
-src/components/gallery/MuseumWalk.tsx 4ms (unchanged)
-src/components/gallery/RoomSelector.tsx 7ms (unchanged)
-src/components/ui/BigButton.tsx 7ms (unchanged)
-src/components/ui/Celebrations.tsx 7ms (unchanged)
-src/components/ui/FriendlyDialog.tsx 4ms (unchanged)
-src/components/ui/ParentGate.tsx 8ms (unchanged)
-src/components/ui/SoundToggle.tsx 4ms (unchanged)
-src/hooks/useBlobUrl.ts 3ms (unchanged)
-src/hooks/useFabricCanvas.ts 14ms (unchanged)
-src/hooks/useSounds.ts 2ms (unchanged)
-src/lib/audio/sounds.ts 11ms (unchanged)
-src/lib/export/gif.ts 31ms (unchanged)
-src/lib/fabric/__tests__/history.test.ts 11ms (unchanged)
-src/lib/fabric/history.ts 10ms (unchanged)
-src/lib/fabric/setup.ts 4ms (unchanged)
-src/lib/fabric/shapes.ts 17ms (unchanged)
-src/lib/fabric/stickers.ts 6ms (unchanged)
-src/lib/fabric/tools.ts 4ms (unchanged)
-src/lib/fabric/touch.ts 9ms (unchanged)
-src/lib/import/camera.ts 3ms (unchanged)
-src/lib/import/cleanup.ts 7ms (unchanged)
-src/lib/import/file.ts 4ms (unchanged)
-src/lib/storage/__tests__/artworks.test.ts 10ms (unchanged)
-src/lib/storage/__tests__/migrate.test.ts 4ms (unchanged)
-src/lib/storage/__tests__/rooms.test.ts 7ms (unchanged)
-src/lib/storage/artworks.ts 15ms (unchanged)
-src/lib/storage/db.ts 5ms (unchanged)
-src/lib/storage/flipbook.ts 13ms (unchanged)
-src/lib/storage/migrate.ts 3ms (unchanged)
-src/lib/storage/rooms.ts 4ms (unchanged)
-src/stores/gallery.store.ts 5ms (unchanged)
-src/stores/ui.store.ts 4ms (unchanged)
-src/styles/globals.css 37ms (unchanged)
-src/test/setup.ts 4ms (unchanged)
-src/types/global.d.ts 1ms (unchanged)
-PS E:\co\tiny-museum> npm run typecheck
-
-> tiny-museum@0.1.0 typecheck
-> tsc --noEmit
-
-PS E:\co\tiny-museum> git commit -m "Phase 2 complete: Import studio, stickers, shapes, rooms, sounds, 20 tests
->>
->> Features:
->> - Camera capture + file import with auto-enhance
->> - Background picker (6 options)
->> - Shape insertion (circle, square, star, heart)
->> - Sticker system (24 emoji stickers in 3 packs)
->> - Select/Move/Resize mode
->> - Room creation + management
->> - Sound effects (procedural Web Audio, no files)
->> - Gallery entrance animations
->> - Friendly delete dialog + parent gate
->> - Auto-save every 30 seconds
->>
->> Quality:
->> - 20 unit tests passing (artworks, rooms, history, migrations)
->> - Prettier + TypeScript strict
->> - Blob URL sanitization (3-layer defense)
->> - Self-hosted fonts (Nunito via next/font)"
-PS E:\co\tiny-museum> git commit -m "Phase 2 complete: Import studio, stickers, shapes, rooms, sounds, 20 tests
->> 
->> Features:
->> - Camera capture + file import with auto-enhance
->> - Background picker (6 options)
->> - Shape insertion (circle, square, star, heart)
->> - Sticker system (24 emoji stickers in 3 packs)
->> - Select/Move/Resize mode
->> - Room creation + management
->> - Sound effects (procedural Web Audio, no files)
->> - Gallery entrance animations
->> - Friendly delete dialog + parent gate
->> - Auto-save every 30 seconds
->>
->> Quality:
->> - 20 unit tests passing (artworks, rooms, history, migrations)
->> - Prettier + TypeScript strict
->> - Blob URL sanitization (3-layer defense)
->> - Self-hosted fonts (Nunito via next/font)"
-PS E:\co\tiny-museum> npx vitest run 
-
- RUN  v4.1.0 E:/co/tiny-museum
-
- ✓ src/lib/fabric/__tests__/history.test.ts (6 tests) 8ms
-stdout | src/lib/storage/__tests__/migrate.test.ts > cleanExpiredBlobUrls > replaces blob URLs in canvasJSON
-🧹 Cleaned blob URLs from 1 artwork(s)
-
- ✓ src/lib/storage/__tests__/migrate.test.ts (3 tests) 24ms
- ✓ src/lib/storage/__tests__/rooms.test.ts (3 tests) 25ms
- ✓ src/lib/storage/__tests__/artworks.test.ts (8 tests) 82ms                            
-                                                                                        
- Test Files  4 passed (4)                                                               
-      Tests  20 passed (20)                                                             
-   Start at  22:38:50                                                                   
-   Duration  1.11s (transform 233ms, setup 736ms, import 403ms, tests 139ms, environment 1.99s)
-```
-
+                                                                        
 ![alt text](image-3.png)
 ![alt text](image-4.png)
 
----
+---Add
 
 ## Phase 3: Flipbook Animator ✅
 *Completed: 2026-03-21*
@@ -361,6 +240,58 @@ Deployed to Vercel. Added a Publish flow so artwork from any device can appear i
 - [x] Vercel deploy — https://tiny-museum-iota.vercel.app
 - [x] 28 unit tests passing
 
-### Next (Phase 5 — future)
+### Published gallery
+- /gallery/published is one shared public URL. Anyone with the link sees all published artworks. There's no per-user isolation today.
+- Studio — fully local (IndexedDB per browser). Anyone visiting the URL gets their own blank studio, stored on their own device. No accounts, no shared state.
+- Future restriction — straightforward to add: a simple PIN/passcode gate on the home screen would lock the studio to Mira's device
+
+### Bug Fixes (post-launch)
+- **Save crash**: `saveArtwork` extracted Fabric.js methods called without `.call(fabricCanvas)` — `this` was `undefined` in strict mode. Fixed all 4 method calls.
+- **Flipbook deadlock**: `containerRef` div was inside an early-return path that required `loaded=true`, but canvas init requires the div in the DOM → permanent deadlock. Fixed by always rendering the container with the spinner as an absolute overlay inside.
+
+---
+
+## Sprint 1: Bug Fixes ✅
+*Completed: 2026-03-21*
+
+### Fixed
+- **Room rename**: Added `renameRoom()` to storage + long-press (500ms) on room pill → ParentGate → inline edit. Default rooms (`My Art`, `Favorites`) are protected.
+- **Favorites room**: Was filtering by `roomId === 'favorites'` (always empty). Fixed: filters by `tags.includes('favorite')` across all artworks.
+- **Flipbook in Gallery**: Exhibit view now shows thumbnail, ▶️ Play button opens `PlaybackOverlay` (with built-in GIF export), Edit routes to `/studio/flipbook`. Deleting a flipbook now cleans up frames (was leaving orphaned IndexedDB data).
+- **Flipbook mobile layout**: Portrait — `min-h-0` on canvas container so controls stay visible. Landscape — frame strip capped to `h-20`, canvas fills remaining space.
+
+### Tests: 30 passing (up from 28)
+
+---
+
+## Post-Sprint 1 Fix
+*2026-03-21*
+
+- **Flipbook thumbnail aspect ratio**: `sendToGallery` was hardcoding 400×300, squishing any canvas wider or taller than 4:3. Fixed: captures at `canvas.getWidth()` × `canvas.getHeight()` (actual logical dimensions). Width/height now stored in `canvasJSON` so `PlaybackOverlay` in the exhibit view also uses the correct dimensions instead of the 400×300 fallback.
+
+---
+
+## Next Actions (backlog)
+
+### Anyone finds the link, can use Supabase to publish artwork
+Low risk (free tier quota is generous for casual use) but worth a simple passcode gate on the Publish button eventually.
+
+### Sprint 2: Make It Showable
+- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio) - Actually, code is welcome to add demo content, to show how this can be advanced.
+- **Gallery thumbnail polish** — switch `object-contain` → `object-cover` + migrate to `next/image`
+- **Mobile polish** — safe-area insets, keyboard avoidance
+
+### Personalization
+- App renamed to **Mira's Museum** (layout title + home screen heading) ✅
+
+### Repo / Pro (Jules — issue #1)
+- CI/CD: GitHub Actions (lint + typecheck + tests on every push/PR)
+- Test coverage: cloud publish, flipbook storage, GIF export (target ≥ 50 tests)
+- Docs: README, CONTRIBUTING, ARCHITECTURE
+- Online monitoring: Vercel Speed Insights + Analytics
+- Repo hygiene: LICENSE, PR template, ESLint warning cleanup
+
+### Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber)
+- Studio access control — simple PIN gate to lock studio to Mira's device
 - Data model already shaped for rooms-as-spaces and artworks-with-metadata.
