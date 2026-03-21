@@ -113,10 +113,15 @@ export async function updateFlipbookMeta(
   id: string,
   fps: number,
   thumbnail: Blob,
+  width?: number,
+  height?: number,
 ): Promise<void> {
   const frameCount = await getFrameCount(id);
+  const meta: Record<string, unknown> = { fps, frameCount };
+  if (width) meta.width = width;
+  if (height) meta.height = height;
   await db.artworks.update(id, {
-    canvasJSON: JSON.stringify({ fps, frameCount }),
+    canvasJSON: JSON.stringify(meta),
     thumbnail,
     updatedAt: Date.now(),
   });

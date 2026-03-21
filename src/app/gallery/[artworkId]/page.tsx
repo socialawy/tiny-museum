@@ -315,20 +315,16 @@ export default function ExhibitPage() {
       )}
 
       {flipbookFrames && (() => {
-        // Canvas dims are NOT stored in frame JSON — use the same hardcoded defaults
-        // that FlipbookStudio uses: 400×300.
-        const canvasWidth = 400;
-        const canvasHeight = 300;
-        const fps = (() => {
-          try { return JSON.parse(artwork!.canvasJSON).fps ?? 4; }
-          catch { return 4; }
+        const meta = (() => {
+          try { return JSON.parse(artwork!.canvasJSON) as Record<string, number>; }
+          catch { return {} as Record<string, number>; }
         })();
         return (
           <PlaybackOverlay
             frames={flipbookFrames}
-            fps={fps}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
+            fps={meta.fps ?? 4}
+            canvasWidth={meta.width ?? 400}
+            canvasHeight={meta.height ?? 300}
             onClose={() => setFlipbookFrames(null)}
           />
         );

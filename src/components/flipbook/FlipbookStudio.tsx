@@ -205,18 +205,21 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     if (!canvas || !artworkId) return;
     await saveCurrentFrame();
 
-    // Use first frame's canvas as the thumbnail
+    // Use current canvas as the thumbnail — capture at actual logical dimensions
+    // so the aspect ratio matches what was drawn (canvas is fluid-sized).
     const el = canvas.getElement() as HTMLCanvasElement;
+    const logW = canvas.getWidth();
+    const logH = canvas.getHeight();
     const thumb = document.createElement('canvas');
-    thumb.width = 400;
-    thumb.height = 300;
+    thumb.width = logW;
+    thumb.height = logH;
     const ctx = thumb.getContext('2d')!;
-    ctx.drawImage(el, 0, 0, 400, 300);
+    ctx.drawImage(el, 0, 0, logW, logH);
     const thumbnailBlob = await new Promise<Blob>((resolve) =>
       thumb.toBlob((b) => resolve(b ?? new Blob([])), 'image/webp', 0.8),
     );
 
-    await updateFlipbookMeta(artworkId, fps, thumbnailBlob);
+    await updateFlipbookMeta(artworkId, fps, thumbnailBlob, logW, logH);
     celebrate();
     playSound('celebrate');
     setTimeout(() => router.push('/gallery'), 600);
