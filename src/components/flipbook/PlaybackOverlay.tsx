@@ -27,25 +27,24 @@ export function PlaybackOverlay({
   const [isExporting, setIsExporting] = useState(false);
   const { playSound } = useSounds();
 
-  // Compute display size that fits within the viewport on any screen size.
-  // Reserve ~45% of viewport height for controls + safe areas.
-  const [displaySize, setDisplaySize] = useState(() => {
-    const w = Math.min(canvasWidth, 360);
-    return { width: w, height: Math.round((w / canvasWidth) * canvasHeight) };
-  });
+  // Compute display size that fits within the viewport, preserving aspect ratio.
+  // PlaybackOverlay is never SSR'd (only mounts on user interaction), so window
+  // is always available — compute the correct size immediately to avoid a flash.
+  function computeDisplaySize() {
+    const maxW = window.innerWidth - 32;
+    const maxH = window.innerHeight * 0.55; // leave room for dots + buttons
+    const scale = Math.min(maxW / canvasWidth, maxH / canvasHeight, 1);
+    return {
+      width: Math.round(canvasWidth * scale),
+      height: Math.round(canvasHeight * scale),
+    };
+  }
+  const [displaySize, setDisplaySize] = useState(computeDisplaySize);
   useEffect(() => {
-    function compute() {
-      const maxW = window.innerWidth - 32;
-      const maxH = window.innerHeight * 0.55;
-      const scale = Math.min(maxW / canvasWidth, maxH / canvasHeight, 1);
-      setDisplaySize({
-        width: Math.round(canvasWidth * scale),
-        height: Math.round(canvasHeight * scale),
-      });
-    }
-    compute();
-    window.addEventListener('resize', compute);
-    return () => window.removeEventListener('resize', compute);
+    function onResize() { setDisplaySize(computeDisplaySize()); }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasWidth, canvasHeight]);
 
   // Render frame to canvas
