@@ -43,7 +43,7 @@ function convertBlobSourcesToDataUrl(fabricCanvas: Record<string, unknown>): voi
   try {
     const getObjectsFn = fabricCanvas.getObjects as ((
     ) => unknown[]) | undefined;
-    const objects = (getObjectsFn?.() ?? []) as unknown[];
+    const objects = ((getObjectsFn?.call(fabricCanvas)) ?? []) as unknown[];
     for (const obj of objects) {
       const objRecord = obj as Record<string, unknown>;
       if (objRecord.type !== 'image') continue;
@@ -110,21 +110,21 @@ export async function saveArtwork(
 
   // Step 2: Serialize
   const toJSONFn = fabricCanvas.toJSON as (() => unknown) | undefined;
-  const canvasJson = toJSONFn?.() ?? {};
+  const canvasJson = toJSONFn?.call(fabricCanvas) ?? {};
 
   // Step 3: Nuclear sanitization — catch anything that slipped through
   const canvasJSON = sanitizeBlobUrls(JSON.stringify(canvasJson));
 
   // Generate exports
   const toDataURLFn = fabricCanvas.toDataURL as ((options: Record<string, unknown>) => string) | undefined;
-  const fullDataUrl = toDataURLFn?.({
+  const fullDataUrl = toDataURLFn?.call(fabricCanvas, {
     format: 'png',
     multiplier: 2,
   }) ?? '';
   const fullBlob = dataURLtoBlob(fullDataUrl);
 
   const getElementFn = fabricCanvas.getElement as (() => unknown) | undefined;
-  const canvasEl = getElementFn?.() as HTMLCanvasElement | undefined;
+  const canvasEl = getElementFn?.call(fabricCanvas) as HTMLCanvasElement | undefined;
   if (!canvasEl) {
     throw new Error('Failed to get canvas element');
   }

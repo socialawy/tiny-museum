@@ -234,112 +234,117 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     // Full canvas overlay comes in polish pass
   }, [canvas, onionSkin, currentIndex, frames, loaded]);
 
-  if (!loaded) {
-    return (
-      <div className="flex items-center justify-center h-[100dvh] bg-studio-bg">
-        <div className="text-center">
-          <p className="text-5xl mb-3 animate-bounce">🎬</p>
-          <p className="text-lg font-bold text-gray-400">Setting up your flipbook...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-[100dvh] bg-studio-bg">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
-        <div className="flex items-center gap-2">
-          <BigButton onClick={() => router.push('/gallery')} aria-label="Back">
-            ←
-          </BigButton>
-          <span className="text-sm font-bold text-gray-500">
-            🎬 Frame {currentIndex + 1}/{frames.length}
-          </span>
+      {/* Top bar — only shown when loaded */}
+      {loaded && (
+        <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
+          <div className="flex items-center gap-2">
+            <BigButton onClick={() => router.push('/gallery')} aria-label="Back">
+              ←
+            </BigButton>
+            <span className="text-sm font-bold text-gray-500">
+              🎬 Frame {currentIndex + 1}/{frames.length}
+            </span>
+          </div>
+          <div className="flex gap-1.5">
+            <BigButton onClick={sendToGallery} aria-label="Save to Gallery">
+              🏛️
+            </BigButton>
+          </div>
         </div>
-        <div className="flex gap-1.5">
-          <BigButton onClick={sendToGallery} aria-label="Save to Gallery">
-            🏛️
-          </BigButton>
-        </div>
-      </div>
+      )}
 
-      {/* Canvas */}
+      {/* Canvas — ALWAYS in DOM so useFabricCanvas can initialize before loaded */}
       <div
         ref={containerRef}
         className="flex-1 relative overflow-hidden"
         style={{ touchAction: 'none' }}
-      />
+      >
+        {!loaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-studio-bg z-30">
+            <div className="text-center">
+              <p className="text-5xl mb-3 animate-bounce">🎬</p>
+              <p className="text-lg font-bold text-gray-400">Setting up your flipbook...</p>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Frame strip */}
-      <FrameStrip frames={frames} currentIndex={currentIndex} onSelectFrame={goToFrame} />
+      {/* Controls — only shown when loaded */}
+      {loaded && (
+        <>
+          {/* Frame strip */}
+          <FrameStrip frames={frames} currentIndex={currentIndex} onSelectFrame={goToFrame} />
 
-      {/* Bottom controls */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-t-2 border-gray-100">
-        <div className="flex gap-2">
-          <BigButton
-            onClick={prevFrame}
-            disabled={currentIndex === 0}
-            aria-label="Previous"
-          >
-            ◀
-          </BigButton>
-          <BigButton
-            onClick={nextFrame}
-            disabled={currentIndex >= frames.length - 1}
-            aria-label="Next"
-          >
-            ▶
-          </BigButton>
-        </div>
+          {/* Bottom controls */}
+          <div className="flex items-center justify-between px-4 py-3 bg-white border-t-2 border-gray-100">
+            <div className="flex gap-2">
+              <BigButton
+                onClick={prevFrame}
+                disabled={currentIndex === 0}
+                aria-label="Previous"
+              >
+                ◀
+              </BigButton>
+              <BigButton
+                onClick={nextFrame}
+                disabled={currentIndex >= frames.length - 1}
+                aria-label="Next"
+              >
+                ▶
+              </BigButton>
+            </div>
 
-        <div className="flex gap-2">
-          <BigButton
-            onClick={() => setOnionSkin(!onionSkin)}
-            active={onionSkin}
-            aria-label="Onion skin"
-          >
-            👻
-          </BigButton>
-          <BigButton onClick={addFrame} aria-label="New frame">
-            ＋
-          </BigButton>
-          <BigButton onClick={dupFrame} aria-label="Duplicate frame">
-            📋
-          </BigButton>
-          {frames.length > 1 && (
-            <BigButton onClick={removeFrame} aria-label="Delete frame">
-              🗑️
+            <div className="flex gap-2">
+              <BigButton
+                onClick={() => setOnionSkin(!onionSkin)}
+                active={onionSkin}
+                aria-label="Onion skin"
+              >
+                👻
+              </BigButton>
+              <BigButton onClick={addFrame} aria-label="New frame">
+                ＋
+              </BigButton>
+              <BigButton onClick={dupFrame} aria-label="Duplicate frame">
+                📋
+              </BigButton>
+              {frames.length > 1 && (
+                <BigButton onClick={removeFrame} aria-label="Delete frame">
+                  🗑️
+                </BigButton>
+              )}
+            </div>
+
+            <BigButton
+              onClick={startPlayback}
+              aria-label="Play"
+              className="bg-kid-green text-white"
+            >
+              ▶️
             </BigButton>
-          )}
-        </div>
+          </div>
 
-        <BigButton
-          onClick={startPlayback}
-          aria-label="Play"
-          className="bg-kid-green text-white"
-        >
-          ▶️
-        </BigButton>
-      </div>
-
-      {/* Speed control */}
-      <div className="flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50">
-        <span className="text-xs font-bold text-gray-400">🐢</span>
-        <input
-          type="range"
-          min={2}
-          max={12}
-          value={fps}
-          onChange={(e) => setFps(Number(e.target.value))}
-          className="flex-1 h-6 accent-kid-purple"
-          aria-label="Animation speed"
-        />
-        <span className="text-xs font-bold text-gray-400">🐇</span>
-        <span className="text-xs font-bold text-kid-purple w-12 text-right">
-          {fps} fps
-        </span>
-      </div>
+          {/* Speed control */}
+          <div className="flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50">
+            <span className="text-xs font-bold text-gray-400">🐢</span>
+            <input
+              type="range"
+              min={2}
+              max={12}
+              value={fps}
+              onChange={(e) => setFps(Number(e.target.value))}
+              className="flex-1 h-6 accent-kid-purple"
+              aria-label="Animation speed"
+            />
+            <span className="text-xs font-bold text-gray-400">🐇</span>
+            <span className="text-xs font-bold text-kid-purple w-12 text-right">
+              {fps} fps
+            </span>
+          </div>
+        </>
+      )}
 
       {/* Playback overlay */}
       {isPlaying && (
