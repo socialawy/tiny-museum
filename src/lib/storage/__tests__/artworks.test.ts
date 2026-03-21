@@ -9,9 +9,7 @@ import {
   toggleFavorite,
   moveArtwork,
   updatePublishedUrl,
-  dataURLtoBlob,
   listAllArtworks,
-  loadArtworkBlob,
 } from '../artworks';
 
 interface MockCanvasElement {
