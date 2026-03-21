@@ -30,27 +30,31 @@ export function PlaybackOverlay({
   // Use per-frame stored dimensions (_w/_h) if available — this is the size
   // the frame was actually drawn at, which may differ from the current canvas
   // size if the device was rotated after drawing.
-  function getFrameDims(index: number) {
-    try {
-      const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as {
-        _w?: number;
-        _h?: number;
-      };
-      if (p._w && p._h) return { w: p._w, h: p._h };
-    } catch {
-      /* fall through */
-    }
-    return { w: canvasWidth, h: canvasHeight };
-  }
+  const getFrameDims = useCallback(
+    (index: number) => {
+      try {
+        const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as {
+          _w?: number;
+          _h?: number;
+        };
+        if (p._w && p._h) return { w: p._w, h: p._h };
+      } catch {
+        /* fall through */
+      }
+      return { w: canvasWidth, h: canvasHeight };
+    },
+    [canvasHeight, canvasWidth, frames],
+  );
 
   // Display size: fit the first frame's drawing dimensions into the viewport.
-  function computeDisplaySize() {
+  const computeDisplaySize = useCallback(() => {
     const { w, h } = getFrameDims(0);
     const maxW = window.innerWidth - 32;
     const maxH = window.innerHeight * 0.55; // leave room for dots + buttons
     const scale = Math.min(maxW / w, maxH / h, 1);
     return { width: Math.round(w * scale), height: Math.round(h * scale) };
-  }
+  }, [getFrameDims]);
+
   const [displaySize, setDisplaySize] = useState(computeDisplaySize);
   useEffect(() => {
     function onResize() {
@@ -58,8 +62,7 @@ export function PlaybackOverlay({
     }
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasWidth, canvasHeight, frames]);
+  }, [computeDisplaySize]);
 
   // Render frame to canvas
   const renderFrame = useCallback(
@@ -95,7 +98,7 @@ export function PlaybackOverlay({
         fabric.dispose();
       }
     },
-    [frames, canvasWidth, canvasHeight],
+    [frames, getFrameDims],
   );
 
   // Animation loop
@@ -165,7 +168,7 @@ export function PlaybackOverlay({
     } finally {
       setIsExporting(false);
     }
-  }, [frames, fps, canvasWidth, canvasHeight, playSound]);
+  }, [frames, fps, playSound, getFrameDims]);
 
   return (
     <div

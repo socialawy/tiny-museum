@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { publishArtwork, unpublishArtwork } from '../publish';
 import { supabase } from '../client';
@@ -43,14 +44,14 @@ describe('Cloud Publishing', () => {
     const url = await publishArtwork(mockArtwork, mockBlob);
 
     expect(url).toBe('https://example.com/art.png');
-    expect(supabase.storage.from).toHaveBeenCalledWith('artwork-files');
-    expect((supabase.storage.from('artwork-files') as any).upload).toHaveBeenCalledWith(
+    expect(supabase!.storage.from).toHaveBeenCalledWith('artwork-files');
+    expect((supabase!.storage.from('artwork-files') as any).upload).toHaveBeenCalledWith(
       'art_123.png',
       mockBlob,
       expect.any(Object),
     );
-    expect(supabase.from).toHaveBeenCalledWith('published_artworks');
-    expect((supabase as any).upsert).toHaveBeenCalledWith(
+    expect(supabase!.from).toHaveBeenCalledWith('published_artworks');
+    expect((supabase! as any).upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'art_123',
         image_url: 'https://example.com/art.png',
@@ -60,7 +61,7 @@ describe('Cloud Publishing', () => {
 
   it('throws error if upload fails', async () => {
     vi.mocked(
-      (supabase.storage.from('artwork-files') as any).upload,
+      (supabase!.storage.from('artwork-files') as any).upload,
     ).mockResolvedValueOnce({ data: null, error: new Error('Upload failed') as any });
 
     await expect(publishArtwork(mockArtwork, mockBlob)).rejects.toThrow('Upload failed');
@@ -69,10 +70,10 @@ describe('Cloud Publishing', () => {
   it('unpublishes artwork by deleting metadata and removing file', async () => {
     await unpublishArtwork('art_123');
 
-    expect(supabase.from).toHaveBeenCalledWith('published_artworks');
-    expect((supabase as any).delete).toHaveBeenCalled();
-    expect((supabase as any).eq).toHaveBeenCalledWith('id', 'art_123');
-    expect((supabase.storage.from('artwork-files') as any).remove).toHaveBeenCalledWith([
+    expect(supabase!.from).toHaveBeenCalledWith('published_artworks');
+    expect((supabase! as any).delete).toHaveBeenCalled();
+    expect((supabase! as any).eq).toHaveBeenCalledWith('id', 'art_123');
+    expect((supabase!.storage.from('artwork-files') as any).remove).toHaveBeenCalledWith([
       'art_123.png',
     ]);
   });
