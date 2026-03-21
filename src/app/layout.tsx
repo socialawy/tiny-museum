@@ -12,8 +12,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: 'Tiny Museum',
-  description: 'Create, collect, and share your art!',
+  title: "Mira's Museum",
+  description: "Mira's art. Mira's museum.",
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.svg',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Tiny Museum',
+    title: "Mira's Museum",
   },
 };
 

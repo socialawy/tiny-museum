@@ -23,9 +23,9 @@ export default function HomePage() {
       <div className="mb-8">
         <h1 className="text-5xl font-extrabold mb-2 animate-bounce">🏛️</h1>
         <h2 className="text-4xl font-extrabold" style={{ color: '#2D1B69' }}>
-          Tiny Museum
+          Mira&apos;s Museum
         </h2>
-        <p className="text-lg mt-2 text-gray-500 font-semibold">Your art. Your museum.</p>
+        <p className="text-lg mt-2 text-gray-500 font-semibold">Hi Mira! ✨ Your art lives here.</p>
       </div>
 
       {/* Quick Stats */}
