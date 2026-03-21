@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { openCamera, captureFrame, stopStream } from '@/lib/import/camera';
 import { pickFile, processImportedFile, validateFile } from '@/lib/import/file';
 import { cleanupDrawingScan, autoCrop } from '@/lib/import/cleanup';

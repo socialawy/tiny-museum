@@ -1,12 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
 import { CanvasHistory } from '../history';
 
+interface MockCanvasState {
+  objects: unknown[];
+  version: string;
+}
+
 function createMockCanvas() {
-  let state = { objects: [] as any[], version: '6.0' };
+  let state: MockCanvasState = { objects: [], version: '6.0' };
 
   return {
-    toJSON: () => JSON.parse(JSON.stringify(state)),
-    loadFromJSON: vi.fn(async (json: any) => {
+    toJSON: () => JSON.parse(JSON.stringify(state)) as MockCanvasState,
+    loadFromJSON: vi.fn(async (json: MockCanvasState) => {
       state = json;
     }),
     renderAll: vi.fn(),
@@ -16,7 +21,7 @@ function createMockCanvas() {
 describe('CanvasHistory', () => {
   it('starts with one state (initial capture)', () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     expect(history.canUndo).toBe(false);
     expect(history.canRedo).toBe(false);
@@ -24,7 +29,7 @@ describe('CanvasHistory', () => {
 
   it('tracks captures and allows undo', async () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     history.capture();
     history.capture();
@@ -40,7 +45,7 @@ describe('CanvasHistory', () => {
 
   it('supports redo after undo', async () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     history.capture();
     await history.undo();
@@ -54,7 +59,7 @@ describe('CanvasHistory', () => {
 
   it('clears forward history on new capture after undo', async () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     history.capture();
     history.capture();
@@ -66,7 +71,7 @@ describe('CanvasHistory', () => {
 
   it('does not undo past initial state', async () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     const result = await history.undo();
     expect(result).toBe(false);
@@ -74,7 +79,7 @@ describe('CanvasHistory', () => {
 
   it('does not redo when at latest state', async () => {
     const canvas = createMockCanvas();
-    const history = new CanvasHistory(canvas as any);
+    const history = new CanvasHistory(canvas as unknown as Parameters<typeof CanvasHistory>[0]);
 
     history.capture();
     const result = await history.redo();

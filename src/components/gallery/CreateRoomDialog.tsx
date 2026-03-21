@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { createRoom } from '@/lib/storage/rooms';
-import { BigButton } from '@/components/ui/BigButton';
 
 interface CreateRoomDialogProps {
   onCreated: () => void;

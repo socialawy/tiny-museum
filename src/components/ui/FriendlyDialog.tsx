@@ -1,7 +1,5 @@
 'use client';
 
-import { BigButton } from './BigButton';
-
 interface FriendlyDialogProps {
   emoji: string;
   title: string;

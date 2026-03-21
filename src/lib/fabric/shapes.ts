@@ -6,7 +6,7 @@ import type { Canvas } from 'fabric';
  * and makes the new object active so the user can immediately
  * move/resize it.
  */
-function addAndSelect(canvas: Canvas, obj: any) {
+function addAndSelect(canvas: Canvas, obj: Circle | Rect | Polygon | FabricImage) {
   canvas.isDrawingMode = false;
   canvas.selection = true;
   canvas.add(obj);
@@ -102,7 +102,8 @@ export async function addImageToCanvas(
 
   // Explicitly store the data URL as the source
   // Prevents Fabric from regenerating blob URLs
-  (img as any).setSrc?.(imageUrl);
+  const imgWithSrc = img as FabricImage & { setSrc?: (url: string) => void };
+  imgWithSrc.setSrc?.(imageUrl);
 
   const scale = Math.min(
     maxSize / (img.width ?? maxSize),

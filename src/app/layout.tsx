@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Link from 'next/link';
 import { Nunito } from 'next/font/google';
 import { Celebrations } from '@/components/ui/Celebrations';
 import '@/styles/globals.css';
@@ -41,18 +42,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <div className="app-shell">{children}</div>
         <nav className="bottom-nav">
-          <a href="/gallery" className="nav-item">
+          <Link href="/gallery" className="nav-item">
             <span className="nav-icon">🏛️</span>
             <span className="nav-label">Gallery</span>
-          </a>
-          <a href="/" className="nav-item">
+          </Link>
+          <Link href="/" className="nav-item">
             <span className="nav-icon">🏠</span>
             <span className="nav-label">Home</span>
-          </a>
-          <a href="/studio/canvas" className="nav-item">
+          </Link>
+          <Link href="/studio/canvas" className="nav-item">
             <span className="nav-icon">🎨</span>
             <span className="nav-label">Studio</span>
-          </a>
+          </Link>
         </nav>
         <Celebrations />
       </body>

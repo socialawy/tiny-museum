@@ -1,7 +1,26 @@
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 
-const mockCtx = {
+interface MockContext {
+  drawImage: () => void;
+  fillRect: () => void;
+  clearRect: () => void;
+  scale: () => void;
+  fillText: () => void;
+  save: () => void;
+  restore: () => void;
+  getImageData: () => { data: Uint8ClampedArray };
+  putImageData: () => void;
+  fillStyle: string;
+  strokeStyle: string;
+  font: string;
+  textAlign: CanvasTextAlign;
+  textBaseline: CanvasTextBaseline;
+  filter: string;
+  canvas: HTMLCanvasElement | null;
+}
+
+const mockCtx: MockContext = {
   drawImage: () => {},
   fillRect: () => {},
   clearRect: () => {},
@@ -19,23 +38,24 @@ const mockCtx = {
   textAlign: 'start',
   textBaseline: 'alphabetic',
   filter: 'none',
-  canvas: null as any,
+  canvas: null,
 };
 
 HTMLCanvasElement.prototype.getContext = function (
   this: HTMLCanvasElement,
   type: string,
-) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   if (type === '2d') {
-    return { ...mockCtx, canvas: this } as any;
+    return { ...mockCtx, canvas: this } as unknown as CanvasRenderingContext2D;
   }
   return null;
-} as any;
+};
 
-HTMLCanvasElement.prototype.toBlob = function (cb: (blob: Blob | null) => void) {
+HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback): void {
   cb(new Blob(['mock-image'], { type: 'image/png' }));
-} as any;
+};
 
-HTMLCanvasElement.prototype.toDataURL = function () {
+HTMLCanvasElement.prototype.toDataURL = function (): string {
   return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIHWNgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualEQAAAABJRU5ErkJggg==';
-} as any;
+};

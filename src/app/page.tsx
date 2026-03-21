@@ -70,6 +70,22 @@ export default function HomePage() {
           <span className="text-sm text-gray-500">Create something new</span>
         </Link>
       </div>
+
+      {/* Flipbook Door */}
+      <div className="mt-6 w-full flex justify-center">
+        <Link
+          href="/studio/flipbook"
+          className="flex flex-col items-center gap-3 p-6 rounded-kid
+                     bg-white border-4 border-kid-yellow
+                     hover:scale-105 active:scale-95
+                     transition-transform duration-150 shadow-md no-underline
+                     w-full max-w-md group"
+        >
+          <span className="text-4xl group-hover:scale-110 transition-transform">🎬</span>
+          <span className="text-lg font-bold text-kid-dark">Flipbook</span>
+          <span className="text-sm text-gray-500">Make animations!</span>
+        </Link>
+      </div>
     </div>
   );
 }

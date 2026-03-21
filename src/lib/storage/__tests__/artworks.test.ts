@@ -10,17 +10,32 @@ import {
   moveArtwork,
 } from '../artworks';
 
+interface MockCanvasElement {
+  width: number;
+  height: number;
+  getContext: () => { drawImage: ReturnType<typeof vi.fn> };
+  toBlob: (cb: (blob: Blob) => void) => void;
+  toDataURL: () => string;
+}
+
+interface MockFabricCanvas extends Record<string, unknown> {
+  toJSON: () => unknown;
+  toDataURL: () => string;
+  getElement: () => MockCanvasElement;
+  getObjects: () => unknown[];
+}
+
 /**
  * Fully mocked Fabric canvas — no real Canvas 2D needed.
  * Simulates what saveArtwork() calls on the canvas object.
  */
-function createMockFabricCanvas() {
+function createMockFabricCanvas(): MockFabricCanvas {
   // 1x1 red pixel PNG as data URL
   const tinyPng =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
 
   // Mock a canvas element that toBlob works on
-  const mockCanvasEl = {
+  const mockCanvasEl: MockCanvasElement = {
     width: 100,
     height: 100,
     getContext: () => ({
@@ -51,7 +66,7 @@ describe('Artwork CRUD', () => {
 
   it('saves a new artwork and returns it with an id', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const artwork = await saveArtwork(mockCanvas as any);
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     expect(artwork.id).toBeDefined();
     expect(artwork.id.length).toBe(12);
@@ -64,7 +79,7 @@ describe('Artwork CRUD', () => {
 
   it('loads a saved artwork by id', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const saved = await saveArtwork(mockCanvas as any);
+    const saved = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     const loaded = await loadArtwork(saved.id);
     expect(loaded).toBeDefined();
@@ -74,10 +89,10 @@ describe('Artwork CRUD', () => {
 
   it('updates existing artwork preserving createdAt', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const first = await saveArtwork(mockCanvas as any);
+    const first = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     await new Promise((r) => setTimeout(r, 15));
-    const updated = await saveArtwork(mockCanvas as any, first.id);
+    const updated = await saveArtwork(mockCanvas as Record<string, unknown>, first.id);
 
     expect(updated.id).toBe(first.id);
     expect(updated.createdAt).toBe(first.createdAt);
@@ -86,9 +101,9 @@ describe('Artwork CRUD', () => {
 
   it('lists artworks by room in reverse chronological order', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const a1 = await saveArtwork(mockCanvas as any);
+    await saveArtwork(mockCanvas as Record<string, unknown>);
     await new Promise((r) => setTimeout(r, 15));
-    const a2 = await saveArtwork(mockCanvas as any);
+    const a2 = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     const artworks = await listArtworksByRoom('my-art');
     expect(artworks.length).toBe(2);
@@ -97,7 +112,7 @@ describe('Artwork CRUD', () => {
 
   it('deletes artwork and its blob', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const artwork = await saveArtwork(mockCanvas as any);
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     await deleteArtwork(artwork.id);
     expect(await loadArtwork(artwork.id)).toBeUndefined();
@@ -106,7 +121,7 @@ describe('Artwork CRUD', () => {
 
   it('renames an artwork', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const artwork = await saveArtwork(mockCanvas as any);
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
 
     await renameArtwork(artwork.id, 'Sunny Day');
     const loaded = await loadArtwork(artwork.id);
@@ -115,7 +130,7 @@ describe('Artwork CRUD', () => {
 
   it('toggles favorite tag on and off', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const artwork = await saveArtwork(mockCanvas as any);
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
     expect(artwork.tags).not.toContain('favorite');
 
     await toggleFavorite(artwork.id);
@@ -129,7 +144,7 @@ describe('Artwork CRUD', () => {
 
   it('moves artwork between rooms', async () => {
     const mockCanvas = createMockFabricCanvas();
-    const artwork = await saveArtwork(mockCanvas as any);
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
     expect(artwork.roomId).toBe('my-art');
 
     await moveArtwork(artwork.id, 'favorites');
