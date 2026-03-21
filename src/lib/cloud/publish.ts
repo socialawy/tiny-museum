@@ -2,6 +2,10 @@ import type { Artwork } from '@/lib/storage/db';
 import { supabase } from './client';
 
 export async function publishArtwork(artwork: Artwork, imageBlob: Blob): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Missing environment variables.');
+  }
+
   const filename = `${artwork.id}.png`;
 
   // 1. Upload image file
@@ -33,6 +37,10 @@ export async function publishArtwork(artwork: Artwork, imageBlob: Blob): Promise
 }
 
 export async function unpublishArtwork(id: string): Promise<void> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Missing environment variables.');
+  }
+
   const { error: dbError } = await supabase
     .from('published_artworks')
     .delete()
