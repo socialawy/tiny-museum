@@ -25,7 +25,9 @@ export default function HomePage() {
         <h2 className="text-4xl font-extrabold" style={{ color: '#2D1B69' }}>
           Mira&apos;s Museum
         </h2>
-        <p className="text-lg mt-2 text-gray-500 font-semibold">Hi Mira! ✨ Your art lives here.</p>
+        <p className="text-lg mt-2 text-gray-500 font-semibold">
+          Hi Mira! ✨ Your art lives here.
+        </p>
       </div>
 
       {/* Quick Stats */}

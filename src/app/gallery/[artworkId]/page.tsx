@@ -32,7 +32,12 @@ function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
   }, [artwork.thumbnail]);
 
   return thumbUrl ? (
-    <img src={thumbUrl} alt={artwork.title} className="w-full rounded" draggable={false} />
+    <img
+      src={thumbUrl}
+      alt={artwork.title}
+      className="w-full rounded"
+      draggable={false}
+    />
   ) : (
     <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded">
       <span className="text-5xl">🎬</span>
@@ -265,18 +270,16 @@ export default function ExhibitPage() {
         <div className="mt-4 px-6 pb-2 flex flex-col items-center gap-2">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-kid-purple font-bold">🌐 Published online</span>
-            <Link
-              href="/gallery/published"
-              className="text-blue-600 underline text-xs"
-            >
+            <Link href="/gallery/published" className="text-blue-600 underline text-xs">
               View gallery →
             </Link>
           </div>
-          {unpublishError && (
-            <p className="text-red-500 text-xs">{unpublishError}</p>
-          )}
+          {unpublishError && <p className="text-red-500 text-xs">{unpublishError}</p>}
           <BigButton
-            onClick={() => { setUnpublishError(null); setModal('unpublish-gate'); }}
+            onClick={() => {
+              setUnpublishError(null);
+              setModal('unpublish-gate');
+            }}
             aria-label="Unpublish"
           >
             🌐 Unpublish
@@ -314,21 +317,25 @@ export default function ExhibitPage() {
         />
       )}
 
-      {flipbookFrames && (() => {
-        const meta = (() => {
-          try { return JSON.parse(artwork!.canvasJSON) as Record<string, number>; }
-          catch { return {} as Record<string, number>; }
-        })();
-        return (
-          <PlaybackOverlay
-            frames={flipbookFrames}
-            fps={meta.fps ?? 4}
-            canvasWidth={meta.width ?? 400}
-            canvasHeight={meta.height ?? 300}
-            onClose={() => setFlipbookFrames(null)}
-          />
-        );
-      })()}
+      {flipbookFrames &&
+        (() => {
+          const meta = (() => {
+            try {
+              return JSON.parse(artwork!.canvasJSON) as Record<string, number>;
+            } catch {
+              return {} as Record<string, number>;
+            }
+          })();
+          return (
+            <PlaybackOverlay
+              frames={flipbookFrames}
+              fps={meta.fps ?? 4}
+              canvasWidth={meta.width ?? 400}
+              canvasHeight={meta.height ?? 300}
+              onClose={() => setFlipbookFrames(null)}
+            />
+          );
+        })()}
     </div>
   );
 }

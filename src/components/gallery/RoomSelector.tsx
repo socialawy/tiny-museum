@@ -121,7 +121,9 @@ export function RoomSelector({
                       : 'bg-white text-gray-600 border-2 border-gray-200 active:scale-95'
                   }
                 `}
-                style={activeRoomId === room.id ? { backgroundColor: room.color } : undefined}
+                style={
+                  activeRoomId === room.id ? { backgroundColor: room.color } : undefined
+                }
               >
                 <span>{room.icon}</span>
                 <span>{room.name}</span>

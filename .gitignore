@@ -39,3 +39,4 @@ local-files/
 # Test logs
 /test-logs
 test_output.txt
+coverage/

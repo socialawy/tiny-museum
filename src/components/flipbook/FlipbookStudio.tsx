@@ -268,7 +268,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-studio-bg z-30">
             <div className="text-center">
               <p className="text-5xl mb-3 animate-bounce">🎬</p>
-              <p className="text-lg font-bold text-gray-400">Setting up your flipbook...</p>
+              <p className="text-lg font-bold text-gray-400">
+                Setting up your flipbook...
+              </p>
             </div>
           </div>
         )}
@@ -279,7 +281,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         <>
           {/* Frame strip */}
           <div className="flex-shrink-0 landscape:h-20 landscape:overflow-hidden">
-            <FrameStrip frames={frames} currentIndex={currentIndex} onSelectFrame={goToFrame} />
+            <FrameStrip
+              frames={frames}
+              currentIndex={currentIndex}
+              onSelectFrame={goToFrame}
+            />
           </div>
 
           {/* Bottom controls */}

@@ -12,9 +12,7 @@ export async function publishArtwork(artwork: Artwork, imageBlob: Blob): Promise
   if (uploadError) throw uploadError;
 
   // 2. Get public URL (sync — no network call)
-  const { data: urlData } = supabase.storage
-    .from('artwork-files')
-    .getPublicUrl(filename);
+  const { data: urlData } = supabase.storage.from('artwork-files').getPublicUrl(filename);
 
   const imageUrl = urlData.publicUrl;
 

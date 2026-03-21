@@ -41,9 +41,8 @@ async function generateThumbnail(
  */
 function convertBlobSourcesToDataUrl(fabricCanvas: Record<string, unknown>): void {
   try {
-    const getObjectsFn = fabricCanvas.getObjects as ((
-    ) => unknown[]) | undefined;
-    const objects = ((getObjectsFn?.call(fabricCanvas)) ?? []) as unknown[];
+    const getObjectsFn = fabricCanvas.getObjects as (() => unknown[]) | undefined;
+    const objects = (getObjectsFn?.call(fabricCanvas) ?? []) as unknown[];
     for (const obj of objects) {
       const objRecord = obj as Record<string, unknown>;
       if (objRecord.type !== 'image') continue;
@@ -53,7 +52,10 @@ function convertBlobSourcesToDataUrl(fabricCanvas: Record<string, unknown>): voi
       if (!el) continue;
 
       // Check if source is a blob URL
-      const src = (el as HTMLImageElement).src ?? (objRecord._originalElement as Record<string, unknown> | null)?.src ?? '';
+      const src =
+        (el as HTMLImageElement).src ??
+        (objRecord._originalElement as Record<string, unknown> | null)?.src ??
+        '';
 
       if (!src.startsWith('blob:')) continue;
 
@@ -116,11 +118,14 @@ export async function saveArtwork(
   const canvasJSON = sanitizeBlobUrls(JSON.stringify(canvasJson));
 
   // Generate exports
-  const toDataURLFn = fabricCanvas.toDataURL as ((options: Record<string, unknown>) => string) | undefined;
-  const fullDataUrl = toDataURLFn?.call(fabricCanvas, {
-    format: 'png',
-    multiplier: 2,
-  }) ?? '';
+  const toDataURLFn = fabricCanvas.toDataURL as
+    | ((options: Record<string, unknown>) => string)
+    | undefined;
+  const fullDataUrl =
+    toDataURLFn?.call(fabricCanvas, {
+      format: 'png',
+      multiplier: 2,
+    }) ?? '';
   const fullBlob = dataURLtoBlob(fullDataUrl);
 
   const getElementFn = fabricCanvas.getElement as (() => unknown) | undefined;
@@ -213,9 +218,12 @@ export async function updatePublishedUrl(
   publishedUrl: string | undefined,
 ): Promise<void> {
   if (publishedUrl === undefined) {
-    await db.artworks.where('id').equals(id).modify((record) => {
-      delete (record as unknown as Record<string, unknown>).publishedUrl;
-    });
+    await db.artworks
+      .where('id')
+      .equals(id)
+      .modify((record) => {
+        delete (record as unknown as Record<string, unknown>).publishedUrl;
+      });
   } else {
     await db.artworks.update(id, { publishedUrl });
   }
