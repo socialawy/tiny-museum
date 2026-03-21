@@ -24,6 +24,7 @@ export async function createRoom(
 }
 
 export async function deleteRoom(id: string) {
+  if (id === 'my-art' || id === 'favorites') return;
   // Move artworks to default room first
   await db.artworks.where('roomId').equals(id).modify({ roomId: 'my-art' });
   await db.rooms.delete(id);

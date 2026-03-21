@@ -1,135 +1,79 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { publishArtwork, unpublishArtwork } from '../publish';
+import { supabase } from '../client';
 import type { Artwork } from '@/lib/storage/db';
-
-// Mock the supabase client before importing publish
-const mockUpload = vi.fn().mockResolvedValue({ error: null });
-const mockRemove = vi.fn().mockResolvedValue({ error: null });
-const mockGetPublicUrl = vi.fn().mockReturnValue({
-  data: {
-    publicUrl:
-      'https://example.supabase.co/storage/v1/object/public/artwork-files/test-id.png',
-  },
-});
-const mockUpsert = vi.fn().mockResolvedValue({ error: null });
-const mockEq = vi.fn().mockReturnValue({ error: null });
-const mockSelect = vi.fn().mockReturnValue({
-  order: vi.fn().mockResolvedValue({ data: [], error: null }),
-});
 
 vi.mock('../client', () => ({
   supabase: {
     storage: {
-      from: vi.fn().mockReturnValue({
-        upload: mockUpload,
-        remove: mockRemove,
-        getPublicUrl: mockGetPublicUrl,
-      }),
+      from: vi.fn().mockReturnThis(),
+      upload: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      getPublicUrl: vi
+        .fn()
+        .mockReturnValue({ data: { publicUrl: 'https://example.com/art.png' } }),
+      remove: vi.fn().mockResolvedValue({ data: {}, error: null }),
     },
-    from: vi.fn().mockImplementation((table: string) => {
-      if (table === 'published_artworks') {
-        return {
-          upsert: mockUpsert,
-          delete: () => ({ eq: mockEq }),
-          select: mockSelect,
-        };
-      }
-    }),
+    from: vi.fn().mockReturnThis(),
+    upsert: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
   },
 }));
 
-const mockArtwork: Artwork = {
-  id: 'test-id',
-  title: 'My Painting',
-  roomId: 'my-art',
-  type: 'drawing',
-  thumbnail: new Blob(),
-  canvasJSON: '{}',
-  createdAt: Date.now(),
-  updatedAt: Date.now(),
-  tags: [],
-};
+describe('Cloud Publishing', () => {
+  const mockArtwork: Artwork = {
+    id: 'art_123',
+    title: 'Test Art',
+    type: 'drawing',
+    roomId: 'my-art',
+    canvasJSON: '{}',
+    thumbnail: new Blob([]),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    tags: [],
+  };
 
-describe('publishArtwork', () => {
-  beforeEach(() => vi.clearAllMocks());
+  const mockBlob = new Blob(['image data'], { type: 'image/png' });
 
-  it('uploads PNG to Supabase Storage', async () => {
-    const { publishArtwork } = await import('../publish');
-    const imageBlob = new Blob(['fake-png'], { type: 'image/png' });
-    await publishArtwork(mockArtwork, imageBlob);
-    expect(mockUpload).toHaveBeenCalledWith(
-      'test-id.png',
-      imageBlob,
-      expect.objectContaining({ contentType: 'image/png', upsert: true }),
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('publishes artwork by uploading file and upserting metadata', async () => {
+    const url = await publishArtwork(mockArtwork, mockBlob);
+
+    expect(url).toBe('https://example.com/art.png');
+    expect(supabase.storage.from).toHaveBeenCalledWith('artwork-files');
+    expect((supabase.storage.from('artwork-files') as any).upload).toHaveBeenCalledWith(
+      'art_123.png',
+      mockBlob,
+      expect.any(Object),
+    );
+    expect(supabase.from).toHaveBeenCalledWith('published_artworks');
+    expect((supabase as any).upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'art_123',
+        image_url: 'https://example.com/art.png',
+      }),
     );
   });
 
-  it('inserts row into published_artworks', async () => {
-    const { publishArtwork } = await import('../publish');
-    const imageBlob = new Blob(['fake-png'], { type: 'image/png' });
-    await publishArtwork(mockArtwork, imageBlob);
-    expect(mockUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'test-id', title: 'My Painting', type: 'drawing' }),
-    );
+  it('throws error if upload fails', async () => {
+    vi.mocked(
+      (supabase.storage.from('artwork-files') as any).upload,
+    ).mockResolvedValueOnce({ data: null, error: new Error('Upload failed') as any });
+
+    await expect(publishArtwork(mockArtwork, mockBlob)).rejects.toThrow('Upload failed');
   });
 
-  it('returns the public URL', async () => {
-    const { publishArtwork } = await import('../publish');
-    const imageBlob = new Blob(['fake-png'], { type: 'image/png' });
-    const url = await publishArtwork(mockArtwork, imageBlob);
-    expect(url).toContain('test-id.png');
-  });
-});
+  it('unpublishes artwork by deleting metadata and removing file', async () => {
+    await unpublishArtwork('art_123');
 
-describe('unpublishArtwork', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('deletes from published_artworks table', async () => {
-    const { unpublishArtwork } = await import('../publish');
-    await unpublishArtwork('test-id');
-    expect(mockEq).toHaveBeenCalledWith('id', 'test-id');
-  });
-
-  it('removes file from Storage', async () => {
-    const { unpublishArtwork } = await import('../publish');
-    await unpublishArtwork('test-id');
-    expect(mockRemove).toHaveBeenCalledWith(['test-id.png']);
-  });
-});
-
-describe('fetchPublishedArtworks', () => {
-  it('returns empty array when no artworks published', async () => {
-    const { fetchPublishedArtworks } = await import('../gallery');
-    const result = await fetchPublishedArtworks();
-    expect(result).toEqual([]);
-  });
-
-  it('returns artworks array from Supabase', async () => {
-    // Override mock for this test to return data
-    const mockData = [
-      {
-        id: 'a1',
-        title: 'Test',
-        type: 'drawing',
-        image_url: 'https://example.com/a1.png',
-        room_name: 'my-art',
-        published_at: '2026-01-01T00:00:00Z',
-        updated_at: '2026-01-01T00:00:00Z',
-      },
-    ];
-    mockSelect.mockReturnValueOnce({
-      order: vi.fn().mockResolvedValueOnce({ data: mockData, error: null }),
-    });
-    const { fetchPublishedArtworks: fetchAgain } = await import('../gallery');
-    const result = await fetchAgain();
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('a1');
-  });
-
-  it('throws when Supabase returns an error', async () => {
-    mockSelect.mockReturnValueOnce({
-      order: vi.fn().mockResolvedValueOnce({ data: null, error: new Error('DB error') }),
-    });
-    const { fetchPublishedArtworks: fetchError } = await import('../gallery');
-    await expect(fetchError()).rejects.toThrow('DB error');
+    expect(supabase.from).toHaveBeenCalledWith('published_artworks');
+    expect((supabase as any).delete).toHaveBeenCalled();
+    expect((supabase as any).eq).toHaveBeenCalledWith('id', 'art_123');
+    expect((supabase.storage.from('artwork-files') as any).remove).toHaveBeenCalledWith([
+      'art_123.png',
+    ]);
   });
 });

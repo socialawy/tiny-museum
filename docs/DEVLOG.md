@@ -269,29 +269,45 @@ Deployed to Vercel. Added a Publish flow so artwork from any device can appear i
 
 - **Flipbook thumbnail aspect ratio**: `sendToGallery` was hardcoding 400×300, squishing any canvas wider or taller than 4:3. Fixed: captures at `canvas.getWidth()` × `canvas.getHeight()` (actual logical dimensions). Width/height now stored in `canvasJSON` so `PlaybackOverlay` in the exhibit view also uses the correct dimensions instead of the 400×300 fallback.
 
+● Pushed. The previous fixes were treating symptoms — this addresses the root cause.    
+
+  What was actually wrong: The canvas fills its container. In landscape on mobile, the  
+  container is only ~112px tall (viewport minus topbar + frame strip + controls). When  
+  you tapped Play in landscape, canvas.getHeight() = 112. PlaybackOverlay rendered      
+  frames at 780×112, but your drawings were at portrait coordinates (y up to ~600).     
+  Everything below y=112 was off-screen — you saw a thin strip of background.
+
+  What's fixed: saveCurrentFrame now stores _w and _h (the logical canvas size at draw  
+  time) inside each frame's JSON. PlaybackOverlay reads those per-frame dimensions for  
+  rendering and display. Existing frames without _w/_h fall back to current behavior.
+
+---
+
+## Sprint 1.1: Repo / Pro (Maintenance) ✅
+*Completed: 2026-03-21*
+
+Transitioned the hobby project to a professional, contributor-ready repository.
+
+### Key Milestones
+- **CI/CD Pipeline**: GitHub Actions now runs `lint`, `typecheck`, and `test` on every push/PR.
+- **Robust Testing**: Expanded the test suite from 30 to **50 passing unit tests**. Covered Cloud Publish, Flipbook Studio, GIF Export, Room Management, and Storage Utils.
+- **Full Documentation**:
+    - `README.md`: Modern project overview and setup guide.
+    - `CONTRIBUTING.md`: Standards for new collaborators.
+    - `docs/ARCHITECTURE.md`: Technical deep-dive for developers.
+    - `LICENSE`: MIT.
+- **Vercel Build Hygiene**: Optimized `next.config.ts` and `.gitignore` to ensure clean production builds and repository maintenance.
+
 ---
 
 ## Next Actions (backlog)
 
-### Anyone finds the link, can use Supabase to publish artwork
-Low risk (free tier quota is generous for casual use) but worth a simple passcode gate on the Publish button eventually.
-
 ### Sprint 2: Make It Showable
-- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio) - Actually, code is welcome to add demo content, to show how this can be advanced.
-- **Gallery thumbnail polish** — switch `object-contain` → `object-cover` + migrate to `next/image`
-- **Mobile polish** — safe-area insets, keyboard avoidance
-
-### Personalization
-- App renamed to **Mira's Museum** (layout title + home screen heading) ✅
-
-### Repo / Pro (Jules — issue #1)
-- CI/CD: GitHub Actions (lint + typecheck + tests on every push/PR)
-- Test coverage: cloud publish, flipbook storage, GIF export (target ≥ 50 tests)
-- Docs: README, CONTRIBUTING, ARCHITECTURE
-- Online monitoring: Vercel Speed Insights + Analytics
-- Repo hygiene: LICENSE, PR template, ESLint warning cleanup
+- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio).
+- **Gallery thumbnail polish** — switch `object-contain` → `object-cover` + migrate to `next/image`.
+- **Mobile polish** — safe-area insets, keyboard avoidance.
 
 ### Future (Phase 5)
-- 3D walkable museum (Three.js / React Three Fiber)
-- Studio access control — simple PIN gate to lock studio to Mira's device
-- Data model already shaped for rooms-as-spaces and artworks-with-metadata.
+- 3D walkable museum (Three.js / React Three Fiber).
+- Studio access control — simple PIN gate to lock studio to Mira's device.
+- Online monitoring: Vercel Speed Insights + Analytics.

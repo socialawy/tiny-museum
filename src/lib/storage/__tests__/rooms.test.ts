@@ -83,4 +83,20 @@ describe('Room CRUD', () => {
     expect(rooms.find((r) => r.id === 'my-art')?.name).toBe('My Art');
     expect(rooms.find((r) => r.id === 'favorites')?.name).toBe('Favorites');
   });
+
+  it('handles room listing with no custom rooms', async () => {
+    const rooms = await listRooms();
+    expect(rooms.length).toBe(2);
+    expect(rooms.every((r) => r.order >= 0)).toBe(true);
+  });
+
+  it('correctly handles deletion of a non-existent room', async () => {
+    await expect(deleteRoom('non-existent')).resolves.not.toThrow();
+  });
+
+  it('prevents deletion of default rooms', async () => {
+    await deleteRoom('my-art');
+    const rooms = await listRooms();
+    expect(rooms.find((r) => r.id === 'my-art')).toBeDefined();
+  });
 });

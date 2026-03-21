@@ -32,9 +32,14 @@ export function PlaybackOverlay({
   // size if the device was rotated after drawing.
   function getFrameDims(index: number) {
     try {
-      const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as { _w?: number; _h?: number };
+      const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as {
+        _w?: number;
+        _h?: number;
+      };
       if (p._w && p._h) return { w: p._w, h: p._h };
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
     return { w: canvasWidth, h: canvasHeight };
   }
 
@@ -48,10 +53,12 @@ export function PlaybackOverlay({
   }
   const [displaySize, setDisplaySize] = useState(computeDisplaySize);
   useEffect(() => {
-    function onResize() { setDisplaySize(computeDisplaySize()); }
+    function onResize() {
+      setDisplaySize(computeDisplaySize());
+    }
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasWidth, canvasHeight, frames]);
 
   // Render frame to canvas

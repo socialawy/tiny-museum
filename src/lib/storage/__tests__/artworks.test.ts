@@ -8,6 +8,10 @@ import {
   renameArtwork,
   toggleFavorite,
   moveArtwork,
+  updatePublishedUrl,
+  dataURLtoBlob,
+  listAllArtworks,
+  loadArtworkBlob,
 } from '../artworks';
 
 interface MockCanvasElement {
@@ -62,6 +66,11 @@ describe('Artwork CRUD', () => {
   beforeEach(async () => {
     await db.artworks.clear();
     await db.blobs.clear();
+  });
+
+  it('returns empty array when listing all artworks with no data', async () => {
+    const all = await listAllArtworks();
+    expect(all).toEqual([]);
   });
 
   it('saves a new artwork and returns it with an id', async () => {
@@ -150,5 +159,43 @@ describe('Artwork CRUD', () => {
     await moveArtwork(artwork.id, 'favorites');
     const loaded = await loadArtwork(artwork.id);
     expect(loaded!.roomId).toBe('favorites');
+  });
+
+  it('updates published URL', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    const artwork = await saveArtwork(mockCanvas as Record<string, unknown>);
+
+    await updatePublishedUrl(artwork.id, 'https://tiny.museum/art/123');
+    let loaded = await loadArtwork(artwork.id);
+    expect(loaded!.publishedUrl).toBe('https://tiny.museum/art/123');
+
+    await updatePublishedUrl(artwork.id, undefined);
+    loaded = await loadArtwork(artwork.id);
+    expect(loaded!.publishedUrl).toBeUndefined();
+  });
+
+  it('lists artworks by room in reverse chronological order', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    await saveArtwork(mockCanvas as Record<string, unknown>);
+    const a2 = await saveArtwork(mockCanvas as Record<string, unknown>);
+    await moveArtwork(a2.id, 'favorites');
+
+    const myArt = await listArtworksByRoom('my-art');
+    expect(myArt.length).toBe(1);
+
+    const favorites = await listArtworksByRoom('favorites');
+    expect(favorites.length).toBe(1);
+    expect(favorites[0].id).toBe(a2.id);
+  });
+
+  it('lists all artworks in reverse chronological order', async () => {
+    const mockCanvas = createMockFabricCanvas();
+    await saveArtwork(mockCanvas as Record<string, unknown>);
+    await new Promise((r) => setTimeout(r, 10));
+    const a2 = await saveArtwork(mockCanvas as Record<string, unknown>);
+
+    const all = await listAllArtworks();
+    expect(all.length).toBe(2);
+    expect(all[0].id).toBe(a2.id);
   });
 });

@@ -40,3 +40,17 @@ local-files/
 /test-logs
 test_output.txt
 coverage/
+
+# Root logs and temporary results
+*.txt
+*.json
+*.log
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.ts
+!.eslintrc.json
+!vercel.json
+!*.config.js
+!*.config.ts
+!*.config.mjs

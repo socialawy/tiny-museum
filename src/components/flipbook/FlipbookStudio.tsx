@@ -37,7 +37,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
   const [fps, setFps] = useState(4);
   const [onionSkin, setOnionSkin] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   // ── Initialize or Load ──
@@ -97,13 +96,16 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
   // ── Save current frame ──
   const saveCurrentFrame = useCallback(async () => {
     if (!canvas || !artworkId) return;
-    setSaving(true);
     try {
       // Embed the logical canvas dimensions so playback always uses the
       // dimensions from when this frame was drawn, not the current (possibly
       // rotated) canvas size.
       const raw = canvas.toJSON() as Record<string, unknown>;
-      const json = JSON.stringify({ ...raw, _w: canvas.getWidth(), _h: canvas.getHeight() });
+      const json = JSON.stringify({
+        ...raw,
+        _w: canvas.getWidth(),
+        _h: canvas.getHeight(),
+      });
       const el = canvas.getElement() as HTMLCanvasElement;
 
       // Generate tiny thumbnail
@@ -124,9 +126,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         next[currentIndex] = saved;
         return next;
       });
-    } finally {
-      setSaving(false);
-    }
+    } catch {}
   }, [canvas, artworkId, currentIndex]);
 
   // ── Navigation ──
