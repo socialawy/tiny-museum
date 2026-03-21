@@ -251,19 +251,31 @@ Deployed to Vercel. Added a Publish flow so artwork from any device can appear i
 
 ---
 
+## Sprint 1: Bug Fixes ✅
+*Completed: 2026-03-21*
+
+### Fixed
+- **Room rename**: Added `renameRoom()` to storage + long-press (500ms) on room pill → ParentGate → inline edit. Default rooms (`My Art`, `Favorites`) are protected.
+- **Favorites room**: Was filtering by `roomId === 'favorites'` (always empty). Fixed: filters by `tags.includes('favorite')` across all artworks.
+- **Flipbook in Gallery**: Exhibit view now shows thumbnail, ▶️ Play button opens `PlaybackOverlay` (with built-in GIF export), Edit routes to `/studio/flipbook`. Deleting a flipbook now cleans up frames (was leaving orphaned IndexedDB data).
+- **Flipbook mobile layout**: Portrait — `min-h-0` on canvas container so controls stay visible. Landscape — frame strip capped to `h-20`, canvas fills remaining space.
+
+### Tests: 30 passing (up from 28)
+
+---
+
 ## Next Actions (backlog)
 
-### UX Polish
-- **Tooltips / Help** — first-run tooltips or a simple "?" help overlay explaining each tool
-- **Pro demo** — pre-loaded demo artwork / flipbook so new visitors see the app in action
-- **Gallery preview adjust** — better thumbnail crop/fit in gallery cards
+### Anyone finds the link, can use Supabase to publish artwork
+Low risk (free tier quota is generous for casual use) but worth a simple passcode gate on the Publish button eventually.
 
-### Quality
-- **Mobile optimization** — touch interactions, safe-area insets, keyboard avoidance
-- **Performance** — bundle analysis, lazy-load audit, `next/image` for gallery cards
+### Sprint 2: Make It Showable
+- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio)
+- **Gallery thumbnail polish** — switch `object-contain` → `object-cover` + migrate to `next/image`
+- **Mobile polish** — safe-area insets, keyboard avoidance
 
 ### Personalization
-- App renamed to **Mira's Museum** (layout title + home screen heading)
+- App renamed to **Mira's Museum** (layout title + home screen heading) ✅
 
 ### Repo / Pro (Jules — issue #1)
 - CI/CD: GitHub Actions (lint + typecheck + tests on every push/PR)
