@@ -27,17 +27,24 @@ export function PlaybackOverlay({
   const [isExporting, setIsExporting] = useState(false);
   const { playSound } = useSounds();
 
-  // Compute display size that fits within the viewport, preserving aspect ratio.
-  // PlaybackOverlay is never SSR'd (only mounts on user interaction), so window
-  // is always available — compute the correct size immediately to avoid a flash.
+  // Use per-frame stored dimensions (_w/_h) if available — this is the size
+  // the frame was actually drawn at, which may differ from the current canvas
+  // size if the device was rotated after drawing.
+  function getFrameDims(index: number) {
+    try {
+      const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as { _w?: number; _h?: number };
+      if (p._w && p._h) return { w: p._w, h: p._h };
+    } catch { /* fall through */ }
+    return { w: canvasWidth, h: canvasHeight };
+  }
+
+  // Display size: fit the first frame's drawing dimensions into the viewport.
   function computeDisplaySize() {
+    const { w, h } = getFrameDims(0);
     const maxW = window.innerWidth - 32;
     const maxH = window.innerHeight * 0.55; // leave room for dots + buttons
-    const scale = Math.min(maxW / canvasWidth, maxH / canvasHeight, 1);
-    return {
-      width: Math.round(canvasWidth * scale),
-      height: Math.round(canvasHeight * scale),
-    };
+    const scale = Math.min(maxW / w, maxH / h, 1);
+    return { width: Math.round(w * scale), height: Math.round(h * scale) };
   }
   const [displaySize, setDisplaySize] = useState(computeDisplaySize);
   useEffect(() => {
@@ -45,7 +52,7 @@ export function PlaybackOverlay({
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasWidth, canvasHeight]);
+  }, [canvasWidth, canvasHeight, frames]);
 
   // Render frame to canvas
   const renderFrame = useCallback(
@@ -56,13 +63,15 @@ export function PlaybackOverlay({
       const ctx = el.getContext('2d');
       if (!ctx) return;
 
-      // Create a temporary Fabric canvas to render the frame
+      // Create a temporary Fabric canvas using the dimensions the frame was
+      // drawn at (stored as _w/_h in the JSON), not the current canvas size.
+      const { w: fw, h: fh } = getFrameDims(index);
       const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = canvasWidth;
-      tmpCanvas.height = canvasHeight;
+      tmpCanvas.width = fw;
+      tmpCanvas.height = fh;
       const fabric = new FabricCanvas(tmpCanvas, {
-        width: canvasWidth,
-        height: canvasHeight,
+        width: fw,
+        height: fh,
       });
 
       try {
@@ -101,13 +110,15 @@ export function PlaybackOverlay({
     try {
       const exportFrames: HTMLCanvasElement[] = [];
 
-      for (const frame of frames) {
+      for (let fi = 0; fi < frames.length; fi++) {
+        const frame = frames[fi];
+        const { w: fw, h: fh } = getFrameDims(fi);
         const tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = canvasWidth;
-        tmpCanvas.height = canvasHeight;
+        tmpCanvas.width = fw;
+        tmpCanvas.height = fh;
         const fabric = new FabricCanvas(tmpCanvas, {
-          width: canvasWidth,
-          height: canvasHeight,
+          width: fw,
+          height: fh,
         });
 
         const json = JSON.parse(frame.canvasJSON);
@@ -116,8 +127,8 @@ export function PlaybackOverlay({
 
         // Capture the rendered frame
         const capture = document.createElement('canvas');
-        capture.width = canvasWidth;
-        capture.height = canvasHeight;
+        capture.width = fw;
+        capture.height = fh;
         const ctx = capture.getContext('2d')!;
         ctx.drawImage(tmpCanvas, 0, 0);
         exportFrames.push(capture);
@@ -125,9 +136,10 @@ export function PlaybackOverlay({
         fabric.dispose();
       }
 
+      const { w: gifW, h: gifH } = getFrameDims(0);
       const gifBlob = await exportToGif({
-        width: canvasWidth,
-        height: canvasHeight,
+        width: gifW,
+        height: gifH,
         fps,
         frames: exportFrames,
       });

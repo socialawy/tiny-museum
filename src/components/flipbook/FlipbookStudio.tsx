@@ -99,7 +99,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     if (!canvas || !artworkId) return;
     setSaving(true);
     try {
-      const json = JSON.stringify(canvas.toJSON());
+      // Embed the logical canvas dimensions so playback always uses the
+      // dimensions from when this frame was drawn, not the current (possibly
+      // rotated) canvas size.
+      const raw = canvas.toJSON() as Record<string, unknown>;
+      const json = JSON.stringify({ ...raw, _w: canvas.getWidth(), _h: canvas.getHeight() });
       const el = canvas.getElement() as HTMLCanvasElement;
 
       // Generate tiny thumbnail
