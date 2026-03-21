@@ -27,6 +27,7 @@ Fav save — investigated, code is correct. Verify manually before any work; ski
 
 **UI** (`src/components/gallery/RoomSelector.tsx`)
 - Long-press (500ms) on a non-default room pill triggers the sequence below
+- Implementation: use `onPointerDown` to start a 500 ms `setTimeout`; clear it on `onPointerUp` / `onPointerLeave`. A short tap (pointer up before 500 ms) still fires `onSelect` (room switch) as normal.
 - Default rooms (`my-art`, `favorites`) do not respond to long-press
 - **Sequence**:
   1. Long-press → `ParentGate` modal appears (existing multiplication-check component, full-screen)
@@ -52,12 +53,17 @@ Flipbook artworks appear as gallery cards but the exhibit view (`/gallery/[artwo
 
 ### Detection
 - `artwork.type === 'flipbook'` — this is the correct field; there is no `flipbookId`.
+- The `artwork` object is already fetched in the page's existing `useEffect` (via `loadArtwork(artworkId)`) and stored in state — no additional fetch needed for detection or FPS.
 - Frames are loaded with `loadAllFrames(artwork.id)`.
 - FPS is read from `JSON.parse(artwork.canvasJSON).fps`.
 
 ### Design
 
-**Loading state** (`src/app/gallery/[artworkId]/page.tsx`)
+**Display area** (`src/app/gallery/[artworkId]/page.tsx`)
+- For flipbooks, the `db.blobs` full-res blob does not exist. Instead, render `artwork.thumbnail` (a Blob stored directly on the Artwork record) as the preview image via a blob URL — same pattern used by `ArtworkCard`.
+- The Edit button must route to `/studio/flipbook?id=${artwork.id}` instead of `/studio/canvas?id=` for flipbooks.
+
+**Loading state**
 - When `artwork.type === 'flipbook'`, show a **▶ Play** button instead of the PNG download button.
 - On click: set `isLoadingFrames = true`, call `loadAllFrames(artwork.id)`, then mount `PlaybackOverlay`.
 - While loading: show a spinner on the Play button (disable the button, replace label with "Loading…").
