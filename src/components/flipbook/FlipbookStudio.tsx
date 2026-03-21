@@ -258,7 +258,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
       {/* Canvas — ALWAYS in DOM so useFabricCanvas can initialize before loaded */}
       <div
         ref={containerRef}
-        className="flex-1 relative overflow-hidden"
+        className="flex-1 min-h-0 relative overflow-hidden"
         style={{ touchAction: 'none' }}
       >
         {!loaded && (
@@ -275,10 +275,12 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
       {loaded && (
         <>
           {/* Frame strip */}
-          <FrameStrip frames={frames} currentIndex={currentIndex} onSelectFrame={goToFrame} />
+          <div className="flex-shrink-0 landscape:h-20 landscape:overflow-hidden">
+            <FrameStrip frames={frames} currentIndex={currentIndex} onSelectFrame={goToFrame} />
+          </div>
 
           {/* Bottom controls */}
-          <div className="flex items-center justify-between px-4 py-3 bg-white border-t-2 border-gray-100">
+          <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white border-t-2 border-gray-100">
             <div className="flex gap-2">
               <BigButton
                 onClick={prevFrame}
@@ -327,7 +329,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           </div>
 
           {/* Speed control */}
-          <div className="flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50">
+          <div className="flex-shrink-0 flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50">
             <span className="text-xs font-bold text-gray-400">🐢</span>
             <input
               type="range"
