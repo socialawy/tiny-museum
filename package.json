@@ -1,6 +1,7 @@
 {
     "name": "tiny-museum",
     "version": "0.1.0",
+    "description": "A creative, local-first drawing studio and flipbook animator for kids.",
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack -H 0.0.0.0",

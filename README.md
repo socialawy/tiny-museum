@@ -1,5 +1,10 @@
 # 🏛️ Tiny Museum
 
+[![CI Pipeline](https://github.com/socialawy/tiny-museum/actions/workflows/pipeline.yml/badge.svg)](https://github.com/socialawy/tiny-museum/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests: 50 Passing](https://img.shields.io/badge/Tests-50%20Passing-brightgreen.svg)](https://github.com/socialawy/tiny-museum)
+[![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/socialawy/tiny-museum)
+
 **A creative space for tiny humans.**
 
 Tiny Museum is a digital sketchbook, collage studio, and animator designed specifically for children (best for ages 4-10). It focuses on high-touch, low-friction creativity, ensuring that every interaction is delightful and encouraging.
