@@ -1,6 +1,7 @@
 'use client';
 
 import type { PublishedArtwork } from '@/lib/cloud/types';
+import Image from 'next/image';
 
 interface Props {
   artworks: PublishedArtwork[];
@@ -47,12 +48,13 @@ export function PublishedGallery({ artworks }: Props) {
           >
             {/* White paper inside frame */}
             <div className="bg-[#FFFEF7] w-full h-full flex items-center justify-center overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={artwork.image_url}
                 alt={artwork.title}
-                loading="lazy"
                 className="w-full h-full object-contain"
+                width={300}
+                height={300}
+                unoptimized
               />
             </div>
 

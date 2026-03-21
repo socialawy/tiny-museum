@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import NextImage from 'next/image';
 import { openCamera, captureFrame, stopStream } from '@/lib/import/camera';
 import { pickFile, processImportedFile, validateFile } from '@/lib/import/file';
 import { cleanupDrawingScan, autoCrop } from '@/lib/import/cleanup';
@@ -225,10 +226,13 @@ export function ImportPanel({ onImport, onClose }: ImportPanelProps) {
           {mode === 'preview' && previewUrl && (
             <div className="flex flex-col items-center gap-4">
               <div className="w-full rounded-xl overflow-hidden bg-gray-50 border-2 border-gray-200">
-                <img
+                <NextImage
                   src={previewUrl}
                   alt="Preview"
                   className="w-full object-contain max-h-64"
+                  width={400}
+                  height={300}
+                  unoptimized
                 />
               </div>
               <p className="text-sm text-gray-500">

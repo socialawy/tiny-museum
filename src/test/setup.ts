@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 
@@ -44,7 +45,6 @@ const mockCtx: MockContext = {
 HTMLCanvasElement.prototype.getContext = function (
   this: HTMLCanvasElement,
   type: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (type === '2d') {
     return { ...mockCtx, canvas: this } as unknown as CanvasRenderingContext2D;

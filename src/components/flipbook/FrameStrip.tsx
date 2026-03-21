@@ -2,6 +2,7 @@
 
 import type { FlipbookFrame } from '@/lib/storage/db';
 import { useBlobUrl } from '@/hooks/useBlobUrl';
+import Image from 'next/image';
 
 interface FrameStripProps {
   frames: FlipbookFrame[];
@@ -56,11 +57,14 @@ function FrameThumb({
         style={{ aspectRatio: '4/3' }}
       >
         {thumbUrl ? (
-          <img
+          <Image
             src={thumbUrl}
             alt={`Frame ${index + 1}`}
             className="w-full h-full object-cover"
             draggable={false}
+            width={64}
+            height={64}
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">

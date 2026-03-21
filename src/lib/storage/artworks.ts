@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { nanoid } from 'nanoid';
 import { db, type Artwork, type ArtworkBlob } from './db';
 
@@ -41,8 +42,8 @@ async function generateThumbnail(
  */
 function convertBlobSourcesToDataUrl(fabricCanvas: Record<string, unknown>): void {
   try {
-    const getObjectsFn = fabricCanvas.getObjects as (() => unknown[]) | undefined;
-    const objects = (getObjectsFn?.call(fabricCanvas) ?? []) as unknown[];
+    const getObjectsFn = fabricCanvas.getObjects as (() => any[]) | undefined;
+    const objects = (getObjectsFn?.call(fabricCanvas) ?? []) as any[];
     for (const obj of objects) {
       const objRecord = obj as Record<string, unknown>;
       if (objRecord.type !== 'image') continue;
@@ -111,7 +112,7 @@ export async function saveArtwork(
   convertBlobSourcesToDataUrl(fabricCanvas);
 
   // Step 2: Serialize
-  const toJSONFn = fabricCanvas.toJSON as (() => unknown) | undefined;
+  const toJSONFn = fabricCanvas.toJSON as (() => any) | undefined;
   const canvasJson = toJSONFn?.call(fabricCanvas) ?? {};
 
   // Step 3: Nuclear sanitization — catch anything that slipped through
@@ -119,7 +120,7 @@ export async function saveArtwork(
 
   // Generate exports
   const toDataURLFn = fabricCanvas.toDataURL as
-    | ((options: Record<string, unknown>) => string)
+    | ((options: Record<string, any>) => string)
     | undefined;
   const fullDataUrl =
     toDataURLFn?.call(fabricCanvas, {
@@ -128,7 +129,7 @@ export async function saveArtwork(
     }) ?? '';
   const fullBlob = dataURLtoBlob(fullDataUrl);
 
-  const getElementFn = fabricCanvas.getElement as (() => unknown) | undefined;
+  const getElementFn = fabricCanvas.getElement as (() => any) | undefined;
   const canvasEl = getElementFn?.call(fabricCanvas) as HTMLCanvasElement | undefined;
   if (!canvasEl) {
     throw new Error('Failed to get canvas element');
@@ -222,7 +223,7 @@ export async function updatePublishedUrl(
       .where('id')
       .equals(id)
       .modify((record) => {
-        delete (record as unknown as Record<string, unknown>).publishedUrl;
+        delete (record as any).publishedUrl;
       });
   } else {
     await db.artworks.update(id, { publishedUrl });

@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { loadAllFrames } from '@/lib/storage/flipbook';
 import type { FlipbookFrame } from '@/lib/storage/db';
 import { PlaybackOverlay } from '@/components/flipbook/PlaybackOverlay';
+import Image from 'next/image';
 
 type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
 
@@ -32,11 +33,14 @@ function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
   }, [artwork.thumbnail]);
 
   return thumbUrl ? (
-    <img
+    <Image
       src={thumbUrl}
       alt={artwork.title}
       className="w-full rounded"
       draggable={false}
+      width={400}
+      height={400}
+      unoptimized
     />
   ) : (
     <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded">
@@ -211,11 +215,14 @@ export default function ExhibitPage() {
               {artwork.type === 'flipbook' ? (
                 <FlipbookThumbnail artwork={artwork} />
               ) : imageUrl ? (
-                <img
+                <Image
                   src={imageUrl}
                   alt={artwork.title}
                   className="w-full rounded"
                   draggable={false}
+                  width={800}
+                  height={800}
+                  unoptimized
                 />
               ) : (
                 <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded">

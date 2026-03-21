@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Artwork } from '@/lib/storage/db';
+import Image from 'next/image';
 
 interface ArtworkCardProps {
   artwork: Artwork;
@@ -67,11 +68,14 @@ export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProp
           >
             {/* Artwork image */}
             {thumbUrl ? (
-              <img
+              <Image
                 src={thumbUrl}
                 alt={artwork.title}
                 className="w-full h-full object-contain"
                 draggable={false}
+                width={300}
+                height={300}
+                unoptimized
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded">
