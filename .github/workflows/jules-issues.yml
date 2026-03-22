@@ -1,0 +1,59 @@
+name: Jules Issue Worker
+
+on:
+  issues:
+    types: [opened, labeled]
+  schedule:
+    - cron: '0 4 * * *' # Daily at 4 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  jules-work:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && !contains(github.event.issue.labels.*.name, 'needs-human-review'))
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Invoke Jules
+        uses: google-labs-code/jules-invoke@main
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          prompt: |
+            You are working on Tiny Museum (Mira's Museum), a kids art app.
+            Tech stack: Next.js 15 (App Router, Turbopack), React 19, TypeScript 5.7, Fabric.js 7, Dexie.js 4 (IndexedDB), Supabase JS v2, Zustand 5, Vitest.
+
+            Key architecture:
+            - Studio is 100% local — Fabric.js canvas + IndexedDB via Dexie. No server state.
+            - Publish = explicit 🌐 button: exports canvas PNG → Supabase Storage + metadata row.
+            - /gallery/published is ISR (60s revalidation), public, zero auth.
+            - Flipbook animator at /studio/flipbook: frame-by-frame, onion skinning, GIF export.
+            - Parent Gate (multiplication check) protects destructive actions.
+            - src/lib/storage/ — Dexie CRUD (artworks, rooms, flipbooks, frames)
+            - src/lib/cloud/ — Supabase publish/unpublish/fetch
+            - src/lib/export/ — GIF pipeline
+            - src/components/ — React components (studio, gallery, flipbook)
+
+            Check the open GitHub issues and pick the next unassigned one to work on.
+
+            For each issue:
+            1. Read the issue description and acceptance criteria carefully.
+            2. Implement the feature or fix described.
+            3. Write tests (Vitest) for your changes.
+            4. Make sure existing tests still pass (npm run test:run).
+            5. Run quality checks (npm run quality — typecheck + lint + format:check).
+            6. Create a clean PR referencing the issue number (e.g. "Closes #N").
+
+            Do NOT modify .github/workflows/ files.
+            Do NOT change unrelated code.
+            Keep PRs focused — one issue per PR.
+            Remember this is a kids app — UI must stay simple, colorful, and touch-friendly.
