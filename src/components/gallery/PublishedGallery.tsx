@@ -47,11 +47,11 @@ export function PublishedGallery({ artworks }: Props) {
             }}
           >
             {/* White paper inside frame */}
-            <div className="bg-[#FFFEF7] w-full h-full flex items-center justify-center overflow-hidden">
+            <div className="bg-[#FFFEF7] w-full h-full flex items-center justify-center overflow-hidden rounded-lg">
               <Image
                 src={artwork.image_url}
                 alt={artwork.title}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover rounded-lg"
                 width={300}
                 height={300}
                 unoptimized

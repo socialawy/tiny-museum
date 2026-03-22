@@ -71,14 +71,14 @@ export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProp
               <Image
                 src={thumbUrl}
                 alt={artwork.title}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover rounded-lg"
                 draggable={false}
                 width={300}
                 height={300}
                 unoptimized
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded">
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
                 <span className="text-3xl">🖼️</span>
               </div>
             )}
