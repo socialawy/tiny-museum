@@ -61,7 +61,14 @@ export default function GalleryPage() {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+      <div
+        className="flex items-center justify-between px-5 pb-2"
+        style={{
+          paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))',
+          paddingLeft: 'calc(1.25rem + env(safe-area-inset-left, 0px))',
+          paddingRight: 'calc(1.25rem + env(safe-area-inset-right, 0px))',
+        }}
+      >
         <h1 className="text-2xl font-extrabold text-museum-plaque">🏛️ Gallery</h1>
         <div className="flex gap-2">
           <SoundToggle />

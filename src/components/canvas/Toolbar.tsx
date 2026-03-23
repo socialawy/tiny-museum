@@ -164,7 +164,14 @@ export function Toolbar({
   return (
     <div className="flex flex-col w-full pointer-events-auto">
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
+      <div
+        className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
+        style={{
+          paddingTop: 'calc(0.5rem + env(safe-area-inset-top, 0px))',
+          paddingLeft: 'calc(0.75rem + env(safe-area-inset-left, 0px))',
+          paddingRight: 'calc(0.75rem + env(safe-area-inset-right, 0px))',
+        }}
+      >
         <div className="flex gap-1.5">
           <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
             ↩️
@@ -196,7 +203,14 @@ export function Toolbar({
       </div>
 
       {/* Bottom Tools */}
-      <div className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100">
+      <div
+        className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
+      >
         <div
           className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto"
           style={{ scrollbarWidth: 'none' }}
