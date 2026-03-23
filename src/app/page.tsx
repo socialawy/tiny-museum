@@ -13,9 +13,23 @@ export default function HomePage() {
   }, [refresh]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-full px-6 py-12 text-center relative">
+    <div
+      className="flex flex-col items-center justify-center min-h-full px-6 text-center relative"
+      style={{
+        paddingTop: 'calc(3rem + env(safe-area-inset-top, 0px))',
+        paddingBottom: 'calc(3rem + env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'calc(1.5rem + env(safe-area-inset-left, 0px))',
+        paddingRight: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
+      }}
+    >
       {/* Top controls */}
-      <div className="absolute top-6 right-6">
+      <div
+        className="absolute"
+        style={{
+          top: 'calc(1.5rem + env(safe-area-inset-top, 0px))',
+          right: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
+        }}
+      >
         <SoundToggle />
       </div>
 

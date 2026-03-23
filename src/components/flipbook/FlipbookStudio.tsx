@@ -245,7 +245,14 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     <div className="flex flex-col h-[100dvh] bg-studio-bg">
       {/* Top bar — only shown when loaded */}
       {loaded && (
-        <div className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100">
+        <div
+          className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
+          style={{
+            paddingTop: 'calc(0.5rem + env(safe-area-inset-top, 0px))',
+            paddingLeft: 'calc(0.75rem + env(safe-area-inset-left, 0px))',
+            paddingRight: 'calc(0.75rem + env(safe-area-inset-right, 0px))',
+          }}
+        >
           <div className="flex items-center gap-2">
             <BigButton onClick={() => router.push('/gallery')} aria-label="Back">
               ←
@@ -342,7 +349,14 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           </div>
 
           {/* Speed control */}
-          <div className="flex-shrink-0 flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50">
+          <div
+            className="flex-shrink-0 flex items-center gap-3 px-6 py-2 bg-white border-t border-gray-50"
+            style={{
+              paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+              paddingLeft: 'calc(1.5rem + env(safe-area-inset-left, 0px))',
+              paddingRight: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
+            }}
+          >
             <span className="text-xs font-bold text-gray-400">🐢</span>
             <input
               type="range"

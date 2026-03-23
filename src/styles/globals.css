@@ -43,13 +43,15 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--bottom-nav-height);
+  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   background: white;
   border-top: 2px solid #f0e6d6;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   z-index: 100;
 }
 
@@ -109,18 +111,21 @@ body.studio-active .app-shell {
     bottom: auto;
     left: 0;
     right: auto;
-    width: 80px;
+    width: calc(80px + env(safe-area-inset-left, 0px));
     height: 100dvh;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 24px;
+    padding-top: calc(24px + env(safe-area-inset-top, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: 0px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 8px;
     border-top: none;
     border-right: 2px solid #f0e6d6;
   }
 
   .app-shell {
-    margin-left: 80px;
+    margin-left: calc(80px + env(safe-area-inset-left, 0px));
     height: 100dvh;
   }
 
