@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 
 interface ParentGateProps {
   onUnlock: () => void;
@@ -17,6 +18,7 @@ export function ParentGate({ onUnlock, onCancel, message }: ParentGateProps) {
 
   const [input, setInput] = useState('');
   const [wrong, setWrong] = useState(false);
+  const viewport = useVisualViewport();
 
   function check() {
     if (parseInt(input, 10) === problem.answer) {
@@ -31,7 +33,11 @@ export function ParentGate({ onUnlock, onCancel, message }: ParentGateProps) {
   return (
     <div
       className="fixed inset-0 z-[999] flex items-center justify-center px-6"
-      style={{ background: 'rgba(0,0,0,0.5)' }}
+      style={{
+        background: 'rgba(0,0,0,0.5)',
+        paddingBottom:
+          typeof window !== 'undefined' ? window.innerHeight - viewport.height : 0,
+      }}
       onClick={onCancel}
     >
       <div

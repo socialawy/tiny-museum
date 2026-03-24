@@ -90,6 +90,11 @@ export function RoomSelector({
                 autoFocus
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
+                onFocus={(e) => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 300);
+                }}
                 onBlur={() => handleRenameCancel()}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleRenameConfirm(room.id);

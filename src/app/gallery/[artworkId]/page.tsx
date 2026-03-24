@@ -19,6 +19,7 @@ import { loadAllFrames } from '@/lib/storage/flipbook';
 import type { FlipbookFrame } from '@/lib/storage/db';
 import { PlaybackOverlay } from '@/components/flipbook/PlaybackOverlay';
 import Image from 'next/image';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 
 type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
 
@@ -64,6 +65,7 @@ export default function ExhibitPage() {
   const [flipbookFrames, setFlipbookFrames] = useState<FlipbookFrame[] | null>(null);
 
   const imageUrl = useLargeBlob(blob?.fullRes ?? null);
+  const viewport = useVisualViewport();
 
   useEffect(() => {
     (async () => {
@@ -169,6 +171,8 @@ export default function ExhibitPage() {
       className="flex flex-col min-h-full"
       style={{
         background: 'linear-gradient(180deg, #F5E6D3 0%, #E8D5BE 100%)',
+        paddingBottom:
+          typeof window !== 'undefined' ? window.innerHeight - viewport.height : 0,
       }}
     >
       <div className="flex items-center justify-between px-4 pt-4">
