@@ -448,6 +448,23 @@ src/app/gallery/page.tsx
 
 ---
 
+### #12b + #25
+
+- File 1: src/components/flipbook/MiniToolbar.tsx — REPLACEMENT
+Adds compact prop for landscape single-row mode (#12b).
+
+- File 2: src/components/flipbook/FlipbookStudio.tsx — DIFF
+One-line change. Find the <MiniToolbar render and add compact:
+`compact={isLandscape}`
+
+- File 3: src/components/flipbook/PlaybackOverlay.tsx — REPLACEMENT
+Pre-renders all frames on mount instead of creating Fabric per tick (#25).
+
+
+
+
+---
+
 ## Next Actions (backlog)
 
 ### Sprint 3: Monitoring & Install  - Fix & Enhance 
@@ -471,7 +488,7 @@ src/app/gallery/page.tsx
   #24 [x] Flipbook phantom entry — defer createFlipbook until first action
 
 **Performance (High)**  
-  #25 [ ] PlaybackOverlay — pre-render frames, don't create Fabric per tick
+  #25 [x] PlaybackOverlay — pre-render frames, don't create Fabric per tick
 
 **Studio Enhancement (Medium)**
   #16 [ ] Extended color palette — 24+ presets + color wheel picker

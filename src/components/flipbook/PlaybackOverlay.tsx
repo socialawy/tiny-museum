@@ -16,159 +16,138 @@ interface PlaybackOverlayProps {
 }
 
 export function PlaybackOverlay({
-  frames,
-  fps,
-  canvasWidth,
-  canvasHeight,
-  onClose,
+  frames, fps, canvasWidth, canvasHeight, onClose,
 }: PlaybackOverlayProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const displayRef = useRef<HTMLCanvasElement>(null);
+  const preRenderedRef = useRef<HTMLCanvasElement[]>([]);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
+  const [ready, setReady] = useState(false);
   const { playSound } = useSounds();
 
-  // Use per-frame stored dimensions (_w/_h) if available — this is the size
-  // the frame was actually drawn at, which may differ from the current canvas
-  // size if the device was rotated after drawing.
   const getFrameDims = useCallback(
     (index: number) => {
       try {
         const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as {
-          _w?: number;
-          _h?: number;
+          _w?: number; _h?: number;
         };
         if (p._w && p._h) return { w: p._w, h: p._h };
-      } catch {
-        /* fall through */
-      }
+      } catch { /* fall through */ }
       return { w: canvasWidth, h: canvasHeight };
     },
     [canvasHeight, canvasWidth, frames],
   );
 
-  // Display size: fit the first frame's drawing dimensions into the viewport.
+  // Display size: fit first frame into viewport
   const computeDisplaySize = useCallback(() => {
     const { w, h } = getFrameDims(0);
     const maxW = window.innerWidth - 32;
-    const maxH = window.innerHeight * 0.55; // leave room for dots + buttons
+    const maxH = window.innerHeight * 0.55;
     const scale = Math.min(maxW / w, maxH / h, 1);
     return { width: Math.round(w * scale), height: Math.round(h * scale) };
   }, [getFrameDims]);
 
   const [displaySize, setDisplaySize] = useState(computeDisplaySize);
+
   useEffect(() => {
-    function onResize() {
-      setDisplaySize(computeDisplaySize());
-    }
+    const onResize = () => setDisplaySize(computeDisplaySize());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [computeDisplaySize]);
 
-  // Render frame to canvas
-  const renderFrame = useCallback(
-    async (index: number) => {
-      const el = canvasRef.current;
-      if (!el || !frames[index]) return;
-
-      const ctx = el.getContext('2d');
-      if (!ctx) return;
-
-      // Create a temporary Fabric canvas using the dimensions the frame was
-      // drawn at (stored as _w/_h in the JSON), not the current canvas size.
-      const { w: fw, h: fh } = getFrameDims(index);
-      const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = fw;
-      tmpCanvas.height = fh;
-      const fabric = new FabricCanvas(tmpCanvas, {
-        width: fw,
-        height: fh,
-      });
-
-      try {
-        const json = JSON.parse(frames[index].canvasJSON);
-        await fabric.loadFromJSON(json);
-        fabric.renderAll();
-
-        // Draw to our display canvas
-        ctx.clearRect(0, 0, el.width, el.height);
-        ctx.drawImage(tmpCanvas, 0, 0, el.width, el.height);
-      } catch (err) {
-        console.error('Frame render failed:', err);
-      } finally {
-        fabric.dispose();
-      }
-    },
-    [frames, getFrameDims],
-  );
-
-  // Animation loop
+  // ── Pre-render all frames on mount (#25) ──
   useEffect(() => {
-    renderFrame(currentFrame);
+    let cancelled = false;
+
+    (async () => {
+      const rendered: HTMLCanvasElement[] = [];
+
+      for (let i = 0; i < frames.length; i++) {
+        if (cancelled) return;
+        const { w, h } = getFrameDims(i);
+        const tmpEl = document.createElement('canvas');
+        tmpEl.width = w;
+        tmpEl.height = h;
+        const fabric = new FabricCanvas(tmpEl, { width: w, height: h });
+
+        try {
+          const json = JSON.parse(frames[i].canvasJSON);
+          await fabric.loadFromJSON(json);
+          fabric.renderAll();
+
+          // Capture to a static canvas
+          const capture = document.createElement('canvas');
+          capture.width = w;
+          capture.height = h;
+          const ctx = capture.getContext('2d')!;
+          ctx.drawImage(tmpEl, 0, 0);
+          rendered.push(capture);
+        } catch {
+          // Push blank frame on error
+          const blank = document.createElement('canvas');
+          blank.width = w;
+          blank.height = h;
+          rendered.push(blank);
+        } finally {
+          fabric.dispose();
+        }
+      }
+
+      if (!cancelled) {
+        preRenderedRef.current = rendered;
+        setReady(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [frames, getFrameDims]);
+
+  // ── Animation loop — just drawImage from pre-rendered ──
+  useEffect(() => {
+    if (!ready) return;
+    const el = displayRef.current;
+    const ctx = el?.getContext('2d');
+    const source = preRenderedRef.current[currentFrame];
+    if (el && ctx && source) {
+      ctx.clearRect(0, 0, el.width, el.height);
+      ctx.drawImage(source, 0, 0, el.width, el.height);
+    }
 
     const interval = setInterval(() => {
       setCurrentFrame((prev) => (prev + 1) % frames.length);
     }, 1000 / fps);
 
     return () => clearInterval(interval);
-  }, [currentFrame, fps, frames.length, renderFrame]);
+  }, [currentFrame, fps, frames.length, ready]);
 
-  // GIF Export
+  // ── GIF Export — reuses pre-rendered canvases ──
   const handleExportGif = useCallback(async () => {
+    if (!ready) return;
     setIsExporting(true);
     playSound('save');
 
     try {
-      const exportFrames: HTMLCanvasElement[] = [];
-
-      for (let fi = 0; fi < frames.length; fi++) {
-        const frame = frames[fi];
-        const { w: fw, h: fh } = getFrameDims(fi);
-        const tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = fw;
-        tmpCanvas.height = fh;
-        const fabric = new FabricCanvas(tmpCanvas, {
-          width: fw,
-          height: fh,
-        });
-
-        const json = JSON.parse(frame.canvasJSON);
-        await fabric.loadFromJSON(json);
-        fabric.renderAll();
-
-        // Capture the rendered frame
-        const capture = document.createElement('canvas');
-        capture.width = fw;
-        capture.height = fh;
-        const ctx = capture.getContext('2d')!;
-        ctx.drawImage(tmpCanvas, 0, 0);
-        exportFrames.push(capture);
-
-        fabric.dispose();
-      }
-
       const { w: gifW, h: gifH } = getFrameDims(0);
       const gifBlob = await exportToGif({
         width: gifW,
         height: gifH,
         fps,
-        frames: exportFrames,
+        frames: preRenderedRef.current,
       });
 
-      // Download
       const url = URL.createObjectURL(gifBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `tiny-museum-animation-${Date.now()}.gif`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-
       playSound('celebrate');
     } catch (err) {
       console.error('GIF export failed:', err);
     } finally {
       setIsExporting(false);
     }
-  }, [frames, fps, playSound, getFrameDims]);
+  }, [ready, fps, playSound, getFrameDims]);
 
   return (
     <div
@@ -181,17 +160,23 @@ export function PlaybackOverlay({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Playback canvas */}
-        <div
-          className="rounded-kid overflow-hidden shadow-2xl bg-white"
-          style={{ padding: 8 }}
-        >
-          <canvas
-            ref={canvasRef}
-            width={displaySize.width}
-            height={displaySize.height}
-            className="rounded"
-            style={{ width: displaySize.width, height: displaySize.height }}
-          />
+        <div className="rounded-kid overflow-hidden shadow-2xl bg-white" style={{ padding: 8 }}>
+          {!ready ? (
+            <div
+              className="flex items-center justify-center"
+              style={{ width: displaySize.width, height: displaySize.height }}
+            >
+              <p className="text-3xl animate-pulse">🎬</p>
+            </div>
+          ) : (
+            <canvas
+              ref={displayRef}
+              width={displaySize.width}
+              height={displaySize.height}
+              className="rounded"
+              style={{ width: displaySize.width, height: displaySize.height }}
+            />
+          )}
         </div>
 
         {/* Frame indicator */}
@@ -210,12 +195,10 @@ export function PlaybackOverlay({
 
         {/* Controls */}
         <div className="flex gap-3">
-          <BigButton onClick={onClose} aria-label="Close">
-            ✕
-          </BigButton>
+          <BigButton onClick={onClose} aria-label="Close">✕</BigButton>
           <button
             onClick={handleExportGif}
-            disabled={isExporting}
+            disabled={isExporting || !ready}
             className="px-6 py-3 bg-kid-purple text-white rounded-kid font-bold
                        active:scale-95 transition-transform disabled:opacity-50"
           >

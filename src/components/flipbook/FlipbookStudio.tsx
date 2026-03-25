@@ -371,6 +371,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               canUndo={canUndo}
               canRedo={canRedo}
               frameVersion={frameVersion}
+              compact={isLandscape}
             />
           </div>
 
