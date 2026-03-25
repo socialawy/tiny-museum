@@ -1,7 +1,7 @@
 import { db, type Artwork, type ArtworkBlob, type FlipbookFrame } from './db';
 import { nanoid } from 'nanoid';
 
-const SEEDED_KEY = 'tiny_museum_demo_seeded_v4';
+const SEEDED_KEY = 'tiny_museum_demo_seeded_v6';
 
 /**
  * Seeds the database with demo content on first launch.
@@ -403,6 +403,8 @@ async function createSceneArtwork(params: SceneParams) {
   const ctx = canvas.getContext('2d')!;
   params.draw(ctx, W, H);
 
+  const sceneDataUrl = canvas.toDataURL('image/png');
+
   const thumbnail = await new Promise<Blob>((resolve) => {
     canvas.toBlob((b) => resolve(b || new Blob()), 'image/webp', 0.85);
   });
@@ -415,8 +417,21 @@ async function createSceneArtwork(params: SceneParams) {
     thumbnail,
     canvasJSON: JSON.stringify({
       version: '5.3.0',
+      _w: W,
+      _h: H,
       objects: params.fabricObjects,
       background: params.background,
+      backgroundImage: {
+        type: 'image',
+        version: '5.3.0',
+        originX: 'left',
+        originY: 'top',
+        left: 0,
+        top: 0,
+        width: W,
+        height: H,
+        src: sceneDataUrl,
+      },
     }),
     createdAt: now,
     updatedAt: now,
@@ -504,6 +519,8 @@ async function createDemoFlipbook() {
       ctx.fill();
     }
 
+    const frameDataUrl = canvas.toDataURL('image/png');
+
     const thumb = await new Promise<Blob>((resolve) => {
       canvas.toBlob((b) => resolve(b || new Blob()), 'image/webp', 0.85);
     });
@@ -514,6 +531,8 @@ async function createDemoFlipbook() {
       index: i,
       canvasJSON: JSON.stringify({
         version: '5.3.0',
+        _w: W,
+        _h: H,
         objects: [
           {
             type: 'Circle',
@@ -527,6 +546,17 @@ async function createDemoFlipbook() {
           },
         ],
         background: bgColor,
+        backgroundImage: {
+          type: 'image',
+          version: '5.3.0',
+          originX: 'left',
+          originY: 'top',
+          left: 0,
+          top: 0,
+          width: W,
+          height: H,
+          src: frameDataUrl,
+        },
       }),
       thumbnail: thumb,
     };

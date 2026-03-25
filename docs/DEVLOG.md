@@ -469,9 +469,11 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 
 ### Canvas size/borders show (expect what the output will look like)
 
-### Artworks dimension and canvas size, Flipbook player size adjustment
+### Artworks dimension and canvas size, Flipbook player size adjustment (Fixed)
+- Added `_w` and `_h` to seeded JSON to ensure correct scaling in players.
+- Embedded rendered scenes as `backgroundImage` for full editability.
 
-- Slide-in/out sidebars for desktop
+- [ ] Slide-in/out sidebars for desktop
 
 ### Mobile UI Consolidation 📱
 - The real task: reclaim vertical pixels on small devices.
@@ -483,6 +485,21 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - #17 More brush types (Glitter, Rainbow, Stamp).
 - #18 Layer tray (Background / Middle / Foreground).
 - #19 Import images/photos directly into flipbook frames.
+
+---
+
+## Sprint 5 — First Impression Refinements (2026-03-25)
+
+### Achievements 🏆
+- **Demo Editability**: Updated `seeder.ts` to embed rendered procedural scenes as `backgroundImage` in `canvasJSON`. Demo artworks (Starry Night, Flower Garden, etc.) are now fully editable in the Studio instead of being static thumbnails.
+- **Flipbook Player Fix**: Added `_w` and `_h` (800x500) to seeded `canvasJSON` to ensure the `PlaybackOverlay` correctly scales and aligns animation frames regardless of the Studio's dynamic canvas size.
+- **Gallery Layout Alignment**: Fixed desktop clipping issues by applying `box-sizing: border-box` globally and adjusting `.app-shell` width calculations to respect the side navigation bar.
+
+### Verification ✅
+- Manual verification via browser subagent confirmed:
+  - `v6` seeding successful.
+  - "Starry Night" opens in Studio with full scene visible and supports drawing.
+  - Gallery cards are properly aligned and visible on 1200px wide screens.
 
 ---
 
