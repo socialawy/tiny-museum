@@ -8,6 +8,8 @@ import { MuseumWalk } from '@/components/gallery/MuseumWalk';
 import { GalleryGrid } from '@/components/gallery/GalleryGrid';
 import { RoomSelector } from '@/components/gallery/RoomSelector';
 import { SoundToggle } from '@/components/ui/SoundToggle';
+import { CoachMarkOverlay } from '@/components/ui/CoachMarkOverlay';
+import { isCoachSeen, markCoachSeen } from '@/lib/coach';
 import Link from 'next/link';
 
 export default function GalleryPage() {
@@ -23,6 +25,7 @@ export default function GalleryPage() {
   } = useGalleryStore();
 
   const [loaded, setLoaded] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +43,14 @@ export default function GalleryPage() {
       cancelled = true;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show coach marks if first time and we have art
+  useEffect(() => {
+    if (loaded && !isCoachSeen('gallery') && artworks.length > 0) {
+      const timer = setTimeout(() => setShowCoach(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [loaded, artworks.length]);
 
   function handleArtworkTap(id: string) {
     router.push(`/gallery/${id}`);
@@ -101,11 +112,24 @@ export default function GalleryPage() {
       {/* Artwork display */}
       <div className="flex-1">
         {viewMode === 'walk' ? (
-          <MuseumWalk artworks={artworks} onArtworkTap={handleArtworkTap} />
+          <MuseumWalk artworks={artworks} onArtworkTap={handleArtworkTap} isFirst={showCoach} />
         ) : (
-          <GalleryGrid artworks={artworks} onArtworkTap={handleArtworkTap} />
+          <GalleryGrid artworks={artworks} onArtworkTap={handleArtworkTap} isFirst={showCoach} />
         )}
       </div>
+      {showCoach && (
+        <CoachMarkOverlay
+          area="gallery"
+          onComplete={() => {
+            markCoachSeen('gallery');
+            setShowCoach(false);
+          }}
+          onSkip={() => {
+            markCoachSeen('gallery');
+            setShowCoach(false);
+          }}
+        />
+      )}
     </div>
   );
 }

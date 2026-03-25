@@ -19,6 +19,8 @@ import { ShapePanel } from './ShapePanel';
 import { BackgroundPicker } from './BackgroundPicker';
 import { StickerPanel } from './StickerPanel';
 import { useSounds } from '@/hooks/useSounds';
+import { CoachMarkOverlay } from '@/components/ui/CoachMarkOverlay';
+import { isCoachSeen, markCoachSeen } from '@/lib/coach';
 
 /** Returns true when the canvas has zero user content */
 function isCanvasEmpty(fabricCanvas: Record<string, unknown>): boolean {
@@ -50,6 +52,7 @@ export default function StudioCanvas() {
   );
   const [activePanel, setActivePanel] = useState<Panel>('none');
   const [loaded, setLoaded] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
 
   // Lifted state — shared between toolbar, shapes, stickers
   const [activeColor, setActiveColor] = useState<string>(KID_PALETTE[0]);
@@ -85,6 +88,15 @@ export default function StudioCanvas() {
   useEffect(() => {
     if (!editId) setLoaded(true);
   }, [editId]);
+
+  // Show coach marks if first time
+  useEffect(() => {
+    if (loaded && !isCoachSeen('studio')) {
+      // Small delay to let the UI settle
+      const timer = setTimeout(() => setShowCoach(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loaded]);
 
   // Auto-save every 30 seconds — use idle callback to avoid jank
   useEffect(() => {
@@ -322,6 +334,19 @@ export default function StudioCanvas() {
             ✕
           </button>
         </div>
+      )}
+      {showCoach && (
+        <CoachMarkOverlay
+          area="studio"
+          onComplete={() => {
+            markCoachSeen('studio');
+            setShowCoach(false);
+          }}
+          onSkip={() => {
+            markCoachSeen('studio');
+            setShowCoach(false);
+          }}
+        />
       )}
     </div>
   );

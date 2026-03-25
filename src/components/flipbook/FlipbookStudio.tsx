@@ -22,6 +22,8 @@ import { MiniToolbar } from './MiniToolbar';
 import { FrameStrip } from './FrameStrip';
 import { PlaybackOverlay } from './PlaybackOverlay';
 import { BackgroundPicker } from '@/components/canvas/BackgroundPicker';
+import { CoachMarkOverlay } from '@/components/ui/CoachMarkOverlay';
+import { isCoachSeen, markCoachSeen } from '@/lib/coach';
 
 interface FlipbookStudioProps {
   flipbookId?: string;
@@ -49,6 +51,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
   const [isDirty, setIsDirty] = useState(false);
   const [frameVersion, setFrameVersion] = useState(0);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia('(orientation: landscape)');
@@ -114,6 +117,14 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
     return () => { cancelled = true; };
   }, [isReady, flipbookId]);
+
+  // Show coach marks if first time
+  useEffect(() => {
+    if (loaded && !isCoachSeen('flipbook')) {
+      const timer = setTimeout(() => setShowCoach(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loaded]);
 
   // ── Ensure DB entry exists — ref-based to prevent duplicates ──
   const ensureArtworkId = useCallback(async (): Promise<string> => {
@@ -462,6 +473,20 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
       {showBgPicker && (
         <BackgroundPicker canvas={canvas} onClose={() => setShowBgPicker(false)} />
+      )}
+
+      {showCoach && (
+        <CoachMarkOverlay
+          area="flipbook"
+          onComplete={() => {
+            markCoachSeen('flipbook');
+            setShowCoach(false);
+          }}
+          onSkip={() => {
+            markCoachSeen('flipbook');
+            setShowCoach(false);
+          }}
+        />
       )}
     </div>
   );

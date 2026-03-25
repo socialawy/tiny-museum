@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import type { CoachStep } from '@/lib/coach';
+import { type CoachStep, SEQUENCES } from '@/lib/coach';
 
 interface CoachMarkOverlayProps {
-  sequence: CoachStep[];
+  area: string;
   onComplete: () => void;
+  onSkip?: () => void;
 }
 
 interface TargetRect {
@@ -29,7 +30,8 @@ const TRANSITION_MS = 300;
  * - We listen for clicks on the real target element to advance the sequence.
  * - The Skip button and speech bubble have `pointer-events: auto` for their own clicks.
  */
-export function CoachMarkOverlay({ sequence, onComplete }: CoachMarkOverlayProps) {
+export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayProps) {
+  const sequence = useMemo(() => SEQUENCES[area as keyof typeof SEQUENCES] || [], [area]);
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState<TargetRect | null>(null);
   const [transitioning, setTransitioning] = useState(false);
@@ -104,8 +106,9 @@ export function CoachMarkOverlay({ sequence, onComplete }: CoachMarkOverlayProps
 
   const dismiss = useCallback(() => {
     skipRef.current = true;
-    onComplete();
-  }, [onComplete]);
+    if (onSkip) onSkip();
+    else onComplete();
+  }, [onComplete, onSkip]);
 
   // Listen for clicks on the real highlighted element (clicks pass through to it)
   useEffect(() => {
@@ -125,11 +128,11 @@ export function CoachMarkOverlay({ sequence, onComplete }: CoachMarkOverlayProps
 
   const current = sequence[step];
   const validCount = sequence.filter(
-    (s) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null,
+    (s: CoachStep) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null,
   ).length;
   const currentValidIndex = sequence
     .slice(0, step + 1)
-    .filter((s) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null).length;
+    .filter((s: CoachStep) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null).length;
 
   // Bubble position
   const bubbleStyle: React.CSSProperties = {};
