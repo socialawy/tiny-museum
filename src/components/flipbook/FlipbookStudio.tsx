@@ -323,7 +323,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               </div>
             )}
             <BigButton onClick={startPlayback} aria-label="Play"
-              className="bg-kid-green text-white">▶️</BigButton>
+              className="bg-kid-green text-white" data-coach="flip-play">▶️</BigButton>
             <BigButton onClick={sendToGallery} aria-label="Save to Gallery">🏛️</BigButton>
           </div>
         </div>
@@ -389,9 +389,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               </span>
               <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>▶</BigButton>
               <div className="w-px h-6 bg-gray-200 mx-1" />
-              <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin}>👻</BigButton>
-              <BigButton onClick={addFrame}>＋</BigButton>
-              <BigButton onClick={dupFrame}>📋</BigButton>
+              <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin} data-coach="flip-ghost">👻</BigButton>
+              <BigButton onClick={addFrame} data-coach="flip-add">＋</BigButton>
+              <BigButton onClick={dupFrame} data-coach="flip-dup">📋</BigButton>
               {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
             </div>
           ) : (
@@ -410,9 +410,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>▶</BigButton>
                 </div>
                 <div className="flex gap-1.5">
-                  <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin}>👻</BigButton>
-                  <BigButton onClick={addFrame}>＋</BigButton>
-                  <BigButton onClick={dupFrame}>📋</BigButton>
+                  <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin} data-coach="flip-ghost">👻</BigButton>
+                  <BigButton onClick={addFrame} data-coach="flip-add">＋</BigButton>
+                  <BigButton onClick={dupFrame} data-coach="flip-dup">📋</BigButton>
                   {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
                 </div>
               </div>

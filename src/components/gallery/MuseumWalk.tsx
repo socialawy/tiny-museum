@@ -7,9 +7,10 @@ import { ArtworkCard } from './ArtworkCard';
 interface MuseumWalkProps {
   artworks: Artwork[];
   onArtworkTap: (id: string) => void;
+  isFirst?: boolean;
 }
 
-export function MuseumWalk({ artworks, onArtworkTap }: MuseumWalkProps) {
+export function MuseumWalk({ artworks, onArtworkTap, isFirst }: MuseumWalkProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   if (artworks.length === 0) {
@@ -46,6 +47,7 @@ export function MuseumWalk({ artworks, onArtworkTap }: MuseumWalkProps) {
             artwork={artwork}
             size="walk"
             onClick={() => onArtworkTap(artwork.id)}
+            isFirst={isFirst && i === 0}
           />
         </div>
       ))}

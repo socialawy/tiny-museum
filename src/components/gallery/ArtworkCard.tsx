@@ -8,9 +8,10 @@ interface ArtworkCardProps {
   artwork: Artwork;
   size?: 'walk' | 'grid';
   onClick?: () => void;
+  isFirst?: boolean;
 }
 
-export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProps) {
+export function ArtworkCard({ artwork, size = 'walk', onClick, isFirst }: ArtworkCardProps) {
   const [thumbUrl, setThumbUrl] = useState<string>('');
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProp
       onClick={onClick}
       className="group flex flex-col items-center focus:outline-none"
       style={{ flexShrink: 0 }}
+      data-coach={isFirst ? 'gallery-art-0' : undefined}
     >
       {/* Frame */}
       <div

@@ -6,9 +6,10 @@ import { ArtworkCard } from './ArtworkCard';
 interface GalleryGridProps {
   artworks: Artwork[];
   onArtworkTap: (id: string) => void;
+  isFirst?: boolean;
 }
 
-export function GalleryGrid({ artworks, onArtworkTap }: GalleryGridProps) {
+export function GalleryGrid({ artworks, onArtworkTap, isFirst }: GalleryGridProps) {
   if (artworks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
@@ -35,6 +36,7 @@ export function GalleryGrid({ artworks, onArtworkTap }: GalleryGridProps) {
             artwork={artwork}
             size="grid"
             onClick={() => onArtworkTap(artwork.id)}
+            isFirst={isFirst && i === 0}
           />
         </div>
       ))}

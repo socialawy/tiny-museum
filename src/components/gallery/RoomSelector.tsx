@@ -115,6 +115,7 @@ export function RoomSelector({
       <div
         className="flex gap-2 px-4 py-3 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
+        data-coach="gallery-room"
       >
         {rooms.map((room) => (
           <div key={room.id} className="flex-shrink-0">

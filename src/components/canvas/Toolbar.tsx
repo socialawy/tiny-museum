@@ -194,7 +194,7 @@ export function Toolbar({
           <BigButton onClick={onOpenImport} aria-label="Import">
             📥
           </BigButton>
-          <BigButton onClick={onSave} aria-label="Save">
+          <BigButton onClick={onSave} aria-label="Save" data-coach="studio-save">
             💾
           </BigButton>
           <BigButton onClick={onSendToGallery} aria-label="Gallery">
@@ -224,6 +224,7 @@ export function Toolbar({
         <div
           className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto"
           style={{ scrollbarWidth: 'none' }}
+          data-coach="studio-brush"
         >
           {/* Select/Move */}
           <BigButton onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
@@ -296,6 +297,7 @@ export function Toolbar({
         <div
           className="flex items-center gap-2 px-3 pb-3 overflow-x-auto"
           style={{ scrollbarWidth: 'none' }}
+          data-coach="studio-color"
         >
           {KID_PALETTE.map((color) => (
             <button
