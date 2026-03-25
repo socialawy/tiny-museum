@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { Nunito } from 'next/font/google';
 import { Celebrations } from '@/components/ui/Celebrations';
+import { DemoSeederTrigger } from '@/components/ui/DemoSeederTrigger';
 import '@/styles/globals.css';
 
 const nunito = Nunito({
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Link>
         </nav>
         <Celebrations />
+        <DemoSeederTrigger />
       </body>
     </html>
   );
