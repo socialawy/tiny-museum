@@ -430,6 +430,7 @@ CONCEPT: Coach Marks
 ━━━━━━━━━━━━━━━━━━━━
 First time in Flipbook:
   → Spotlight on ＋ → "Tap to add a new page!"
+  → Spotlight on 📋 → "Tap to duplicate a page!"
   → Spotlight on 👻 → "See your last drawing faintly"
   → Spotlight on ▶️ → "Watch your animation!"
 
@@ -464,12 +465,21 @@ Order:
   ```
 ### Sprint 4 Candidates
 
+- Should have a built-in/loaded impressiv demo, both Flipbook and Studio, when the user first opens the app. This demo can be saved as a room in the gallery, and the user should be able to play it.
+
+- Adding images/imports to flipbook
+
 - Priority order:
   1. Tooltips / coach marks (first-run experience)
   2. Mobile canvas space optimization (merge UI layers)
   3. #17 More brush types (glitter, rainbow, stamp)
   4. #18 Layer tray (background/middle/foreground)
   5. Smart automated testing (Playwright for the manual checklist)
+
+### Repo Health Notes (2026-03-25, review)
+- `master` synced to `main` (was 16 commits behind). `main` is now the default branch.
+- `next lint` is deprecated in Next.js 16 — migrate to ESLint CLI before upgrading (`npx @next/codemod@canary next-lint-to-eslint-cli .`).
+- Consider dropping the `master` branch entirely to avoid future drift. All CI, PRs, and deploys should target `main`.
 
 ### (Pending from Sprint 3) (On hold, sent to Jules)
 - [ ] Vercel Analytics + Speed Insights (#8)

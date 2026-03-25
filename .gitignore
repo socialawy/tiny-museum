@@ -35,6 +35,7 @@ next-env.d.ts
 # Folders
 local-files/
 .worktrees/
+docs/superpowers/
 
 # Test logs
 /test-logs
