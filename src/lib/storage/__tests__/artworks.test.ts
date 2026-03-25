@@ -77,7 +77,7 @@ describe('Artwork CRUD', () => {
 
     expect(artwork.id).toBeDefined();
     expect(artwork.id.length).toBe(12);
-    expect(artwork.title).toContain('Masterpiece');
+    expect(artwork.title).toMatch(/^\w+ \w+$/);
     expect(artwork.roomId).toBe('my-art');
     expect(artwork.type).toBe('drawing');
     expect(artwork.canvasJSON).toBeTruthy();

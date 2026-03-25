@@ -57,7 +57,14 @@ export function Toolbar({
   onOpenStickers,
 }: ToolbarProps) {
   const [activeTool, setActiveTool] = useState<BrushKey>('crayon');
-  const [brushSize, setBrushSize] = useState<number>(10);
+  const [brushSizes, setBrushSizes] = useState<Record<BrushKey, number>>({
+    crayon: BRUSHES.crayon.width,
+    pencil: BRUSHES.pencil.width,
+    marker: BRUSHES.marker.width,
+    spray: BRUSHES.spray.width,
+    eraser: BRUSHES.eraser.width,
+  });
+  const brushSize = brushSizes[activeTool];
   const { playSound } = useSounds();
 
   // Listen for canvas switching to select mode externally
@@ -119,9 +126,12 @@ export function Toolbar({
     if (!canvas) return;
     setActiveTool(toolKey);
     onSelectModeChange(false);
-    setBrushSize(BRUSHES[toolKey].width);
     playSound('toolSwitch');
     applyBrush(toolKey, activeColor);
+    // Restore that tool's remembered size
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.width = brushSizes[toolKey];
+    }
   }
 
   function enterSelectMode() {
@@ -145,7 +155,7 @@ export function Toolbar({
 
   function changeBrushSize(newSize: number) {
     if (!canvas) return;
-    setBrushSize(newSize);
+    setBrushSizes((prev) => ({ ...prev, [activeTool]: newSize }));
     if (canvas.freeDrawingBrush) {
       canvas.freeDrawingBrush.width = newSize;
     }

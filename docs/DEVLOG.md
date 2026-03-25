@@ -460,6 +460,34 @@ One-line change. Find the <MiniToolbar render and add compact:
 - File 3: src/components/flipbook/PlaybackOverlay.tsx — REPLACEMENT
 Pre-renders all frames on mount instead of creating Fabric per tick (#25).
 
+### #16 + #20 + #26 are all quick wins — extended palette, fun names, and brush size memory. 
+
+- File 1: src/lib/fabric/tools.ts — REPLACEMENT
+Extended palette from 12 → 24 colors (#16).
+
+- File 2: src/lib/names.ts — NEW
+Fun name generator (#20).
+
+- File 3: src/lib/storage/artworks.ts — DIFF
+Replace the title generation line.
+
+- File 4: src/lib/storage/flipbook.ts — DIFF
+Replace the title generation line in createFlipbook
+
+- File 5: src/components/canvas/Toolbar.tsx — DIFF
+Per-tool brush size memory (#26). Three changes:
+
+1. Replace the brushSize state (near top of component):
+2. Replace enterDrawMode:
+3. Replace changeBrushSize:
+
+- File 6: src/components/flipbook/MiniToolbar.tsx — DIFF
+Same per-tool memory for flipbook (#26). Three changes:
+
+1. Replace size state:
+2. Replace selectTool:
+3. Replace changeSize:
+4. Update the initial apply — in both useEffects that call applyBrush, replace size with sizes[tool]:
 
 
 

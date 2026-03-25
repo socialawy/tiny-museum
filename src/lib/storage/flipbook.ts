@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { db, type Artwork, type FlipbookFrame } from './db';
+import { funFlipbookName } from '@/lib/names';
 
 // ── Frame Management ──
 
@@ -78,7 +79,7 @@ export async function createFlipbook(title?: string): Promise<Artwork> {
 
   const artwork: Artwork = {
     id,
-    title: title ?? `Animation #${Math.floor(Math.random() * 999) + 1}`,
+    title: title ?? funFlipbookName(),
     roomId: 'my-art',
     type: 'flipbook',
     thumbnail: new Blob([], { type: 'image/webp' }),

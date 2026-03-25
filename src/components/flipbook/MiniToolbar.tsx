@@ -27,7 +27,14 @@ export function MiniToolbar({
 }: MiniToolbarProps) {
   const [tool, setTool] = useState<BrushKey>('crayon');
   const [color, setColor] = useState<string>(KID_PALETTE[0]);
-  const [size, setSize] = useState<number>(BRUSHES.crayon.width);
+  const [sizes, setSizes] = useState<Record<BrushKey, number>>({
+    crayon: BRUSHES.crayon.width,
+    pencil: BRUSHES.pencil.width,
+    marker: BRUSHES.marker.width,
+    spray: BRUSHES.spray.width,
+    eraser: BRUSHES.eraser.width,
+  });
+  const size = sizes[tool];
   const { playSound } = useSounds();
 
   const applyBrush = useCallback(
@@ -61,18 +68,16 @@ export function MiniToolbar({
   );
 
   useEffect(() => {
-    if (canvas) applyBrush('crayon', color, size);
+    if (canvas) applyBrush('crayon', color, sizes['crayon']);
   }, [canvas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (canvas && frameVersion > 0) applyBrush(tool, color, size);
+    if (canvas && frameVersion > 0) applyBrush(tool, color, sizes[tool]);
   }, [frameVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function selectTool(k: BrushKey) {
     setTool(k);
-    const newSize = BRUSHES[k].width;
-    setSize(newSize);
-    applyBrush(k, color, newSize);
+    applyBrush(k, color, sizes[k]);
     playSound('toolSwitch');
   }
 
@@ -85,7 +90,7 @@ export function MiniToolbar({
   }
 
   function changeSize(s: number) {
-    setSize(s);
+    setSizes((prev) => ({ ...prev, [tool]: s }));
     if (canvas?.freeDrawingBrush) canvas.freeDrawingBrush.width = s;
   }
 

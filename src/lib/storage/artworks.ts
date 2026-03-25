@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { nanoid } from 'nanoid';
 import { db, type Artwork, type ArtworkBlob } from './db';
+import { funArtworkName } from '@/lib/names';
 
 // ── Helpers ──
 
@@ -141,7 +142,7 @@ export async function saveArtwork(
 
   const artwork: Artwork = {
     id,
-    title: existing?.title ?? `Masterpiece #${Math.floor(Math.random() * 999) + 1}`,
+    title: existing?.title ?? funArtworkName(),
     roomId: existing?.roomId ?? 'my-art',
     type: 'drawing',
     thumbnail,
