@@ -24,12 +24,19 @@ export default function HomePage() {
     >
       {/* Top controls */}
       <div
-        className="absolute"
+        className="absolute flex items-center gap-4"
         style={{
           top: 'calc(1.5rem + env(safe-area-inset-top, 0px))',
           right: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
         }}
       >
+        <Link
+          href="/settings"
+          className="text-3xl hover:scale-110 active:scale-95 transition-transform bg-white/50 backdrop-blur-sm p-2 rounded-full border-2 border-museum-frame/20 shadow-sm"
+          title="Settings"
+        >
+          ⚙️
+        </Link>
         <SoundToggle />
       </div>
 
