@@ -52,6 +52,7 @@ coverage/
 !next.config.ts
 !.eslintrc.json
 !vercel.json
+!public/demo/*.json
 !*.config.js
 !*.config.ts
 !*.config.mjs
