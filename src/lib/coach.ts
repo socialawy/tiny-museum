@@ -25,8 +25,8 @@ export const SEQUENCES: Record<CoachArea, CoachStep[]> = {
     { coachId: 'flip-play', message: 'Watch your animation!', placement: 'above' },
   ],
   gallery: [
-    { coachId: 'gallery-card', message: 'Tap to see your art!', placement: 'below' },
-    { coachId: 'gallery-rooms', message: 'Organize into rooms!', placement: 'below' },
+    { coachId: 'gallery-art-0', message: 'Tap to see your art!', placement: 'below' },
+    { coachId: 'gallery-room', message: 'Organize into rooms!', placement: 'below' },
   ],
 };
 
@@ -44,7 +44,7 @@ export function markCoachSeen(area: CoachArea): void {
   } catch { /* silent */ }
 }
 
-export function resetAllCoach(): void {
+export function resetCoachMarks(): void {
   try {
     for (const key of Object.values(KEYS)) {
       localStorage.removeItem(key);

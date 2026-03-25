@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { isCoachSeen, markCoachSeen, resetAllCoach } from '../coach';
+import { isCoachSeen, markCoachSeen, resetCoachMarks } from '../coach';
 
 describe('Coach localStorage helpers', () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('Coach localStorage helpers', () => {
     markCoachSeen('studio');
     markCoachSeen('flipbook');
     markCoachSeen('gallery');
-    resetAllCoach();
+    resetCoachMarks();
     expect(isCoachSeen('studio')).toBe(false);
     expect(isCoachSeen('flipbook')).toBe(false);
     expect(isCoachSeen('gallery')).toBe(false);
@@ -34,7 +34,7 @@ describe('Coach localStorage helpers', () => {
   it('resetAllCoach does not clear unrelated localStorage keys', () => {
     localStorage.setItem('some_other_key', 'value');
     markCoachSeen('studio');
-    resetAllCoach();
+    resetCoachMarks();
     expect(localStorage.getItem('some_other_key')).toBe('value');
   });
 });

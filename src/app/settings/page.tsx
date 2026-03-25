@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ParentGate } from '@/components/ui/ParentGate';
+import { resetCoachMarks } from '@/lib/coach';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -108,6 +109,23 @@ export default function SettingsPage() {
               </p>
             )}
           </div>
+        </div>
+
+        <div className="mb-6 text-left border-t border-gray-100 pt-6">
+          <h2 className="text-xl font-bold mb-2">Tutorials</h2>
+          <p className="text-gray-500 mb-4 text-sm">
+            Want to see the guided tours again? Click below to reset them.
+          </p>
+          <button
+            onClick={() => {
+              resetCoachMarks();
+              setSaved(true);
+              setTimeout(() => setSaved(false), 2000);
+            }}
+            className="w-full py-3 bg-white border-2 border-kid-purple text-kid-purple rounded-kid font-bold active:scale-95 transition-transform"
+          >
+            ✨ Replay All Tutorials
+          </button>
         </div>
 
         <button
