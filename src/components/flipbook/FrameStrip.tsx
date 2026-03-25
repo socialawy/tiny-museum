@@ -41,6 +41,8 @@ function FrameThumb({
   onTap: () => void;
 }) {
   const thumbUrl = useBlobUrl(frame.thumbnail);
+  // Fix #13: zero-byte blobs produce a valid data URL but render as broken image
+  const hasThumb = thumbUrl && frame.thumbnail && frame.thumbnail.size > 0;
 
   return (
     <button
@@ -56,19 +58,19 @@ function FrameThumb({
         className="w-full bg-white rounded overflow-hidden"
         style={{ aspectRatio: '4/3' }}
       >
-        {thumbUrl ? (
+        {hasThumb ? (
           <Image
             src={thumbUrl}
             alt={`Frame ${index + 1}`}
             className="w-full h-full object-cover"
             draggable={false}
             width={64}
-            height={64}
+            height={48}
             unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-xs text-gray-400">{index + 1}</span>
+            <span className="text-lg">{index === 0 ? '🎨' : '🖼️'}</span>
           </div>
         )}
       </div>

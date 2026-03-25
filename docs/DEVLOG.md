@@ -316,16 +316,156 @@ Resolved critical CI/CD failures and optimized image handling for Next.js best p
     - Configured production environment variables in Vercel to unblock the live Gallery build.
 - **Verification**: Zero errors across `lint`, `typecheck`, and `format`. All **50 unit tests** passing in the automated pipeline.
 
+## Sprint 1.3: AI Automation & Master Consolidation ✅
+*Completed: 2026-03-22*
+
+Consolidated the repository structure and introduced AI-powered workflow automation.
+
+### Key Milestones
+- **Master Branch Consolidation (PR #2)**: Merged the feature-complete `main` branch into `master`, establishing a single, high-integrity production branch.
+- **AI Worker: Jules**: Deployed `.github/workflows/jules-issues.yml` to automatically handle unassigned issues, implement features, and submit PRs.
+- **AI Reviewer: Gemini**: Deployed `.github/workflows/gemini-review.yml` for automated senior-level code reviews, risk assessment, and auto-merging of verified changes.
+- **Infra synchronization**: Updated Supabase publishable key handling and verified environment variable consistency across all local and remote branches.
+
+### Verification
+- Full sync across `main` and `master` branches confirmed.
+- All **50 unit tests** passing in the new automated CI/CD pipeline.
+- GitHub Action runs for `ci` and `Gemini Review` confirmed successful.
+
+---
+
+## Sprint 2: Make It Showable ✅
+*Completed: 2026-03-25 (autonomous — Jules + Gemini)*
+
+Full sprint delivered autonomously — one PR per day, all Gemini-approved and auto-merged.
+
+### Key Milestones
+- **Gallery thumbnail polish (PR #10)**: Switched `object-contain` → `object-cover` for gallery thumbnails. Merged 2026-03-22.
+- **Mobile safe-area insets (PR #11, closes #5)**: Added viewport-aware padding for notch/home-bar devices. Merged 2026-03-23.
+- **Keyboard avoidance in studio (PR #12, closes #6)**: New `useVisualViewport` hook to resize canvas when soft keyboard opens. Tests included. Merged 2026-03-24.
+- **Studio access control — PIN gate (PR #13, closes #7)**: Settings page with PIN setup, `PinGate` component wrapping studio routes. Tests included. Merged 2026-03-25.
+
+### Verification
+- All 4 PRs passed CI Pipeline + CodeQL before merge
+- Gemini APPROVED all 4 with no escalations or change requests
+- Issues #5, #6, #7 closed (auto-close failed on squash merge — closed manually)
+
+### Pipeline notes
+- `delete_branch_on_merge` enabled on repo
+- 4 stale Jules branches cleaned
+
+---
+
+## Sprint 3: Monitoring & Install  - Fix & Enhance 
+
+### implementations for #10, #11, #12, #13, #24. Three complete drop-in files, then diffs for StudioCanvas.
+
+- File 1: src/components/flipbook/MiniToolbar.tsx — NEW
+- File 2: src/components/flipbook/FrameStrip.tsx — REPLACEMENT
+Fixes #13: zero-byte thumbnail blobs no longer show broken images.
+- File 3: src/components/flipbook/FlipbookStudio.tsx — REPLACEMENT
+Covers #10 (drawing toolbar), #12 (mobile layout), #24 (deferred creation).
+
+- File 4: src/components/canvas/StudioCanvas.tsx — DIFF
+These are the targeted changes for #11 (empty canvas guard) and #21 (auto-save empty guard).
+
+Added this helper near the top, below the imports:
+
+```ts
+/** Returns true when the canvas has zero user content */
+function isCanvasEmpty(fabricCanvas: Record<string, unknown>): boolean {
+  try {
+    const getObjectsFn = fabricCanvas.getObjects as (() => unknown[]) | undefined;
+    const objects = getObjectsFn?.call(fabricCanvas) ?? [];
+    return objects.length === 0;
+  } catch {
+    return true;
+  }
+}
+```
+
+- Replaced handleSave:
+
+```ts
+const handleSave = useCallback(async () => {
+  if (!canvas || saving) return;
+  if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) {
+    playSound('toolSwitch'); // subtle feedback, no save
+    return;
+  }
+  setSaving(true);
+  try {
+    const artwork = await saveArtwork(
+      canvas as unknown as Record<string, unknown>,
+      currentArtworkId,
+    );
+    setCurrentArtworkId(artwork.id);
+    celebrate();
+    playSound('save');
+  } catch (err) {
+    console.error('Save failed:', err);
+  } finally {
+    setSaving(false);
+  }
+}, [canvas, saving, currentArtworkId, celebrate, playSound]);
+```
+
+- Replaced the auto-save interval (inside the useEffect):
+
+```ts
+// Inside the setInterval callback, add empty check (#21):
+if (!currentArtworkId) return;
+if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) return;
+
+// ...rest of doSave unchanged
+```
+
+### Summary of What Ships
+Issue	Status	File(s)
+#10 Flipbook drawing toolbar	✅	MiniToolbar.tsx (new) + FlipbookStudio.tsx
+#11 Empty canvas guard	✅	StudioCanvas.tsx diff + FlipbookStudio.tsx exit dialog
+#12 Flipbook mobile layout	✅	FlipbookStudio.tsx — landscape pill, portrait capped strip
+#13 Broken thumbnails	✅	FrameStrip.tsx — zero-byte blob check
+#21 Auto-save empty guard	✅	StudioCanvas.tsx diff
+#23 Onion skin (partial)	✅	FlipbookStudio.tsx — thumbnail-based overlay
+#24 Phantom flipbook entry	✅	FlipbookStudio.tsx — deferred createFlipbook()
+
 ---
 
 ## Next Actions (backlog)
 
-### Sprint 2: Make It Showable
+### Sprint 3: Monitoring & Install  - Fix & Enhance 
+- [ ] Vercel Analytics + Speed Insights (issue #8)
+- [ ] PWA install prompt (issue #9)
 - **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio).
-- **Gallery thumbnail polish** — switch `object-contain` → `object-cover`.
-- **Mobile polish** — safe-area insets, keyboard avoidance.
+
+**Core Fixes (Critical)**
+  #10 [x] Flipbook: add drawing toolbar (brushes, colors, eraser)
+  #11 [x] Empty canvas guard — don't save blank art on navigate away
+  #12 [x] Flipbook mobile layout — landscape too small, portrait play btn hidden
+
+**Reliability (High)**
+  #13 [x] Broken thumbnails — zero-byte blob check + audit export pipeline
+  #14 [ ] Room delete UI — parent-gated, relocate orphaned art
+  #15 [ ] Move art to room — exhibit view or card action
+  #23 [x] Onion skin is a no-op — implement actual overlay
+  #24 [x] Flipbook phantom entry — defer createFlipbook until first action
+
+**Performance (High)**  
+  #25 [ ] PlaybackOverlay — pre-render frames, don't create Fabric per tick
+
+**Studio Enhancement (Medium)**
+  #16 [ ] Extended color palette — 24+ presets + color wheel picker
+  #17 [ ] More brush types (glitter, rainbow, stamp)
+  #18 [ ] Layer tray (background / middle / foreground)
+  #26 [ ] Per-tool brush size memory
+  #27 [ ] Flipbook background picker
+
+**Polish (Low)**
+  #19 [ ] Flipbook entry in side nav
+  #20 [ ] Fun default artwork names (not "Masterpiece #228")
+  #21 [x] Auto-save empty canvas guard (30s timer shouldn't save blank)
+  #22 [ ] Published badge visibility — larger/more contrast
 
 ### Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber).
-- Studio access control — simple PIN gate to lock studio to Mira's device.
-- Online monitoring: Vercel Speed Insights + Analytics.

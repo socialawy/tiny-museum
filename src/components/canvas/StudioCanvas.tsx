@@ -20,6 +20,17 @@ import { BackgroundPicker } from './BackgroundPicker';
 import { StickerPanel } from './StickerPanel';
 import { useSounds } from '@/hooks/useSounds';
 
+/** Returns true when the canvas has zero user content */
+function isCanvasEmpty(fabricCanvas: Record<string, unknown>): boolean {
+  try {
+    const getObjectsFn = fabricCanvas.getObjects as (() => unknown[]) | undefined;
+    const objects = getObjectsFn?.call(fabricCanvas) ?? [];
+    return objects.length === 0;
+  } catch {
+    return true;
+  }
+}
+
 type Panel = 'none' | 'import' | 'shapes' | 'background' | 'stickers';
 
 export default function StudioCanvas() {
@@ -81,6 +92,7 @@ export default function StudioCanvas() {
 
     const interval = setInterval(() => {
       if (!currentArtworkId) return;
+      if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) return;
 
       const doSave = async () => {
         try {
@@ -121,6 +133,10 @@ export default function StudioCanvas() {
 
   const handleSave = useCallback(async () => {
     if (!canvas || saving) return;
+    if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) {
+      playSound('toolSwitch'); // subtle feedback, no save
+      return;
+    }
     setSaving(true);
     try {
       const artwork = await saveArtwork(
