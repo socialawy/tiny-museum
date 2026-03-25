@@ -21,6 +21,7 @@ import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { MiniToolbar } from './MiniToolbar';
 import { FrameStrip } from './FrameStrip';
 import { PlaybackOverlay } from './PlaybackOverlay';
+import { BackgroundPicker } from '@/components/canvas/BackgroundPicker';
 
 interface FlipbookStudioProps {
   flipbookId?: string;
@@ -41,6 +42,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
   const [onionSkin, setOnionSkin] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [showBgPicker, setShowBgPicker] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   // Tracks whether any real drawing has happened (fixes #24)
   const [isDirty, setIsDirty] = useState(false);
@@ -374,6 +376,19 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               compact={isLandscape}
             />
           </div>
+ 
+          {/* Background picker toggle — inline after toolbar */}
+          {!isLandscape && (
+            <div className="flex-shrink-0 flex justify-center py-1 bg-white/90 border-t border-gray-50">
+              <button
+                onClick={() => setShowBgPicker(true)}
+                className="kid-button text-sm"
+                aria-label="Background"
+              >
+                🎨 Background
+              </button>
+            </div>
+          )}
 
           {/* Frame strip — hidden in landscape, compact pill instead (#12) */}
           {isLandscape ? (
@@ -458,6 +473,10 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           onConfirm={handleExitSave}
           onCancel={handleExitDiscard}
         />
+      )}
+ 
+      {showBgPicker && (
+        <BackgroundPicker canvas={canvas} onClose={() => setShowBgPicker(false)} />
       )}
     </div>
   );

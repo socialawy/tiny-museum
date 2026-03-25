@@ -39,17 +39,27 @@ export function ArtworkCard({ artwork, size = 'walk', onClick }: ArtworkCardProp
           aspectRatio: '4 / 5',
         }}
       >
-        {/* Type badge */}
-        {artwork.type === 'flipbook' ? (
+        {/* Flipbook badge */}
+        {artwork.type === 'flipbook' && (
           <div className="absolute top-2 right-2 z-10 bg-black/60 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
             🎬
           </div>
-        ) : null}
-        {artwork.publishedUrl ? (
-          <div className="absolute top-2 left-2 z-10 bg-kid-purple/80 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
-            🌐
+        )}
+
+        {/* Published badge — #22: larger, glowing ribbon */}
+        {artwork.publishedUrl && (
+          <div
+            className="absolute top-0 left-0 z-10 flex items-center gap-1
+                       px-2.5 py-1 rounded-br-lg font-bold text-xs text-white"
+            style={{
+              background: 'linear-gradient(135deg, #6C5CE7 0%, #a855f7 100%)',
+              boxShadow: '0 0 8px rgba(108, 92, 231, 0.6), 0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            🌐 <span>Live</span>
           </div>
-        ) : null}
+        )}
+
         {/* Outer frame */}
         <div
           className="absolute inset-0 rounded-lg"

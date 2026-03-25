@@ -55,6 +55,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span className="nav-icon">🎨</span>
             <span className="nav-label">Studio</span>
           </Link>
+          <Link href="/studio/flipbook" className="nav-item">
+            <span className="nav-icon">🎬</span>
+            <span className="nav-label">Flipbook</span>
+          </Link>
         </nav>
         <Celebrations />
       </body>

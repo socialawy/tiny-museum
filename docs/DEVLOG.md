@@ -490,6 +490,17 @@ Same per-tool memory for flipbook (#26). Three changes:
 4. Update the initial apply — in both useEffects that call applyBrush, replace size with sizes[tool]:
 
 
+### Next batch: #19 + #22 + #27 — all quick wins.
+
+- File 1: src/app/layout.tsx — REPLACEMENT
+Adds Flipbook to bottom nav (#19).
+
+- File 2: src/components/gallery/ArtworkCard.tsx — REPLACEMENT
+Published badge is now a ribbon with glow (#22).
+
+- File 3: src/components/flipbook/FlipbookStudio.tsx — DIFF
+Add background picker for flipbook (#27). Three small changes:
+
 
 ---
 
@@ -519,17 +530,17 @@ Same per-tool memory for flipbook (#26). Three changes:
   #25 [x] PlaybackOverlay — pre-render frames, don't create Fabric per tick
 
 **Studio Enhancement (Medium)**
-  #16 [ ] Extended color palette — 24+ presets + color wheel picker
+  #16 [x] Extended color palette — 24+ presets + color wheel picker
   #17 [ ] More brush types (glitter, rainbow, stamp)
   #18 [ ] Layer tray (background / middle / foreground)
-  #26 [ ] Per-tool brush size memory
-  #27 [ ] Flipbook background picker
+  #26 [x] Per-tool brush size memory
+  #27 [x] Flipbook background picker
 
 **Polish (Low)**
-  #19 [ ] Flipbook entry in side nav
-  #20 [ ] Fun default artwork names (not "Masterpiece #228")
+  #19 [x] Flipbook entry in side nav
+  #20 [x] Fun default artwork names (not "Masterpiece #228")
   #21 [x] Auto-save empty canvas guard (30s timer shouldn't save blank)
-  #22 [ ] Published badge visibility — larger/more contrast
+  #22 [x] Published badge visibility — larger/more contrast
 
 ### Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber).
