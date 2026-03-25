@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { FlipbookFrame } from '@/lib/storage/db';
 import { exportToGif } from '@/lib/export/gif';
 import { BigButton } from '@/components/ui/BigButton';
 import { useSounds } from '@/hooks/useSounds';
 import { Canvas as FabricCanvas } from 'fabric';
+import Image from 'next/image';
 
 interface PlaybackOverlayProps {
   frames: FlipbookFrame[];
@@ -15,18 +16,15 @@ interface PlaybackOverlayProps {
   onClose: () => void;
 }
 
-/**
- * Render a single Fabric JSON frame to a static canvas.
- * The temporary Fabric canvas is attached to the DOM (off-screen)
- * because mobile browsers require a DOM-attached canvas for WebGL rendering.
- */
-async function renderFrameToCanvas(
+/** Render a Fabric JSON frame to a data URL — most mobile-compatible path */
+async function renderFrameToDataUrl(
   json: string,
   w: number,
   h: number,
-): Promise<HTMLCanvasElement> {
+): Promise<string> {
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:fixed;left:-9999px;top:-9999px;pointer-events:none;';
+  wrapper.style.cssText =
+    'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;';
   document.body.appendChild(wrapper);
 
   const tmpEl = document.createElement('canvas');
@@ -40,24 +38,37 @@ async function renderFrameToCanvas(
     const parsed = JSON.parse(json);
     await fabric.loadFromJSON(parsed);
     fabric.renderAll();
-
-    const capture = document.createElement('canvas');
-    capture.width = w;
-    capture.height = h;
-    const ctx = capture.getContext('2d')!;
-    ctx.drawImage(fabric.getElement() as HTMLCanvasElement, 0, 0);
-    return capture;
+    return fabric.toDataURL({ format: 'png', multiplier: 1 });
   } finally {
     fabric.dispose();
     document.body.removeChild(wrapper);
   }
 }
 
+/** Convert a data URL to an HTMLCanvasElement (for GIF export) */
+function dataUrlToCanvas(
+  dataUrl: string,
+  w: number,
+  h: number,
+): Promise<HTMLCanvasElement> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(c);
+    };
+    img.src = dataUrl;
+  });
+}
+
 export function PlaybackOverlay({
   frames, fps, canvasWidth, canvasHeight, onClose,
 }: PlaybackOverlayProps) {
-  const displayRef = useRef<HTMLCanvasElement>(null);
-  const preRenderedRef = useRef<HTMLCanvasElement[]>([]);
+  const [frameUrls, setFrameUrls] = useState<string[]>([]);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [ready, setReady] = useState(false);
@@ -92,30 +103,27 @@ export function PlaybackOverlay({
     return () => window.removeEventListener('resize', onResize);
   }, [computeDisplaySize]);
 
-  // ── Pre-render all frames on mount ──
+  // ── Pre-render all frames to data URLs ──
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const rendered: HTMLCanvasElement[] = [];
+      const urls: string[] = [];
 
       for (let i = 0; i < frames.length; i++) {
         if (cancelled) return;
         const { w, h } = getFrameDims(i);
-
         try {
-          const capture = await renderFrameToCanvas(frames[i].canvasJSON, w, h);
-          rendered.push(capture);
+          const url = await renderFrameToDataUrl(frames[i].canvasJSON, w, h);
+          urls.push(url);
         } catch {
-          const blank = document.createElement('canvas');
-          blank.width = w;
-          blank.height = h;
-          rendered.push(blank);
+          // Transparent 1x1 fallback
+          urls.push('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
         }
       }
 
       if (!cancelled) {
-        preRenderedRef.current = rendered;
+        setFrameUrls(urls);
         setReady(true);
       }
     })();
@@ -123,23 +131,16 @@ export function PlaybackOverlay({
     return () => { cancelled = true; };
   }, [frames, getFrameDims]);
 
-  // ── Animation loop ──
+  // ── Animation loop — just swap image src ──
   useEffect(() => {
-    if (!ready) return;
-    const el = displayRef.current;
-    const ctx = el?.getContext('2d');
-    const source = preRenderedRef.current[currentFrame];
-    if (el && ctx && source) {
-      ctx.clearRect(0, 0, el.width, el.height);
-      ctx.drawImage(source, 0, 0, el.width, el.height);
-    }
+    if (!ready || frameUrls.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentFrame((prev) => (prev + 1) % frames.length);
+      setCurrentFrame((prev) => (prev + 1) % frameUrls.length);
     }, 1000 / fps);
 
     return () => clearInterval(interval);
-  }, [currentFrame, fps, frames.length, ready]);
+  }, [fps, frameUrls.length, ready]);
 
   // ── GIF Export ──
   const handleExportGif = useCallback(async () => {
@@ -149,26 +150,33 @@ export function PlaybackOverlay({
 
     try {
       const { w: gifW, h: gifH } = getFrameDims(0);
+      const canvases: HTMLCanvasElement[] = [];
+
+      for (const url of frameUrls) {
+        const c = await dataUrlToCanvas(url, gifW, gifH);
+        canvases.push(c);
+      }
+
       const gifBlob = await exportToGif({
         width: gifW,
         height: gifH,
         fps,
-        frames: preRenderedRef.current,
+        frames: canvases,
       });
 
-      const url = URL.createObjectURL(gifBlob);
+      const blobUrl = URL.createObjectURL(gifBlob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = blobUrl;
       a.download = `tiny-museum-animation-${Date.now()}.gif`;
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
       playSound('celebrate');
     } catch (err) {
       console.error('GIF export failed:', err);
     } finally {
       setIsExporting(false);
     }
-  }, [ready, fps, playSound, getFrameDims]);
+  }, [ready, fps, playSound, getFrameDims, frameUrls]);
 
   return (
     <div
@@ -180,6 +188,7 @@ export function PlaybackOverlay({
         className="flex flex-col items-center gap-4"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Playback display */}
         <div className="rounded-kid overflow-hidden shadow-2xl bg-white" style={{ padding: 8 }}>
           {!ready ? (
             <div
@@ -189,16 +198,20 @@ export function PlaybackOverlay({
               <p className="text-3xl animate-pulse">🎬</p>
             </div>
           ) : (
-            <canvas
-              ref={displayRef}
+            <Image
+              src={frameUrls[currentFrame] ?? ''}
+              alt={`Frame ${currentFrame + 1}`}
               width={displaySize.width}
               height={displaySize.height}
               className="rounded"
               style={{ width: displaySize.width, height: displaySize.height }}
+              unoptimized
+              priority
             />
           )}
         </div>
 
+        {/* Frame dots */}
         <div className="flex gap-1">
           {frames.map((_, i) => (
             <div
@@ -212,6 +225,7 @@ export function PlaybackOverlay({
           ))}
         </div>
 
+        {/* Controls */}
         <div className="flex gap-3">
           <BigButton onClick={onClose} aria-label="Close">✕</BigButton>
           <button
