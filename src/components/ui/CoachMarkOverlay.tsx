@@ -132,7 +132,9 @@ export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayP
   ).length;
   const currentValidIndex = sequence
     .slice(0, step + 1)
-    .filter((s: CoachStep) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null).length;
+    .filter(
+      (s: CoachStep) => document.querySelector(`[data-coach="${s.coachId}"]`) !== null,
+    ).length;
 
   // Bubble position
   const bubbleStyle: React.CSSProperties = {};
@@ -159,16 +161,18 @@ export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayP
   const vw = window.innerWidth;
 
   return createPortal(
-    <div
-      className="fixed inset-0"
-      style={{ zIndex: 900, pointerEvents: 'none' }}
-    >
+    <div className="fixed inset-0" style={{ zIndex: 900, pointerEvents: 'none' }}>
       {/* 4 backdrop panels around the cutout — clicking any dismisses */}
       {/* Top panel */}
       <div
         style={{
-          position: 'fixed', top: 0, left: 0, width: vw, height: Math.max(0, rect.top),
-          background: 'rgba(0,0,0,0.6)', pointerEvents: 'auto',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: vw,
+          height: Math.max(0, rect.top),
+          background: 'rgba(0,0,0,0.6)',
+          pointerEvents: 'auto',
           transition: `all ${TRANSITION_MS}ms ease-in-out`,
         }}
         onClick={dismiss}
@@ -176,9 +180,13 @@ export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayP
       {/* Bottom panel */}
       <div
         style={{
-          position: 'fixed', top: rect.top + rect.height, left: 0,
-          width: vw, height: Math.max(0, vh - rect.top - rect.height),
-          background: 'rgba(0,0,0,0.6)', pointerEvents: 'auto',
+          position: 'fixed',
+          top: rect.top + rect.height,
+          left: 0,
+          width: vw,
+          height: Math.max(0, vh - rect.top - rect.height),
+          background: 'rgba(0,0,0,0.6)',
+          pointerEvents: 'auto',
           transition: `all ${TRANSITION_MS}ms ease-in-out`,
         }}
         onClick={dismiss}
@@ -186,9 +194,13 @@ export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayP
       {/* Left panel */}
       <div
         style={{
-          position: 'fixed', top: rect.top, left: 0,
-          width: Math.max(0, rect.left), height: rect.height,
-          background: 'rgba(0,0,0,0.6)', pointerEvents: 'auto',
+          position: 'fixed',
+          top: rect.top,
+          left: 0,
+          width: Math.max(0, rect.left),
+          height: rect.height,
+          background: 'rgba(0,0,0,0.6)',
+          pointerEvents: 'auto',
           transition: `all ${TRANSITION_MS}ms ease-in-out`,
         }}
         onClick={dismiss}
@@ -196,9 +208,13 @@ export function CoachMarkOverlay({ area, onComplete, onSkip }: CoachMarkOverlayP
       {/* Right panel */}
       <div
         style={{
-          position: 'fixed', top: rect.top, left: rect.left + rect.width,
-          width: Math.max(0, vw - rect.left - rect.width), height: rect.height,
-          background: 'rgba(0,0,0,0.6)', pointerEvents: 'auto',
+          position: 'fixed',
+          top: rect.top,
+          left: rect.left + rect.width,
+          width: Math.max(0, vw - rect.left - rect.width),
+          height: rect.height,
+          background: 'rgba(0,0,0,0.6)',
+          pointerEvents: 'auto',
           transition: `all ${TRANSITION_MS}ms ease-in-out`,
         }}
         onClick={dismiss}

@@ -89,7 +89,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           try {
             const meta = JSON.parse(artwork.canvasJSON);
             setFps(meta.fps ?? 4);
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         const allFrames = await loadAllFrames(id);
         if (!cancelled) {
@@ -104,7 +106,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           artworkId: '__pending',
           index: 0,
           canvasJSON: JSON.stringify({
-            version: '6.0.0', objects: [], background: '#FFFEF7',
+            version: '6.0.0',
+            objects: [],
+            background: '#FFFEF7',
           }),
           thumbnail: new Blob([], { type: 'image/webp' }),
         };
@@ -115,7 +119,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isReady, flipbookId]);
 
   // Show coach marks if first time
@@ -179,7 +185,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     try {
       const raw = canvas.toJSON() as Record<string, unknown>;
       const json = JSON.stringify({
-        ...raw, _w: canvas.getWidth(), _h: canvas.getHeight(),
+        ...raw,
+        _w: canvas.getWidth(),
+        _h: canvas.getHeight(),
       });
       const el = canvas.getElement() as HTMLCanvasElement;
       const thumb = document.createElement('canvas');
@@ -196,16 +204,21 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         next[currentIndex] = saved;
         return next;
       });
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }, [canvas, currentIndex, ensureArtworkId]);
 
   // ── Navigation ──
-  const goToFrame = useCallback(async (index: number) => {
-    if (index === currentIndex) return;
-    await saveCurrentFrame();
-    setCurrentIndex(index);
-    playSound('footstep');
-  }, [currentIndex, saveCurrentFrame, playSound]);
+  const goToFrame = useCallback(
+    async (index: number) => {
+      if (index === currentIndex) return;
+      await saveCurrentFrame();
+      setCurrentIndex(index);
+      playSound('footstep');
+    },
+    [currentIndex, saveCurrentFrame, playSound],
+  );
 
   const nextFrame = useCallback(() => {
     if (currentIndex < frames.length - 1) goToFrame(currentIndex + 1);
@@ -221,7 +234,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     const id = await ensureArtworkId();
     const newIndex = frames.length;
     const emptyJSON = JSON.stringify({
-      version: '6.0.0', objects: [], background: '#FFFEF7',
+      version: '6.0.0',
+      objects: [],
+      background: '#FFFEF7',
     });
     await saveFrame(id, newIndex, emptyJSON, new Blob([], { type: 'image/webp' }));
     // Reload from DB to ensure consistency
@@ -314,9 +329,12 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <BigButton onClick={handleBack} aria-label="Back">←</BigButton>
+            <BigButton onClick={handleBack} aria-label="Back">
+              ←
+            </BigButton>
             <span className="text-sm font-bold text-gray-500">
-              🎬 {isLandscape
+              🎬{' '}
+              {isLandscape
                 ? `${currentIndex + 1}/${frames.length}`
                 : `Frame ${currentIndex + 1}/${frames.length}`}
             </span>
@@ -326,16 +344,27 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               <div className="flex items-center gap-1 mr-2">
                 <span className="text-[10px]">🐢</span>
                 <input
-                  type="range" min={2} max={12} value={fps}
+                  type="range"
+                  min={2}
+                  max={12}
+                  value={fps}
                   onChange={(e) => setFps(+e.target.value)}
                   className="w-20 h-5 accent-kid-purple"
                 />
                 <span className="text-[10px]">🐇</span>
               </div>
             )}
-            <BigButton onClick={startPlayback} aria-label="Play"
-              className="bg-kid-green text-white" data-coach="flip-play">▶️</BigButton>
-            <BigButton onClick={sendToGallery} aria-label="Save to Gallery">🏛️</BigButton>
+            <BigButton
+              onClick={startPlayback}
+              aria-label="Play"
+              className="bg-kid-green text-white"
+              data-coach="flip-play"
+            >
+              ▶️
+            </BigButton>
+            <BigButton onClick={sendToGallery} aria-label="Save to Gallery">
+              🏛️
+            </BigButton>
           </div>
         </div>
       )}
@@ -349,7 +378,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-studio-bg z-30">
             <div className="text-center">
               <p className="text-5xl mb-3 animate-bounce">🎬</p>
-              <p className="text-lg font-bold text-gray-400">Setting up your flipbook...</p>
+              <p className="text-lg font-bold text-gray-400">
+                Setting up your flipbook...
+              </p>
             </div>
           </div>
         )}
@@ -394,15 +425,29 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
           {isLandscape ? (
             <div className="flex-shrink-0 flex items-center justify-center gap-2 px-3 py-1 bg-gray-50 border-t border-gray-200">
-              <BigButton onClick={prevFrame} disabled={currentIndex === 0}>◀</BigButton>
+              <BigButton onClick={prevFrame} disabled={currentIndex === 0}>
+                ◀
+              </BigButton>
               <span className="text-xs font-bold text-gray-500 min-w-[60px] text-center">
                 {currentIndex + 1} / {frames.length}
               </span>
-              <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>▶</BigButton>
+              <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>
+                ▶
+              </BigButton>
               <div className="w-px h-6 bg-gray-200 mx-1" />
-              <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin} data-coach="flip-ghost">👻</BigButton>
-              <BigButton onClick={addFrame} data-coach="flip-add">＋</BigButton>
-              <BigButton onClick={dupFrame} data-coach="flip-dup">📋</BigButton>
+              <BigButton
+                onClick={() => setOnionSkin(!onionSkin)}
+                active={onionSkin}
+                data-coach="flip-ghost"
+              >
+                👻
+              </BigButton>
+              <BigButton onClick={addFrame} data-coach="flip-add">
+                ＋
+              </BigButton>
+              <BigButton onClick={dupFrame} data-coach="flip-dup">
+                📋
+              </BigButton>
               {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
             </div>
           ) : (
@@ -417,13 +462,30 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
               <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white border-t-2 border-gray-100">
                 <div className="flex gap-1.5">
-                  <BigButton onClick={prevFrame} disabled={currentIndex === 0}>◀</BigButton>
-                  <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>▶</BigButton>
+                  <BigButton onClick={prevFrame} disabled={currentIndex === 0}>
+                    ◀
+                  </BigButton>
+                  <BigButton
+                    onClick={nextFrame}
+                    disabled={currentIndex >= frames.length - 1}
+                  >
+                    ▶
+                  </BigButton>
                 </div>
                 <div className="flex gap-1.5">
-                  <BigButton onClick={() => setOnionSkin(!onionSkin)} active={onionSkin} data-coach="flip-ghost">👻</BigButton>
-                  <BigButton onClick={addFrame} data-coach="flip-add">＋</BigButton>
-                  <BigButton onClick={dupFrame} data-coach="flip-dup">📋</BigButton>
+                  <BigButton
+                    onClick={() => setOnionSkin(!onionSkin)}
+                    active={onionSkin}
+                    data-coach="flip-ghost"
+                  >
+                    👻
+                  </BigButton>
+                  <BigButton onClick={addFrame} data-coach="flip-add">
+                    ＋
+                  </BigButton>
+                  <BigButton onClick={dupFrame} data-coach="flip-dup">
+                    📋
+                  </BigButton>
                   {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
                 </div>
               </div>
@@ -436,12 +498,17 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               >
                 <span className="text-xs text-gray-400">🐢</span>
                 <input
-                  type="range" min={2} max={12} value={fps}
+                  type="range"
+                  min={2}
+                  max={12}
+                  value={fps}
                   onChange={(e) => setFps(+e.target.value)}
                   className="flex-1 h-6 accent-kid-purple"
                 />
                 <span className="text-xs text-gray-400">🐇</span>
-                <span className="text-xs font-bold text-kid-purple w-10 text-right">{fps} fps</span>
+                <span className="text-xs font-bold text-kid-purple w-10 text-right">
+                  {fps} fps
+                </span>
               </div>
             </>
           )}

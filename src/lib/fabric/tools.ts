@@ -10,13 +10,31 @@ export type BrushKey = keyof typeof BRUSHES;
 
 export const KID_PALETTE = [
   // Row 1 — bold primaries + favorites
-  '#FF6B6B', '#FF8E53', '#FECA57', '#48DBFB',
-  '#6C5CE7', '#A29BFE', '#FD79A8', '#00B894',
-  '#2D3436', '#FDFDFD', '#E17055', '#81ECEC',
+  '#FF6B6B',
+  '#FF8E53',
+  '#FECA57',
+  '#48DBFB',
+  '#6C5CE7',
+  '#A29BFE',
+  '#FD79A8',
+  '#00B894',
+  '#2D3436',
+  '#FDFDFD',
+  '#E17055',
+  '#81ECEC',
   // Row 2 — expanded range (#16)
-  '#D63031', '#E84393', '#0984E3', '#00CEC9',
-  '#6AB04C', '#F9CA24', '#F0932B', '#EB4D4B',
-  '#7ED6DF', '#C4E538', '#9B59B6', '#BDC3C7',
+  '#D63031',
+  '#E84393',
+  '#0984E3',
+  '#00CEC9',
+  '#6AB04C',
+  '#F9CA24',
+  '#F0932B',
+  '#EB4D4B',
+  '#7ED6DF',
+  '#C4E538',
+  '#9B59B6',
+  '#BDC3C7',
 ] as const;
 
 export const BACKGROUNDS = [

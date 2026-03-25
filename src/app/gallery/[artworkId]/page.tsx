@@ -22,7 +22,12 @@ import { PlaybackOverlay } from '@/components/flipbook/PlaybackOverlay';
 import Image from 'next/image';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
 
-type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate' | 'room-picker';
+type ModalState =
+  | 'none'
+  | 'delete-confirm'
+  | 'delete-gate'
+  | 'unpublish-gate'
+  | 'room-picker';
 
 function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);

@@ -19,11 +19,21 @@ interface MiniToolbarProps {
 }
 
 const TOOLS: Record<BrushKey, string> = {
-  crayon: '🖍️', pencil: '✏️', marker: '🖌️', spray: '💨', eraser: '🧹',
+  crayon: '🖍️',
+  pencil: '✏️',
+  marker: '🖌️',
+  spray: '💨',
+  eraser: '🧹',
 };
 
 export function MiniToolbar({
-  canvas, onUndo, onRedo, canUndo, canRedo, frameVersion = 0, compact = false,
+  canvas,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  frameVersion = 0,
+  compact = false,
 }: MiniToolbarProps) {
   const [tool, setTool] = useState<BrushKey>('crayon');
   const [color, setColor] = useState<string>(KID_PALETTE[0]);
@@ -104,23 +114,35 @@ export function MiniToolbar({
         >
           {onUndo && (
             <>
-              <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">↩️</BigButton>
-              <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">↪️</BigButton>
+              <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+                ↩️
+              </BigButton>
+              <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+                ↪️
+              </BigButton>
               <div className="w-px h-6 bg-gray-200 mx-0.5 flex-shrink-0" />
             </>
           )}
           {(Object.keys(TOOLS) as BrushKey[]).map((k) => (
-            <BigButton key={k} onClick={() => selectTool(k)} active={tool === k} aria-label={k}>
+            <BigButton
+              key={k}
+              onClick={() => selectTool(k)}
+              active={tool === k}
+              aria-label={k}
+            >
               {TOOLS[k]}
             </BigButton>
           ))}
           <div className="w-px h-6 bg-gray-200 mx-0.5 flex-shrink-0" />
           {KID_PALETTE.map((c) => (
             <button
-              key={c} onClick={() => selectColor(c)}
+              key={c}
+              onClick={() => selectColor(c)}
               className="flex-shrink-0 rounded-full transition-transform duration-100"
               style={{
-                backgroundColor: c, width: 28, height: 28,
+                backgroundColor: c,
+                width: 28,
+                height: 28,
                 border: color === c ? '3px solid #2D3436' : '2px solid #E0E0E0',
                 transform: color === c ? 'scale(1.15)' : 'scale(1)',
               }}
@@ -140,25 +162,39 @@ export function MiniToolbar({
       >
         {onUndo && (
           <>
-            <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">↩️</BigButton>
-            <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">↪️</BigButton>
+            <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+              ↩️
+            </BigButton>
+            <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+              ↪️
+            </BigButton>
             <div className="w-px h-7 bg-gray-200 mx-0.5" />
           </>
         )}
         {(Object.keys(TOOLS) as BrushKey[]).map((k) => (
-          <BigButton key={k} onClick={() => selectTool(k)} active={tool === k} aria-label={k}>
+          <BigButton
+            key={k}
+            onClick={() => selectTool(k)}
+            active={tool === k}
+            aria-label={k}
+          >
             {TOOLS[k]}
           </BigButton>
         ))}
         {tool === 'eraser' && (
-          <span className="text-xs font-bold text-kid-red animate-pulse ml-1">Erasing</span>
+          <span className="text-xs font-bold text-kid-red animate-pulse ml-1">
+            Erasing
+          </span>
         )}
       </div>
 
       <div className="flex items-center gap-2 px-5 pb-0.5 landscape:hidden">
         <span className="text-[10px] text-gray-400">thin</span>
         <input
-          type="range" min={1} max={40} value={size}
+          type="range"
+          min={1}
+          max={40}
+          value={size}
           onChange={(e) => changeSize(+e.target.value)}
           className="flex-1 h-5 accent-kid-purple"
         />
@@ -171,10 +207,13 @@ export function MiniToolbar({
       >
         {KID_PALETTE.map((c) => (
           <button
-            key={c} onClick={() => selectColor(c)}
+            key={c}
+            onClick={() => selectColor(c)}
             className="flex-shrink-0 rounded-full transition-transform duration-100"
             style={{
-              backgroundColor: c, width: 32, height: 32,
+              backgroundColor: c,
+              width: 32,
+              height: 32,
               border: color === c ? '3px solid #2D3436' : '2px solid #E0E0E0',
               transform: color === c ? 'scale(1.2)' : 'scale(1)',
             }}

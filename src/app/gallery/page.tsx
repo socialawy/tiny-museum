@@ -112,9 +112,17 @@ export default function GalleryPage() {
       {/* Artwork display */}
       <div className="flex-1">
         {viewMode === 'walk' ? (
-          <MuseumWalk artworks={artworks} onArtworkTap={handleArtworkTap} isFirst={showCoach} />
+          <MuseumWalk
+            artworks={artworks}
+            onArtworkTap={handleArtworkTap}
+            isFirst={showCoach}
+          />
         ) : (
-          <GalleryGrid artworks={artworks} onArtworkTap={handleArtworkTap} isFirst={showCoach} />
+          <GalleryGrid
+            artworks={artworks}
+            onArtworkTap={handleArtworkTap}
+            isFirst={showCoach}
+          />
         )}
       </div>
       {showCoach && (

@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-03-25
+
+### Added (Sprint 4: First Impression)
+- **Coach Mark Infrastructure**: Implemented a portal-based tutorial system with animated spotlights and speech bubbles.
+- **Onboarding Tours**: Created guided walkthroughs for the **Studio**, **Flipbook Studio**, and **Gallery** to help new users.
+- **Demo Museum Seeder**: Added a background seeder that populates the museum with high-quality demo content (3 drawings, 1 animation) on the first visit.
+- **Replayability**: Added a "Replay All Tutorials" button in Settings to reset the onboarding experience.
+- **Seeder Reliability**: Improved `canvasJSON` and thumbnail generation to ensure demo content is visible and functional.
+
+### Fixed
+- **Demo Content**: Fixed an issue where demo artworks appeared blank when opened in the studio.
+- **Flipbook Animation**: Fixed a bug in the seeder where demo flipbook frames were empty, preventing playback.
+- **Toolbar Cleanup**: Removed unused `artworkId` state in `FlipbookStudio.tsx`.
+- **Save Refinement**: Improved `handleSendToGallery` in `StudioCanvas.tsx` for more robust gallery transitions.
+
+## [0.3.0] - 2026-03-25
+
+### Added (Sprint 3: Product Polish & Management)
+- **Canvas Guards**: Implemented `isCanvasEmpty` to prevent saving/auto-saving blank canvases in Studio and Flipbook.
+- **Room Management**: Added renaming and deletion of custom rooms (parent-gated).
+- **Organization**: Integrated `RoomPicker` into the exhibit view to move artworks between rooms.
+- **Flipbook Studio**: 
+  - Responsive **Landscape Mode** with a compact mobile-optimized toolbar.
+  - **Background Picker** for animations.
+  - **Onion Skin** stability and performance optimizations (pre-rendering frames).
+- **Pro Polish**: 
+  - **Per-tool Memory**: Brushes now remember their last used size independently.
+  - **24-Color Palette**: Expanded from 12 to 24 curated vibrant colors.
+  - **Brand Personality**: Randomized gallery naming (e.g., "The Giggle Gallery").
+- **Documentation**: Integrated project philosophy and the "Creation → Curation → Exhibition" loop into `README.md` and `ARCHITECTURE.md`.
+
+### Fixed
+- **Flipbook Ghosting**: Fixed a race condition causing "ghost frames" during frame duplication (#2).
+- **Save Hygiene**: Fixed an issue where "Save to Gallery" could still persist an empty canvas from the Studio.
+- **Mobile Playback**: Swapped canvas rendering for data URLs in `PlaybackOverlay` to ensure compatibility across all mobile browsers.
+
+### Performance & Quality
+- **Test Suite**: Expanded to **73 passing unit tests**.
+- **Repo Health**: Consolidated `master` branch into `main`. `main` is now the primary production branch.
+
+---
+
 ## [0.2.0] - 2026-03-25
 
 ### Added (Autonomous Pipeline: Jules + Gemini)

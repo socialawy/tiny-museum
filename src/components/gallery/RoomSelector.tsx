@@ -154,9 +154,10 @@ export function RoomSelector({
                   flex items-center gap-1.5 px-4 py-2 rounded-full
                   font-bold text-sm whitespace-nowrap
                   transition-all duration-150
-                  ${activeRoomId === room.id
-                    ? 'text-white shadow-md scale-105'
-                    : 'bg-white text-gray-600 border-2 border-gray-200 active:scale-95'
+                  ${
+                    activeRoomId === room.id
+                      ? 'text-white shadow-md scale-105'
+                      : 'bg-white text-gray-600 border-2 border-gray-200 active:scale-95'
                   }
                 `}
                 style={
@@ -205,7 +206,10 @@ export function RoomSelector({
         <div
           className="fixed inset-0 z-[999] flex items-center justify-center px-6"
           style={{ background: 'rgba(0,0,0,0.4)' }}
-          onClick={() => { setAction('none'); setActionRoomId(null); }}
+          onClick={() => {
+            setAction('none');
+            setActionRoomId(null);
+          }}
         >
           <div
             className="bg-white rounded-kid p-6 max-w-xs w-full text-center shadow-2xl"
@@ -232,7 +236,10 @@ export function RoomSelector({
                 🗑️ Delete Room
               </button>
               <button
-                onClick={() => { setAction('none'); setActionRoomId(null); }}
+                onClick={() => {
+                  setAction('none');
+                  setActionRoomId(null);
+                }}
                 className="px-5 py-3 bg-gray-100 rounded-kid font-bold text-gray-500
                            active:scale-95 transition-transform min-h-[48px]"
               >
@@ -254,7 +261,10 @@ export function RoomSelector({
           cancelLabel="Keep it"
           danger
           onConfirm={handleDeleteFinal}
-          onCancel={() => { setAction('none'); setActionRoomId(null); }}
+          onCancel={() => {
+            setAction('none');
+            setActionRoomId(null);
+          }}
         />
       )}
     </>

@@ -11,7 +11,12 @@ interface ArtworkCardProps {
   isFirst?: boolean;
 }
 
-export function ArtworkCard({ artwork, size = 'walk', onClick, isFirst }: ArtworkCardProps) {
+export function ArtworkCard({
+  artwork,
+  size = 'walk',
+  onClick,
+  isFirst,
+}: ArtworkCardProps) {
   const [thumbUrl, setThumbUrl] = useState<string>('');
 
   useEffect(() => {

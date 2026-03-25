@@ -17,11 +17,7 @@ interface PlaybackOverlayProps {
 }
 
 /** Render a Fabric JSON frame to a data URL — most mobile-compatible path */
-async function renderFrameToDataUrl(
-  json: string,
-  w: number,
-  h: number,
-): Promise<string> {
+async function renderFrameToDataUrl(json: string, w: number, h: number): Promise<string> {
   const wrapper = document.createElement('div');
   wrapper.style.cssText =
     'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;';
@@ -66,7 +62,11 @@ function dataUrlToCanvas(
 }
 
 export function PlaybackOverlay({
-  frames, fps, canvasWidth, canvasHeight, onClose,
+  frames,
+  fps,
+  canvasWidth,
+  canvasHeight,
+  onClose,
 }: PlaybackOverlayProps) {
   const [frameUrls, setFrameUrls] = useState<string[]>([]);
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -78,10 +78,13 @@ export function PlaybackOverlay({
     (index: number) => {
       try {
         const p = JSON.parse(frames[index]?.canvasJSON ?? '{}') as {
-          _w?: number; _h?: number;
+          _w?: number;
+          _h?: number;
         };
         if (p._w && p._h) return { w: p._w, h: p._h };
-      } catch { /* fall through */ }
+      } catch {
+        /* fall through */
+      }
       return { w: canvasWidth, h: canvasHeight };
     },
     [canvasHeight, canvasWidth, frames],
@@ -118,7 +121,9 @@ export function PlaybackOverlay({
           urls.push(url);
         } catch {
           // Transparent 1x1 fallback
-          urls.push('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+          urls.push(
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+          );
         }
       }
 
@@ -128,7 +133,9 @@ export function PlaybackOverlay({
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [frames, getFrameDims]);
 
   // ── Animation loop — just swap image src ──
@@ -189,7 +196,10 @@ export function PlaybackOverlay({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Playback display */}
-        <div className="rounded-kid overflow-hidden shadow-2xl bg-white" style={{ padding: 8 }}>
+        <div
+          className="rounded-kid overflow-hidden shadow-2xl bg-white"
+          style={{ padding: 8 }}
+        >
           {!ready ? (
             <div
               className="flex items-center justify-center"
@@ -227,7 +237,9 @@ export function PlaybackOverlay({
 
         {/* Controls */}
         <div className="flex gap-3">
-          <BigButton onClick={onClose} aria-label="Close">✕</BigButton>
+          <BigButton onClick={onClose} aria-label="Close">
+            ✕
+          </BigButton>
           <button
             onClick={handleExportGif}
             disabled={isExporting || !ready}

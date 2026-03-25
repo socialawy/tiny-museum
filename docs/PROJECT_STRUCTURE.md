@@ -13,6 +13,8 @@ This document provides a detailed overview of the Tiny Museum codebase, mapping 
 - `tailwind.config.ts`: Tailwind CSS configuration.
 - `tsconfig.json`: TypeScript configuration.
 - `vitest.config.ts`: Vitest configuration for testing.
+- `eslint.config.mjs`: ESLint configuration.
+- `postcss.config.js`: PostCSS configuration.
 
 ---
 
@@ -62,6 +64,18 @@ This document provides a detailed overview of the Tiny Museum codebase, mapping 
 ### 🎨 `assets/`
 - `stickers/`, `frames/`, `sounds/`, `textures/`, `mascot/`.
 
+### 🪝 `hooks/` (Custom Hooks)
+- `useFabricCanvas.ts`: Fabric.js lifecycle and instance management.
+- `useBlobUrl.ts`: Memory-safe management of canvas exports.
+- `useSounds.ts`: Audio triggers for UI interactions.
+- `useVisualViewport.ts`: Mobile keyboard and viewport resizing fixes.
+
+### 🎨 `styles/` (Global Styles)
+- `globals.css`: Tailwind directives, design tokens, and global animations.
+
+### 🏷️ `types/` (Type Definitions)
+- `global.d.ts`: Global TypeScript definitions and environment augmentations.
+
 ---
 
 ## 🧪 Testing
@@ -77,3 +91,24 @@ This document provides a detailed overview of the Tiny Museum codebase, mapping 
 - **Local Database**: Dexie.js (IndexedDB)
 - **State Management**: Zustand
 - **Testing**: Vitest
+
+---
+
+## 📊 Project Statistics
+
+| Extension | Count |
+|-----------|-------|
+| .ts       | 46    |
+| .tsx      | 38    |
+| .md       | 20    |
+| .json     | 13    |
+| .html     | 11    |
+| .txt      | 8     |
+| .png      | 7     |
+| .js       | 4     |
+| .yml      | 4     |
+| .css      | 3     |
+| .jpg      | 3     |
+| .svg      | 3     |
+
+*Statistics exclude `node_modules`, `.next`, and `.git` directories.*

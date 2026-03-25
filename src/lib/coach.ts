@@ -21,7 +21,11 @@ export const SEQUENCES: Record<CoachArea, CoachStep[]> = {
   flipbook: [
     { coachId: 'flip-add', message: 'Tap to add a new page!', placement: 'above' },
     { coachId: 'flip-dup', message: 'Copy this page!', placement: 'above' },
-    { coachId: 'flip-ghost', message: 'See your last drawing faintly', placement: 'above' },
+    {
+      coachId: 'flip-ghost',
+      message: 'See your last drawing faintly',
+      placement: 'above',
+    },
     { coachId: 'flip-play', message: 'Watch your animation!', placement: 'above' },
   ],
   gallery: [
@@ -41,7 +45,9 @@ export function isCoachSeen(area: CoachArea): boolean {
 export function markCoachSeen(area: CoachArea): void {
   try {
     localStorage.setItem(KEYS[area], '1');
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 }
 
 export function resetCoachMarks(): void {
@@ -49,5 +55,7 @@ export function resetCoachMarks(): void {
     for (const key of Object.values(KEYS)) {
       localStorage.removeItem(key);
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 }

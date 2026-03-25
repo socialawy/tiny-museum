@@ -421,62 +421,72 @@ GENERAL
 
 ---
 
+## Sprint 4: First Impression (Onboarding & Demos) ✅
+*Completed: 2026-03-25*
 
-## Next Actions 
+This sprint focused on making the first visit to Tiny Museum feel magic and guided by providing high-quality demo content and a structured tour.
 
-### Tooltips / Onboarding (High Impact)
+### Key Milestones
+- **Coach Mark Infrastructure**: Implemented an animated, portal-based onboarding system.
+    - **Spotlights**: Dynamic SVG-based overlays that focus on specific UI targets with smooth transitions.
+    - **Sequences**: Tailored tours for the drawing **Studio**, **Flipbook Studio**, and **Gallery**.
+    - **Replayability**: Added a "Replay All Tutorials" button to the Settings page.
+- **Demo Museum Seeder**:
+    - **Welcome Gallery**: Creates a dedicated room for new users to explore.
+    - **High-Quality Content**:
+        - **Starry Night**: Procedural dark sky, crescent moon, and 15+ stars with sparkles over rolling hills.
+        - **Flower Garden**: Sunny day with a rainbow flower bed, stems, petals, and butterflies.
+        - **Underwater World**: Ocean depth with light rays, sandy floor, seaweed, bubbles, and 4 types of fish.
+        - **Dancing Star (Flipbook)**: A 6-frame animation where a star grows, rotates, and sparkles against a cosmic background.
+    - **Asset Hygiene**: Generates representative thumbnails and valid `canvasJSON` on-the-fly to ensure the museum feels "alive" immediately. (Seeded v4)
+- **UI Tagging**: Standardized `data-coach` attributes across the application for precise tutorial targeting.
 
-CONCEPT: Coach Marks
-━━━━━━━━━━━━━━━━━━━━
-First time in Flipbook:
-  → Spotlight on ＋ → "Tap to add a new page!"
-  → Spotlight on 📋 → "Tap to duplicate a page!"
-  → Spotlight on 👻 → "See your last drawing faintly"
-  → Spotlight on ▶️ → "Watch your animation!"
+### Bug Fixes
+- **Demo Visibility**: Fixed an issue where demo artworks appeared blank when loaded into the library.
+- **Animation Sync**: Resolved empty frame data in the seeder that prevented the "Bouncing Ball" from playing.
+- **Toolbar Refinement**: Removed unused state and improved gallery transition logic for a smoother exit from the Studio.
 
-Implementation:
-  - localStorage flag: `tooltips_flipbook_seen`
-  - Component: <CoachMark target={ref} message="..." step={1} total={3} />
-  - Dismiss on tap, auto-advance, skip-all button
-  - Replayable from Settings
+---
 
-### Mobile Canvas Space (maybe a quick research for best practices)
+## Current Status: SPRINT 4 COMPLETE ✅ — Onboarding & Demos Live
+*2026-03-25*
 
-- The real problem: on a 667px phone, the flipbook has ~5 UI layers eating vertical space. Priority order for reclaiming pixels:
-```
-CURRENT (portrait):
-  Top bar:        ~48px
-  Canvas:         ~250px  ← TOO SMALL
-  MiniToolbar:    ~120px (3 rows)
-  BG button:      ~36px
-  Frame strip:    ~80px
-  Controls:       ~48px
-  Speed slider:   ~40px
-  ─────────────────────
-  Total chrome:   ~372px of 667px = 56% chrome, 44% canvas
+### Shipped
+- [x] Coach Mark System (Portal-based spotlights)
+- [x] Onboarding tours for all primary studios
+- [x] Demo content seeder (3 drawings, 1 animation)
+- [x] Tutorial reset in Settings
+- [x] Fixed all empty-canvas demo bugs
+![alt text](image.png)
 
-Order:
-  1. Merge BG button into MiniToolbar (add 🎨 as another tool)
-  2. Merge speed slider into controls row (small inline)
-  3. Frame strip: collapse to single row, max 48px
-  4. MiniToolbar: hide brush size by default, show on tool long-press
-  
-  Result: ~200px chrome, ~467px canvas = 70% canvas
-  ```
-### Sprint 4 Candidates
+### Verification
+- **78 unit tests passing** (up from 73).
+- Manual verification via browser subagent confirmed thumbnails, drawing content, and animation playback.
 
-- Should have a built-in/loaded impressiv demo, both Flipbook and Studio, when the user first opens the app. This demo can be saved as a room in the gallery, and the user should be able to play it.
+---
 
-- Adding images/imports to flipbook
+## Next Actions
 
-- Priority order:
-  1. Tooltips / coach marks (first-run experience)
-  2. Mobile canvas space optimization (merge UI layers)
-  3. #17 More brush types (glitter, rainbow, stamp)
-  4. #18 Layer tray (background/middle/foreground)
-  5. Smart automated testing (Playwright for the manual checklist)
+### Canvas size/borders show (expect what the output will look like)
 
-### Repo Health Notes (2026-03-25, review)
+### Artworks dimension and canvas size, Flipbook player size adjustment
+
+- Slide-in/out sidebars for desktop
+
+### Mobile UI Consolidation 📱
+- The real task: reclaim vertical pixels on small devices.
+- Merge background picker into the main toolbar.
+- Collapse frame strip height on mobile portrait.
+- Move speed slider into the playback controls row.
+
+### More Magic ✨
+- #17 More brush types (Glitter, Rainbow, Stamp).
+- #18 Layer tray (Background / Middle / Foreground).
+- #19 Import images/photos directly into flipbook frames.
+
+---
+
+## Repo Health Notes (2026-03-25, review)
 - `master` synced to `main` (was 16 commits behind). `main` is now the default branch.
 - `next lint` is deprecated in Next.js 16 — migrate to ESLint CLI before upgrading (`npx @next/codemod@canary next-lint-to-eslint-cli .`).
 - Consider dropping the `master` branch entirely to avoid future drift. All CI, PRs, and deploys should target `main`.
