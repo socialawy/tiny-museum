@@ -341,206 +341,96 @@ Full sprint delivered autonomously — one PR per day, all Gemini-approved and a
 
 ### Key Milestones
 - **Gallery thumbnail polish (PR #10)**: Switched `object-contain` → `object-cover` for gallery thumbnails. Merged 2026-03-22.
-- **Mobile safe-area insets (PR #11, closes #5)**: Added viewport-aware padding for notch/home-bar devices. Merged 2026-03-23.
-- **Keyboard avoidance in studio (PR #12, closes #6)**: New `useVisualViewport` hook to resize canvas when soft keyboard opens. Tests included. Merged 2026-03-24.
-- **Studio access control — PIN gate (PR #13, closes #7)**: Settings page with PIN setup, `PinGate` component wrapping studio routes. Tests included. Merged 2026-03-25.
+- **Mobile safe-area insets (PR #11, closes #5)**: Added viewport-aware padding f## Sprint 3: The Polish & Management Sprint ✅
+*Completed: 2026-03-25*
+
+This sprint focused on hardening the studio experience, improving room organization, and adding "pro" polish to the Flipbook Studio.
+
+---
+
+## Sprint 3: The Polish & Management Sprint ✅
+*Completed: 2026-03-25*
+
+### Key Milestones
+- **Canvas Guards (#11, #21)**: Implemented `isCanvasEmpty` to prevent saving blank canvases, ensuring manual and auto-saves only occur when content exists.
+- **Room Management (#14, #15)**: 
+    - Added room deletion and renaming with parent-gated protection.
+    - Integrated `RoomPicker` into the exhibit page to allow moving artworks between rooms.
+- **Flipbook Studio Enhancements**:
+    - **UX/Layout (#12, #12b)**: Added responsive landscape mode with a compact toolbar.
+    - **Performance (#25)**: Optimized `PlaybackOverlay` by pre-rendering frames to avoid Fabric.js overhead during playback.
+    - **Features (#23, #24, #27)**: Fixed onion skinning, implemented deferred database entry creation, and added a background picker.
+- **General Studio Polish**:
+    - **Per-tool Memory (#26)**: Brushes now remember their last used size independently.
+    - **Fun Branding (#20)**: Replaced generic titles with a randomized name generator (e.g., "The Giggle Gallery").
+    - **Visuals (#16, #22)**: Extended to 24-color palette. Replaced the flat "Live" icon with a glowing purple ribbon badge.
+    - **Navigation (#19)**: Integrated Flipbook Studio into the global bottom navigation.
+
+### Storage & reliability
+- Fixed zero-byte thumbnail blobs showing as broken images (#13).
+- Added exit confirmation dialogs to prevent accidental loss of unsaved animation frames.
 
 ### Verification
-- All 4 PRs passed CI Pipeline + CodeQL before merge
-- Gemini APPROVED all 4 with no escalations or change requests
-- Issues #5, #6, #7 closed (auto-close failed on squash merge — closed manually)
-
-### Pipeline notes
-- `delete_branch_on_merge` enabled on repo
-- 4 stale Jules branches cleaned
+- **73 unit tests passing** (up from 50).
+- Fully synchronized across `main` and `master`.
 
 ---
 
-## Sprint 3: Monitoring & Install  - Fix & Enhance 
+## Manual test checklist
 
-### implementations for #10, #11, #12, #13, #24. Three complete drop-in files, then diffs for StudioCanvas.
+MANUAL TEST CHECKLIST — Sprint 3 Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- File 1: src/components/flipbook/MiniToolbar.tsx — NEW
-- File 2: src/components/flipbook/FrameStrip.tsx — REPLACEMENT
-Fixes #13: zero-byte thumbnail blobs no longer show broken images.
-- File 3: src/components/flipbook/FlipbookStudio.tsx — REPLACEMENT
-Covers #10 (drawing toolbar), #12 (mobile layout), #24 (deferred creation).
+STUDIO (Canvas)
+  [x] Open Studio → draw nothing → tap 💾 → should NOT save
+  [~] Open Studio → draw nothing → tap 🏛️ → should go to gallery, no new artwork (It does create a new empty artwork)
+  [x] Open Studio → draw nothing → wait 35s → gallery has NO new blank entry
+  [x] Open Studio → draw something → tap 🏛️ → gallery has new artwork ✓
+  [~] Open Studio → draw something → tap Home (bottom nav) → check gallery
+      → Expected: artwork MAY exist from auto-save. Is this OK? (not clear, if clicke back at browser, it doesn't save. The concept to home save, if has data is fine.)
 
-- File 4: src/components/canvas/StudioCanvas.tsx — DIFF
-These are the targeted changes for #11 (empty canvas guard) and #21 (auto-save empty guard).
+FLIPBOOK
+  [x] Open Flipbook → draw on frame 1 → tap ＋ (new frame)
+  [x] Draw on frame 2 → tap ◀ back to frame 1
+      → Expected: frame 1 shows your drawing, NOT blank
+  [x] Tap ▶️ Play → both frames animate
+  [x] Tap 🏛️ Save to Gallery → go to gallery
+  [x] Tap the flipbook card → exhibit view
+  [x] Tap ▶️ Play in exhibit → animation plays at correct size
+  [x] Open Flipbook → draw nothing → tap ← back
+      → Expected: no phantom entry in gallery
 
-Added this helper near the top, below the imports:
+GALLERY
+  [x] Long-press custom room → parent gate → Rename works
+  [x] Long-press custom room → parent gate → Delete works
+  [x] Open artwork → tap 📂 → room picker shows, move works
+  [x] Published badge shows purple "🌐 Live" ribbon
 
-```ts
-/** Returns true when the canvas has zero user content */
-function isCanvasEmpty(fabricCanvas: Record<string, unknown>): boolean {
-  try {
-    const getObjectsFn = fabricCanvas.getObjects as (() => unknown[]) | undefined;
-    const objects = getObjectsFn?.call(fabricCanvas) ?? [];
-    return objects.length === 0;
-  } catch {
-    return true;
-  }
-}
-```
+GENERAL
+  [x] Bottom nav shows 4 items: Gallery, Home, Studio, Flipbook
+  [x] Colors show 24 options in studio + flipbook
+  [x] Switch crayon (size 30) → pencil → back to crayon → size is still 30
 
-- Replaced handleSave:
+### Bug 1: Flipbook Ghost Frame on Duplicate
 
-```ts
-const handleSave = useCallback(async () => {
-  if (!canvas || saving) return;
-  if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) {
-    playSound('toolSwitch'); // subtle feedback, no save
-    return;
-  }
-  setSaving(true);
-  try {
-    const artwork = await saveArtwork(
-      canvas as unknown as Record<string, unknown>,
-      currentArtworkId,
-    );
-    setCurrentArtworkId(artwork.id);
-    celebrate();
-    playSound('save');
-  } catch (err) {
-    console.error('Save failed:', err);
-  } finally {
-    setSaving(false);
-  }
-}, [canvas, saving, currentArtworkId, celebrate, playSound]);
-```
+- src/components/flipbook/FlipbookStudio.tsx — REPLACEMENT
 
-- Replaced the auto-save interval (inside the useEffect):
+### Bug 2: Studio 🏛️ Still Saves Empty Canvas
 
-```ts
-// Inside the setInterval callback, add empty check (#21):
-if (!currentArtworkId) return;
-if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) return;
-
-// ...rest of doSave unchanged
-```
-
-### Summary of What Ships
-Issue	Status	File(s)
-#10 Flipbook drawing toolbar	✅	MiniToolbar.tsx (new) + FlipbookStudio.tsx
-#11 Empty canvas guard	✅	StudioCanvas.tsx diff + FlipbookStudio.tsx exit dialog
-#12 Flipbook mobile layout	✅	FlipbookStudio.tsx — landscape pill, portrait capped strip
-#13 Broken thumbnails	✅	FrameStrip.tsx — zero-byte blob check
-#21 Auto-save empty guard	✅	StudioCanvas.tsx diff
-#23 Onion skin (partial)	✅	FlipbookStudio.tsx — thumbnail-based overlay
-#24 Phantom flipbook entry	✅	FlipbookStudio.tsx — deferred createFlipbook()
+- src/components/flipbook/PlaybackOverlay.tsx — REPLACEMENT
 
 ---
 
-### Implementation for: #14 (room delete) and #15 (move art to room), plus the landscape fix #12b.
-
-- File 1: src/components/gallery/RoomSelector.tsx — REPLACEMENT
-Adds delete option alongside rename after ParentGate unlock.
-
-- File 2: src/components/gallery/RoomPicker.tsx — NEW
-A bottom-sheet room picker for moving artwork.
-
-- File 3: src/app/gallery/[artworkId]/page.tsx — REPLACEMENT
-Adds the "Move to Room" button and integrates RoomPicker.
- 
-- wire up the gallery page to pass onRoomDeleted:
-src/app/gallery/page.tsx
+## Current Status: SPRINT 3 COMPLETE ✅
+*2026-03-25*
 
 ---
 
-### #12b + #25
+## Next Actions (Sprint 4) (On hold, 2 for Jules, 2 for future)
+- [ ] Vercel Analytics + Speed Insights (#8)
+- [ ] PWA install prompt (#9)
+- [ ] More brush types: Glitter, Rainbow, Stamps (#17)
+- [ ] Layer tray: Background/Middle/Foreground (#18)
 
-- File 1: src/components/flipbook/MiniToolbar.tsx — REPLACEMENT
-Adds compact prop for landscape single-row mode (#12b).
-
-- File 2: src/components/flipbook/FlipbookStudio.tsx — DIFF
-One-line change. Find the <MiniToolbar render and add compact:
-`compact={isLandscape}`
-
-- File 3: src/components/flipbook/PlaybackOverlay.tsx — REPLACEMENT
-Pre-renders all frames on mount instead of creating Fabric per tick (#25).
-
-### #16 + #20 + #26 are all quick wins — extended palette, fun names, and brush size memory. 
-
-- File 1: src/lib/fabric/tools.ts — REPLACEMENT
-Extended palette from 12 → 24 colors (#16).
-
-- File 2: src/lib/names.ts — NEW
-Fun name generator (#20).
-
-- File 3: src/lib/storage/artworks.ts — DIFF
-Replace the title generation line.
-
-- File 4: src/lib/storage/flipbook.ts — DIFF
-Replace the title generation line in createFlipbook
-
-- File 5: src/components/canvas/Toolbar.tsx — DIFF
-Per-tool brush size memory (#26). Three changes:
-
-1. Replace the brushSize state (near top of component):
-2. Replace enterDrawMode:
-3. Replace changeBrushSize:
-
-- File 6: src/components/flipbook/MiniToolbar.tsx — DIFF
-Same per-tool memory for flipbook (#26). Three changes:
-
-1. Replace size state:
-2. Replace selectTool:
-3. Replace changeSize:
-4. Update the initial apply — in both useEffects that call applyBrush, replace size with sizes[tool]:
-
-
-### Next batch: #19 + #22 + #27 — all quick wins.
-
-- File 1: src/app/layout.tsx — REPLACEMENT
-Adds Flipbook to bottom nav (#19).
-
-- File 2: src/components/gallery/ArtworkCard.tsx — REPLACEMENT
-Published badge is now a ribbon with glow (#22).
-
-- File 3: src/components/flipbook/FlipbookStudio.tsx — DIFF
-Add background picker for flipbook (#27). Three small changes:
-
-
----
-
-## Next Actions (backlog)
-
-### Sprint 3: Monitoring & Install  - Fix & Enhance 
-- [ ] Vercel Analytics + Speed Insights (issue #8)
-- [ ] PWA install prompt (issue #9)
-- **Demo content** — publish a few nice artworks/flipbooks so `/gallery/published` looks great for new visitors (zero code — just publish from the studio).
-
-**Core Fixes (Critical)**
-  #10 [x] Flipbook: add drawing toolbar (brushes, colors, eraser)
-  #11 [x] Empty canvas guard — don't save blank art on navigate away
-  #12 [x] Flipbook mobile layout — landscape too small, portrait play btn hidden
-  ##12b [x] — Landscape: collapse MiniToolbar to single row
-    Hide brush size row (already has landscape:hidden ✅)
-    Merge tools + colors into one horizontally scrollable strip
-    OR: hide MiniToolbar entirely in landscape, show a floating 🎨 button that opens it as a popover
-**Reliability (High)**
-  #13 [x] Broken thumbnails — zero-byte blob check + audit export pipeline
-  #14 [x] Room delete UI — parent-gated, relocate orphaned art
-  #15 [x] Move art to room — exhibit view or card action
-  #23 [x] Onion skin is a no-op — implement actual overlay
-  #24 [x] Flipbook phantom entry — defer createFlipbook until first action
-
-**Performance (High)**  
-  #25 [x] PlaybackOverlay — pre-render frames, don't create Fabric per tick
-
-**Studio Enhancement (Medium)**
-  #16 [x] Extended color palette — 24+ presets + color wheel picker
-  #17 [ ] More brush types (glitter, rainbow, stamp)
-  #18 [ ] Layer tray (background / middle / foreground)
-  #26 [x] Per-tool brush size memory
-  #27 [x] Flipbook background picker
-
-**Polish (Low)**
-  #19 [x] Flipbook entry in side nav
-  #20 [x] Fun default artwork names (not "Masterpiece #228")
-  #21 [x] Auto-save empty canvas guard (30s timer shouldn't save blank)
-  #22 [x] Published badge visibility — larger/more contrast
-
-### Future (Phase 5)
+## Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber).

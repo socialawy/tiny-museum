@@ -155,6 +155,10 @@ export default function StudioCanvas() {
 
   const handleSendToGallery = useCallback(async () => {
     if (!canvas || saving) return;
+    if (isCanvasEmpty(canvas as unknown as Record<string, unknown>)) {
+      router.push('/gallery');
+      return;
+    }
     setSaving(true);
     try {
       const artwork = await saveArtwork(

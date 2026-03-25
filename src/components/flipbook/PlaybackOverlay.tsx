@@ -15,6 +15,44 @@ interface PlaybackOverlayProps {
   onClose: () => void;
 }
 
+/**
+ * Render a single Fabric JSON frame to a static canvas.
+ * The temporary Fabric canvas is attached to the DOM (off-screen)
+ * because mobile browsers require a DOM-attached canvas for WebGL rendering.
+ */
+async function renderFrameToCanvas(
+  json: string,
+  w: number,
+  h: number,
+): Promise<HTMLCanvasElement> {
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:fixed;left:-9999px;top:-9999px;pointer-events:none;';
+  document.body.appendChild(wrapper);
+
+  const tmpEl = document.createElement('canvas');
+  tmpEl.width = w;
+  tmpEl.height = h;
+  wrapper.appendChild(tmpEl);
+
+  const fabric = new FabricCanvas(tmpEl, { width: w, height: h });
+
+  try {
+    const parsed = JSON.parse(json);
+    await fabric.loadFromJSON(parsed);
+    fabric.renderAll();
+
+    const capture = document.createElement('canvas');
+    capture.width = w;
+    capture.height = h;
+    const ctx = capture.getContext('2d')!;
+    ctx.drawImage(fabric.getElement() as HTMLCanvasElement, 0, 0);
+    return capture;
+  } finally {
+    fabric.dispose();
+    document.body.removeChild(wrapper);
+  }
+}
+
 export function PlaybackOverlay({
   frames, fps, canvasWidth, canvasHeight, onClose,
 }: PlaybackOverlayProps) {
@@ -38,7 +76,6 @@ export function PlaybackOverlay({
     [canvasHeight, canvasWidth, frames],
   );
 
-  // Display size: fit first frame into viewport
   const computeDisplaySize = useCallback(() => {
     const { w, h } = getFrameDims(0);
     const maxW = window.innerWidth - 32;
@@ -55,7 +92,7 @@ export function PlaybackOverlay({
     return () => window.removeEventListener('resize', onResize);
   }, [computeDisplaySize]);
 
-  // ── Pre-render all frames on mount (#25) ──
+  // ── Pre-render all frames on mount ──
   useEffect(() => {
     let cancelled = false;
 
@@ -65,31 +102,15 @@ export function PlaybackOverlay({
       for (let i = 0; i < frames.length; i++) {
         if (cancelled) return;
         const { w, h } = getFrameDims(i);
-        const tmpEl = document.createElement('canvas');
-        tmpEl.width = w;
-        tmpEl.height = h;
-        const fabric = new FabricCanvas(tmpEl, { width: w, height: h });
 
         try {
-          const json = JSON.parse(frames[i].canvasJSON);
-          await fabric.loadFromJSON(json);
-          fabric.renderAll();
-
-          // Capture to a static canvas
-          const capture = document.createElement('canvas');
-          capture.width = w;
-          capture.height = h;
-          const ctx = capture.getContext('2d')!;
-          ctx.drawImage(tmpEl, 0, 0);
+          const capture = await renderFrameToCanvas(frames[i].canvasJSON, w, h);
           rendered.push(capture);
         } catch {
-          // Push blank frame on error
           const blank = document.createElement('canvas');
           blank.width = w;
           blank.height = h;
           rendered.push(blank);
-        } finally {
-          fabric.dispose();
         }
       }
 
@@ -102,7 +123,7 @@ export function PlaybackOverlay({
     return () => { cancelled = true; };
   }, [frames, getFrameDims]);
 
-  // ── Animation loop — just drawImage from pre-rendered ──
+  // ── Animation loop ──
   useEffect(() => {
     if (!ready) return;
     const el = displayRef.current;
@@ -120,7 +141,7 @@ export function PlaybackOverlay({
     return () => clearInterval(interval);
   }, [currentFrame, fps, frames.length, ready]);
 
-  // ── GIF Export — reuses pre-rendered canvases ──
+  // ── GIF Export ──
   const handleExportGif = useCallback(async () => {
     if (!ready) return;
     setIsExporting(true);
@@ -159,7 +180,6 @@ export function PlaybackOverlay({
         className="flex flex-col items-center gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Playback canvas */}
         <div className="rounded-kid overflow-hidden shadow-2xl bg-white" style={{ padding: 8 }}>
           {!ready ? (
             <div
@@ -179,7 +199,6 @@ export function PlaybackOverlay({
           )}
         </div>
 
-        {/* Frame indicator */}
         <div className="flex gap-1">
           {frames.map((_, i) => (
             <div
@@ -193,7 +212,6 @@ export function PlaybackOverlay({
           ))}
         </div>
 
-        {/* Controls */}
         <div className="flex gap-3">
           <BigButton onClick={onClose} aria-label="Close">✕</BigButton>
           <button

@@ -35,7 +35,9 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
   const { canvas, isReady, undo, redo, canUndo, canRedo } = useFabricCanvas(containerRef);
 
-  const [artworkId, setArtworkId] = useState<string>(flipbookId ?? '');
+  // Ref-based ID prevents race condition when multiple async calls
+  // run before React state updates (#dupFrame ghost bug)
+  const artworkIdRef = useRef<string>(flipbookId ?? '');
   const [frames, setFrames] = useState<FlipbookFrame[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fps, setFps] = useState(4);
@@ -44,11 +46,8 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
   const [loaded, setLoaded] = useState(false);
   const [showBgPicker, setShowBgPicker] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
-  // Tracks whether any real drawing has happened (fixes #24)
   const [isDirty, setIsDirty] = useState(false);
-  // Incremented after each frame load so MiniToolbar re-applies brush
   const [frameVersion, setFrameVersion] = useState(0);
-  // Landscape detection for compact layout (#12)
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
@@ -82,7 +81,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
       const id = flipbookId ?? '';
 
       if (id) {
-        // Editing existing flipbook
         const artwork = await loadArtwork(id);
         if (artwork) {
           try {
@@ -92,14 +90,12 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         }
         const allFrames = await loadAllFrames(id);
         if (!cancelled) {
-          setArtworkId(id);
+          artworkIdRef.current = id;
           setFrames(allFrames);
           setLoaded(true);
-          setIsDirty(true); // existing flipbook counts as dirty
+          setIsDirty(true);
         }
       } else {
-        // NEW flipbook — defer DB creation until first action (#24)
-        // Start with a virtual empty frame in memory only
         const virtualFrame: FlipbookFrame = {
           id: '__virtual_0',
           artworkId: '__pending',
@@ -119,13 +115,13 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     return () => { cancelled = true; };
   }, [isReady, flipbookId]);
 
-  // ── Ensure DB entry exists (lazy creation for #24) ──
+  // ── Ensure DB entry exists — ref-based to prevent duplicates ──
   const ensureArtworkId = useCallback(async (): Promise<string> => {
-    if (artworkId && artworkId !== '') return artworkId;
+    if (artworkIdRef.current) return artworkIdRef.current;
     const fb = await createFlipbook();
-    setArtworkId(fb.id);
+    artworkIdRef.current = fb.id;
     return fb.id;
-  }, [artworkId]);
+  }, []);
 
   // ── Load frame into canvas ──
   useEffect(() => {
@@ -145,7 +141,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     })();
   }, [canvas, loaded, currentIndex, frames]);
 
-  // ── Onion skin overlay (#23) ──
+  // ── Onion skin overlay ──
   const [onionDataUrl, setOnionDataUrl] = useState<string>('');
 
   useEffect(() => {
@@ -216,8 +212,10 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     const emptyJSON = JSON.stringify({
       version: '6.0.0', objects: [], background: '#FFFEF7',
     });
-    const frame = await saveFrame(id, newIndex, emptyJSON, new Blob([], { type: 'image/webp' }));
-    setFrames((prev) => [...prev, frame]);
+    await saveFrame(id, newIndex, emptyJSON, new Blob([], { type: 'image/webp' }));
+    // Reload from DB to ensure consistency
+    const allFrames = await loadAllFrames(id);
+    setFrames(allFrames);
     setCurrentIndex(newIndex);
     setIsDirty(true);
     playSound('sparkle');
@@ -227,6 +225,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     await saveCurrentFrame();
     const id = await ensureArtworkId();
     await duplicateFrame(id, currentIndex);
+    // Reload from DB to ensure consistency
     const allFrames = await loadAllFrames(id);
     setFrames(allFrames);
     setCurrentIndex(currentIndex + 1);
@@ -273,7 +272,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     setTimeout(() => router.push('/gallery'), 600);
   }, [canvas, fps, saveCurrentFrame, ensureArtworkId, celebrate, playSound, router]);
 
-  // ── Exit handler (#11 — don't save empty canvas) ──
+  // ── Exit handler ──
   const handleBack = useCallback(() => {
     if (isDirty) {
       setShowExitDialog(true);
@@ -289,13 +288,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
 
   const handleExitDiscard = useCallback(() => {
     setShowExitDialog(false);
-    // If it was a new flipbook that never got persisted, nothing to clean up
     router.push('/gallery');
   }, [router]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-studio-bg">
-      {/* Top bar */}
       {loaded && (
         <div
           className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
@@ -314,7 +311,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             </span>
           </div>
           <div className="flex gap-1.5">
-            {/* Speed control — inline in landscape (#12) */}
             {isLandscape && (
               <div className="flex items-center gap-1 mr-2">
                 <span className="text-[10px]">🐢</span>
@@ -333,7 +329,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         </div>
       )}
 
-      {/* Canvas */}
       <div
         ref={containerRef}
         className="flex-1 min-h-0 relative overflow-hidden"
@@ -347,7 +342,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             </div>
           </div>
         )}
-        {/* Onion skin overlay (#23) */}
         {onionDataUrl && (
           <Image
             src={onionDataUrl}
@@ -361,10 +355,8 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         )}
       </div>
 
-      {/* Controls — only when loaded */}
       {loaded && (
         <>
-          {/* Drawing toolbar (#10) */}
           <div className="flex-shrink-0">
             <MiniToolbar
               canvas={canvas}
@@ -376,8 +368,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               compact={isLandscape}
             />
           </div>
- 
-          {/* Background picker toggle — inline after toolbar */}
+
           {!isLandscape && (
             <div className="flex-shrink-0 flex justify-center py-1 bg-white/90 border-t border-gray-50">
               <button
@@ -390,7 +381,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             </div>
           )}
 
-          {/* Frame strip — hidden in landscape, compact pill instead (#12) */}
           {isLandscape ? (
             <div className="flex-shrink-0 flex items-center justify-center gap-2 px-3 py-1 bg-gray-50 border-t border-gray-200">
               <BigButton onClick={prevFrame} disabled={currentIndex === 0}>◀</BigButton>
@@ -406,7 +396,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             </div>
           ) : (
             <>
-              {/* Portrait: full frame strip */}
               <div className="flex-shrink-0 max-h-24 overflow-hidden">
                 <FrameStrip
                   frames={frames}
@@ -415,7 +404,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                 />
               </div>
 
-              {/* Portrait: controls row */}
               <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white border-t-2 border-gray-100">
                 <div className="flex gap-1.5">
                   <BigButton onClick={prevFrame} disabled={currentIndex === 0}>◀</BigButton>
@@ -429,7 +417,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                 </div>
               </div>
 
-              {/* Portrait: speed slider */}
               <div
                 className="flex-shrink-0 flex items-center gap-3 px-6 py-1.5 bg-white border-t border-gray-50"
                 style={{
@@ -450,7 +437,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         </>
       )}
 
-      {/* Playback overlay */}
       {isPlaying && (
         <PlaybackOverlay
           frames={frames}
@@ -461,7 +447,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
         />
       )}
 
-      {/* Exit dialog (#11) */}
       {showExitDialog && (
         <FriendlyDialog
           emoji="🎬"
@@ -474,7 +459,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           onCancel={handleExitDiscard}
         />
       )}
- 
+
       {showBgPicker && (
         <BackgroundPicker canvas={canvas} onClose={() => setShowBgPicker(false)} />
       )}
