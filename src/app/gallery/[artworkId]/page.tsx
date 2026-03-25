@@ -14,6 +14,7 @@ import { useLargeBlob } from '@/hooks/useBlobUrl';
 import { BigButton } from '@/components/ui/BigButton';
 import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
+import { RoomPicker } from '@/components/gallery/RoomPicker';
 import Link from 'next/link';
 import { loadAllFrames } from '@/lib/storage/flipbook';
 import type { FlipbookFrame } from '@/lib/storage/db';
@@ -21,7 +22,7 @@ import { PlaybackOverlay } from '@/components/flipbook/PlaybackOverlay';
 import Image from 'next/image';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
 
-type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate';
+type ModalState = 'none' | 'delete-confirm' | 'delete-gate' | 'unpublish-gate' | 'room-picker';
 
 function FlipbookThumbnail({ artwork }: { artwork: Artwork }) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
@@ -166,6 +167,11 @@ export default function ExhibitPage() {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
+  function handleRoomMoved(newRoomId: string) {
+    setArtwork({ ...artwork!, roomId: newRoomId });
+    setModal('none');
+  }
+
   return (
     <div
       className="flex flex-col min-h-full"
@@ -185,6 +191,9 @@ export default function ExhibitPage() {
           </BigButton>
           <BigButton onClick={handleEdit} aria-label="Edit">
             ✏️
+          </BigButton>
+          <BigButton onClick={() => setModal('room-picker')} aria-label="Move to room">
+            📂
           </BigButton>
           {artwork.type === 'flipbook' ? (
             <BigButton
@@ -215,7 +224,6 @@ export default function ExhibitPage() {
             }}
           >
             <div className="bg-white p-2 rounded-lg">
-              {/* Display area */}
               {artwork.type === 'flipbook' ? (
                 <FlipbookThumbnail artwork={artwork} />
               ) : imageUrl ? (
@@ -298,6 +306,7 @@ export default function ExhibitPage() {
         </div>
       )}
 
+      {/* Modals */}
       {modal === 'delete-confirm' && (
         <FriendlyDialog
           emoji="🥺"
@@ -325,6 +334,15 @@ export default function ExhibitPage() {
           message="A grown-up needs to confirm unpublishing."
           onUnlock={handleUnpublish}
           onCancel={() => setModal('none')}
+        />
+      )}
+
+      {modal === 'room-picker' && (
+        <RoomPicker
+          artworkId={artworkId}
+          currentRoomId={artwork.roomId}
+          onMoved={handleRoomMoved}
+          onClose={() => setModal('none')}
         />
       )}
 

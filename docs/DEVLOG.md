@@ -432,6 +432,22 @@ Issue	Status	File(s)
 
 ---
 
+### Implementation for: #14 (room delete) and #15 (move art to room), plus the landscape fix #12b.
+
+- File 1: src/components/gallery/RoomSelector.tsx — REPLACEMENT
+Adds delete option alongside rename after ParentGate unlock.
+
+- File 2: src/components/gallery/RoomPicker.tsx — NEW
+A bottom-sheet room picker for moving artwork.
+
+- File 3: src/app/gallery/[artworkId]/page.tsx — REPLACEMENT
+Adds the "Move to Room" button and integrates RoomPicker.
+ 
+- wire up the gallery page to pass onRoomDeleted:
+src/app/gallery/page.tsx
+
+---
+
 ## Next Actions (backlog)
 
 ### Sprint 3: Monitoring & Install  - Fix & Enhance 
@@ -443,11 +459,14 @@ Issue	Status	File(s)
   #10 [x] Flipbook: add drawing toolbar (brushes, colors, eraser)
   #11 [x] Empty canvas guard — don't save blank art on navigate away
   #12 [x] Flipbook mobile layout — landscape too small, portrait play btn hidden
-
+  ##12b [x] — Landscape: collapse MiniToolbar to single row
+    Hide brush size row (already has landscape:hidden ✅)
+    Merge tools + colors into one horizontally scrollable strip
+    OR: hide MiniToolbar entirely in landscape, show a floating 🎨 button that opens it as a popover
 **Reliability (High)**
   #13 [x] Broken thumbnails — zero-byte blob check + audit export pipeline
-  #14 [ ] Room delete UI — parent-gated, relocate orphaned art
-  #15 [ ] Move art to room — exhibit view or card action
+  #14 [x] Room delete UI — parent-gated, relocate orphaned art
+  #15 [x] Move art to room — exhibit view or card action
   #23 [x] Onion skin is a no-op — implement actual overlay
   #24 [x] Flipbook phantom entry — defer createFlipbook until first action
 

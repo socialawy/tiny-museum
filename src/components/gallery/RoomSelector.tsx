@@ -4,11 +4,14 @@ import { useState, useRef } from 'react';
 import type { Room } from '@/lib/storage/db';
 import { CreateRoomDialog } from './CreateRoomDialog';
 import { ParentGate } from '@/components/ui/ParentGate';
-import { renameRoom } from '@/lib/storage/rooms';
+import { FriendlyDialog } from '@/components/ui/FriendlyDialog';
+import { renameRoom, deleteRoom } from '@/lib/storage/rooms';
 import { useSounds } from '@/hooks/useSounds';
 
 const DEFAULT_ROOM_IDS = ['my-art', 'favorites'];
 const LONG_PRESS_MS = 500;
+
+type Action = 'none' | 'choose' | 'rename' | 'delete-confirm';
 
 interface RoomSelectorProps {
   rooms: Room[];
@@ -16,6 +19,7 @@ interface RoomSelectorProps {
   onSelect: (roomId: string) => void;
   onRoomCreated: () => void;
   onRoomRenamed: () => void;
+  onRoomDeleted?: () => void;
 }
 
 export function RoomSelector({
@@ -24,11 +28,14 @@ export function RoomSelector({
   onSelect,
   onRoomCreated,
   onRoomRenamed,
+  onRoomDeleted,
 }: RoomSelectorProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [gateForRoomId, setGateForRoomId] = useState<string | null>(null);
-  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [actionRoomId, setActionRoomId] = useState<string | null>(null);
+  const [action, setAction] = useState<Action>('none');
   const [editValue, setEditValue] = useState('');
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasLongPressFor = useRef<string | null>(null);
   const { playSound } = useSounds();
@@ -50,16 +57,42 @@ export function RoomSelector({
   }
 
   function handleGateUnlock() {
-    const room = rooms.find((r) => r.id === gateForRoomId);
+    // Show action chooser after parent gate
+    setActionRoomId(gateForRoomId);
+    setAction('choose');
+    setGateForRoomId(null);
+  }
+
+  function startRename() {
+    const room = rooms.find((r) => r.id === actionRoomId);
     if (!room) return;
     setEditValue(room.name);
-    setEditingRoomId(gateForRoomId);
-    setGateForRoomId(null);
+    setEditingRoomId(actionRoomId);
+    setAction('none');
+    setActionRoomId(null);
+  }
+
+  function startDelete() {
+    setAction('delete-confirm');
+  }
+
+  async function handleDeleteFinal() {
+    if (!actionRoomId) return;
+    const wasActive = activeRoomId === actionRoomId;
+    try {
+      await deleteRoom(actionRoomId);
+      playSound('delete');
+      if (wasActive) onSelect('my-art');
+      onRoomDeleted?.();
+    } catch (err) {
+      console.error('Delete room failed:', err);
+    }
+    setAction('none');
+    setActionRoomId(null);
   }
 
   async function handleRenameConfirm(roomId: string) {
     const trimmed = editValue.trim();
-    // Clear state immediately (before await) — prevents double-call issues
     setEditingRoomId(null);
     setEditValue('');
     if (trimmed) {
@@ -120,10 +153,9 @@ export function RoomSelector({
                   flex items-center gap-1.5 px-4 py-2 rounded-full
                   font-bold text-sm whitespace-nowrap
                   transition-all duration-150
-                  ${
-                    activeRoomId === room.id
-                      ? 'text-white shadow-md scale-105'
-                      : 'bg-white text-gray-600 border-2 border-gray-200 active:scale-95'
+                  ${activeRoomId === room.id
+                    ? 'text-white shadow-md scale-105'
+                    : 'bg-white text-gray-600 border-2 border-gray-200 active:scale-95'
                   }
                 `}
                 style={
@@ -161,9 +193,67 @@ export function RoomSelector({
 
       {gateForRoomId && (
         <ParentGate
-          message="A grown-up needs to confirm renaming this room."
+          message="A grown-up needs to confirm this action."
           onUnlock={handleGateUnlock}
           onCancel={() => setGateForRoomId(null)}
+        />
+      )}
+
+      {/* Action chooser — rename or delete */}
+      {action === 'choose' && actionRoomId && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={() => { setAction('none'); setActionRoomId(null); }}
+        >
+          <div
+            className="bg-white rounded-kid p-6 max-w-xs w-full text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-4xl mb-3">🏠</p>
+            <h2 className="text-lg font-extrabold mb-1">
+              {rooms.find((r) => r.id === actionRoomId)?.name}
+            </h2>
+            <p className="text-gray-400 text-sm mb-5">What would you like to do?</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={startRename}
+                className="px-5 py-3 bg-kid-purple text-white rounded-kid font-bold
+                           active:scale-95 transition-transform min-h-[48px]"
+              >
+                ✏️ Rename
+              </button>
+              <button
+                onClick={startDelete}
+                className="px-5 py-3 bg-kid-red text-white rounded-kid font-bold
+                           active:scale-95 transition-transform min-h-[48px]"
+              >
+                🗑️ Delete Room
+              </button>
+              <button
+                onClick={() => { setAction('none'); setActionRoomId(null); }}
+                className="px-5 py-3 bg-gray-100 rounded-kid font-bold text-gray-500
+                           active:scale-95 transition-transform min-h-[48px]"
+              >
+                Never mind 💚
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {action === 'delete-confirm' && actionRoomId && (
+        <FriendlyDialog
+          emoji="🏠"
+          title="Delete this room?"
+          message="All artwork inside will move to My Art. The room will be gone!"
+          confirmLabel="Delete room"
+          confirmEmoji="🗑️"
+          cancelLabel="Keep it"
+          danger
+          onConfirm={handleDeleteFinal}
+          onCancel={() => { setAction('none'); setActionRoomId(null); }}
         />
       )}
     </>

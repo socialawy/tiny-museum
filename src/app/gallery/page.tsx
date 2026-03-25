@@ -95,6 +95,7 @@ export default function GalleryPage() {
         onSelect={setActiveRoom}
         onRoomCreated={() => refresh()}
         onRoomRenamed={() => refresh()}
+        onRoomDeleted={() => refresh()}
       />
 
       {/* Artwork display */}
