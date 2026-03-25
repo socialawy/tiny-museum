@@ -2,6 +2,13 @@
 
 Tiny Museum is a local-first creative application built with Next.js, Fabric.js, and Dexie.js. It is designed to be resilient, offline-capable, and simple to maintain.
 
+## 🧠 Technical Design Principles
+
+The architecture is guided by the core philosophy of "Creation over Consumption":
+- **Manual > Generative**: We deliberately avoid AI-generated art to preserve the child's sense of ownership and the educational value of manual sequencing in animations.
+- **Local-First (The "Hybrid" model)**: Core creative data stays in IndexedDB. Cloud interaction (Supabase) is an explicit, user-triggered secondary layer.
+- **Cohesion via Metaphor**: Every technical component serves the "Museum" metaphor, ensuring the gallery isn't just a file browser but a central part of the application's emotional loop.
+
 ## 🧱 System Overview
 
 Tiny Museum operates in a "hybrid" mode: the studio, gallery, and core creative loop are 100% local, while publishing art online is an explicit opt-in action.

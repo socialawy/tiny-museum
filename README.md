@@ -5,19 +5,39 @@
 [![Tests: 50 Passing](https://img.shields.io/badge/Tests-50%20Passing-brightgreen.svg)](https://github.com/socialawy/tiny-museum)
 [![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-blue.svg)](https://github.com/socialawy/tiny-museum)
 
-**A creative space for tiny humans.**
+**A creative, local-first studio for kids to create, curate, and animate.**
 
-Tiny Museum is a digital sketchbook, collage studio, and animator designed specifically for children (best for ages 4-10). It focuses on high-touch, low-friction creativity, ensuring that every interaction is delightful and encouraging.
+Tiny Museum is not just a drawing app; it's a complete **Creation → Curation → Exhibition → Publication** loop. Designed for children (ages 4-10), it turns digital sketching into a meaningful journey of pride and ownership.
+
+## 🧠 The Philosophy: "You are an artist. This is your museum."
+
+Unlike apps that focus on passive consumption or AI-generated shortcuts, Tiny Museum empowers kids to build their own creative legacy:
+- **Real Animation**: No AI illusions. Kids learn the magic of motion through manual flipbook sequencing and onion skinning.
+- **Gallery as a Core Mechanic**: The gallery isn't just a file browser—it's an immersive "Museum Walk" where art is named, framed, and curated into themed rooms.
+- **Creation-First**: Every masterpiece reflects the effort and joy of the maker.
+- **Local-First & Private**: Your child's art belongs to their device (IndexedDB). No accounts, no trackers, no ads.
+- **Safe Publishing**: A parent-gated "Publish to Web" feature allows kids to explicitly choose which works to share in a public online gallery.
 
 ## 🎨 Features
 
-- **Core Studio**: Freehand drawing with kid-friendly brushes (Crayon, Pencil, Marker, Spray).
-- **Import & Collage**: Bring in photos via camera or files, add shapes, and use curated stickers.
-- **Flipbook Animator**: Create frame-by-frame animations with onion skinning and export as GIFs.
-- **Museum Walk**: Horizontal, immersive gallery view where your art hangs on the wall.
-- **Multi-Room Gallery**: Organize your masterpieces into different themed rooms.
-- **Local-First & Safe**: All data stays on your device (IndexedDB). No trackers, no ads, and no social features without a parent gate.
-- **Publish to Web**: Explicitly choose to publish artworks to a public online gallery (Supabase).
+### 1. Create & Compose
+- **Core Studio**: Freehand drawing with high-touch, kid-friendly brushes (Crayon, Pencil, Marker, Spray).
+- **Collage & Import**: Bring in real-world art via camera or files, and enhance it with shapes and stickers.
+- **24-Color Palette**: A curated, vibrant palette designed for maximum delight.
+
+### 2. Animate
+- **Flipbook Studio**: A simple, tactile frame-by-frame animator.
+- **Onion Skinning**: See your previous frame faintly to guide your next move.
+- **GIF Export**: Turn your story into a shareable animation.
+
+### 3. Curate & Exhibit
+- **Museum Walk**: An immersive horizontal gallery where your art hangs on the wall.
+- **Room Management**: Organize your work into "The Giggle Gallery," "Space Adventures," or custom-named rooms.
+- **Exhibit Detail**: Name your art and move it between rooms.
+
+### 4. Publish
+- **🌐 Web Gallery**: Explicitly publish chosen works to a public online collection (Supabase).
+- **Live Badges**: See which of your masterpieces are "Live" globally.
 
 ## 🛠️ Technology Stack
 

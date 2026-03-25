@@ -421,16 +421,59 @@ GENERAL
 
 ---
 
-## Current Status: SPRINT 3 COMPLETE ✅
-*2026-03-25*
 
----
+## Next Actions 
 
-## Next Actions (Sprint 4) (On hold, 2 for Jules, 2 for future)
+### Tooltips / Onboarding (High Impact)
+
+CONCEPT: Coach Marks
+━━━━━━━━━━━━━━━━━━━━
+First time in Flipbook:
+  → Spotlight on ＋ → "Tap to add a new page!"
+  → Spotlight on 👻 → "See your last drawing faintly"
+  → Spotlight on ▶️ → "Watch your animation!"
+
+Implementation:
+  - localStorage flag: `tooltips_flipbook_seen`
+  - Component: <CoachMark target={ref} message="..." step={1} total={3} />
+  - Dismiss on tap, auto-advance, skip-all button
+  - Replayable from Settings
+
+### Mobile Canvas Space (maybe a quick research for best practices)
+
+- The real problem: on a 667px phone, the flipbook has ~5 UI layers eating vertical space. Priority order for reclaiming pixels:
+```
+CURRENT (portrait):
+  Top bar:        ~48px
+  Canvas:         ~250px  ← TOO SMALL
+  MiniToolbar:    ~120px (3 rows)
+  BG button:      ~36px
+  Frame strip:    ~80px
+  Controls:       ~48px
+  Speed slider:   ~40px
+  ─────────────────────
+  Total chrome:   ~372px of 667px = 56% chrome, 44% canvas
+
+Order:
+  1. Merge BG button into MiniToolbar (add 🎨 as another tool)
+  2. Merge speed slider into controls row (small inline)
+  3. Frame strip: collapse to single row, max 48px
+  4. MiniToolbar: hide brush size by default, show on tool long-press
+  
+  Result: ~200px chrome, ~467px canvas = 70% canvas
+  ```
+### Sprint 4 Candidates
+
+- Priority order:
+  1. Tooltips / coach marks (first-run experience)
+  2. Mobile canvas space optimization (merge UI layers)
+  3. #17 More brush types (glitter, rainbow, stamp)
+  4. #18 Layer tray (background/middle/foreground)
+  5. Smart automated testing (Playwright for the manual checklist)
+
+### (Pending from Sprint 3) (On hold, sent to Jules)
 - [ ] Vercel Analytics + Speed Insights (#8)
 - [ ] PWA install prompt (#9)
-- [ ] More brush types: Glitter, Rainbow, Stamps (#17)
-- [ ] Layer tray: Background/Middle/Foreground (#18)
 
 ## Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber).
