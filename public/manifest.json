@@ -1,6 +1,6 @@
 {
-  "name": "Tiny Museum",
-  "short_name": "Tiny Museum",
+  "name": "Mira's Museum",
+  "short_name": "Museum",
   "description": "Create, collect, and share your art!",
   "start_url": "/",
   "display": "standalone",
