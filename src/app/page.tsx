@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useGalleryStore } from '@/stores/gallery.store';
 import { SoundToggle } from '@/components/ui/SoundToggle';
+import { InstallPrompt } from '@/components/ui/InstallPrompt';
 
 export default function HomePage() {
   const { totalCount, favoriteCount, refresh } = useGalleryStore();
@@ -109,6 +110,7 @@ export default function HomePage() {
           <span className="text-sm text-gray-500">Make animations!</span>
         </Link>
       </div>
+      <InstallPrompt />
     </div>
   );
 }
