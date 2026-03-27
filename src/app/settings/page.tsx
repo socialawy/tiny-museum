@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ParentGate } from '@/components/ui/ParentGate';
 import { resetCoachMarks } from '@/lib/coach';
 import { exportMuseum, importMuseum } from '@/lib/storage/backup';
+import { markDemoSeeded } from '@/lib/storage/seeder';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -81,10 +82,14 @@ export default function SettingsPage() {
     try {
       const text = await file.text();
       await importMuseum(text);
+      // Prevent the demo seeder from re-running on the next page load and
+      // injecting duplicate demo artworks on top of the restored museum.
+      markDemoSeeded();
       setSaved(true);
       alert('Success! Your museum has been restored. ✨');
       window.location.reload();
     } catch (err) {
+      e.target.value = '';
       alert('Import failed: ' + (err as Error).message);
     } finally {
       setIsMigrating(false);

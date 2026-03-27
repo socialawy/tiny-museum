@@ -528,7 +528,7 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - Consider dropping the `master` branch entirely to avoid future drift. All CI, PRs, and deploys should target `main`.
 
 ### (Pending) (On hold, sent to Jules)
-- [ ] Vercel Analytics + Speed Insights (#8)
+- [ ] Vercel Analytics + Speed Insights (#8), check if already done in another fix
 
 ## Sprint 5.1 — PWA & Mobile Install ✅
 *Completed: 2026-03-26*
@@ -539,13 +539,26 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - **Layout Metadata**: Enhanced mobile viewport meta tags for a true "App-like" feel on iOS and Android. (PR #14)
 
 ## [2026-03-27] Browser Migration Support ✅
+*Completed: 2026-03-27 — Gemini Flash 3 (Antigravity) + Claude review/fix*
 
 ### Objective
-Implement Export/Import functionality to allow users to move their museum between browsers/devices.
+Allow users to move their entire museum between browsers/devices via JSON export/import.
 
 ### Changes
-- Created `src/lib/storage/backup.ts` for database-wide serialization.
-- Added Export/Import UI to `Settings` page.
+- **`src/lib/storage/backup.ts`** (NEW): Full Dexie serialization — exports all 5 tables (`artworks`, `blobs`, `frames`, `rooms`, `settings`). All Blob fields (`Artwork.thumbnail`, `ArtworkBlob.fullRes`, `FlipbookFrame.thumbnail`) serialized to Base64 via `FileReader.readAsDataURL`. Import wraps everything in a single Dexie `rw` transaction (clear → restore). Export envelope includes `version`, `appName`, and `timestamp` fields.
+- **`src/app/settings/page.tsx`** (MODIFIED): Added "Data Management" section with Export and Import buttons, parent-gated. Import shows a confirmation dialog before overwriting.
+
+### Bug Fix: Seeder re-injection on fresh-device import
+**Root cause**: The demo seeder guard is stored in `localStorage` (`tiny_museum_demo_seeded_v6`), not in the Dexie `settings` table. `importMuseum` only restores IndexedDB. On a fresh browser/device after import + reload, `DemoSeederTrigger` saw no localStorage flag and re-ran — injecting duplicate demo artworks (Starry Night ×2, etc.) on top of the restored museum.
+
+**Fix**:
+- Exported `markDemoSeeded()` from `seeder.ts` — sets the localStorage guard without re-running the seeder.
+- Called `markDemoSeeded()` in `handleImport` (settings page) immediately after a successful `importMuseum`, before `window.location.reload()`.
+- Also cleared `e.target.value` on import failure so the user can retry with the same file.
+
+### Verification ✅
+- Manually tested locally: export → import → reload shows restored content only, no duplicate demo artworks.
+- 85 unit tests passing.
 
 ## Future (Phase 5)
 - Multi-user collaboration.

@@ -4,6 +4,17 @@ import { nanoid } from 'nanoid';
 const SEEDED_KEY = 'tiny_museum_demo_seeded_v6';
 
 /**
+ * Marks the demo seeder as already run, preventing it from injecting demo
+ * content on the next page load. Call this after a successful museum import
+ * so the seeder doesn't add duplicate artworks on top of restored data.
+ */
+export function markDemoSeeded() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SEEDED_KEY, 'true');
+  }
+}
+
+/**
  * Seeds the database with demo content on first launch.
  * Creates a "Welcome Gallery" room with 3 drawings + 1 flipbook.
  */
