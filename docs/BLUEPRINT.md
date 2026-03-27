@@ -1,5 +1,14 @@
 # Tiny Museum — Sharp Draft v1
 
+## Core Non-Negotiables
+
+- Never lose artwork
+- No public sharing by default
+- Every destructive action is reversible
+- Features should be understandable without reading
+- Delight beats power
+The app should grow with the child
+
 ## 🧱 Phase 1 — "The Sketchbook" (MVP)
 Core Canvas + Gallery Shell
 ─────────────────────────────

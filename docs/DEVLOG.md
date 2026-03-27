@@ -467,7 +467,26 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 
 ## Next Actions
 
-### Canvas size/borders show (expect what the output will look like)
+### Canvas size/borders show (expect what the output will look like) (#TODO)
+
+- Border view/customization
+
+### Next Actions in Philosophy
+
+- Inspect password protection -> impact on gallery and future security.
+- Never lose a child’s work
+- Hide nonessential nav during drawing
+- Resilience features:
+    - object count caps with friendly messaging
+    - low-memory fallback
+    - oversized import downscaling
+    - palm rejection heuristics where possible
+    - “return to canvas” button if panned/zoomed away
+    - “center my art” action
+    - “clean up workspace” magic button
+- Data migration strategy
+- Performance budgets
+- 
 
 ### Artworks dimension and canvas size, Flipbook player size adjustment (Fixed)
 - Added `_w` and `_h` to seeded JSON to ensure correct scaling in players.
@@ -508,9 +527,16 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - `next lint` is deprecated in Next.js 16 — migrate to ESLint CLI before upgrading (`npx @next/codemod@canary next-lint-to-eslint-cli .`).
 - Consider dropping the `master` branch entirely to avoid future drift. All CI, PRs, and deploys should target `main`.
 
-### (Pending from Sprint 3) (On hold, sent to Jules)
+### (Pending) (On hold, sent to Jules)
 - [ ] Vercel Analytics + Speed Insights (#8)
-- [ ] PWA install prompt (#9)
+
+## Sprint 5.1 — PWA & Mobile Install ✅
+*Completed: 2026-03-26*
+
+### Key Milestones
+- **PWA Support (#14)**: Added `manifest.json` and service worker (`sw.js`). Icons and theme colors configured for local-first offline experience.
+- **Install Prompt**: Implemented a custom deferred installation flow to encourage users to add Tiny Museum to their home screen without being intrusive.
+- **Layout Metadata**: Enhanced mobile viewport meta tags for a true "App-like" feel on iOS and Android. (PR #14)
 
 ## Future (Phase 5)
 - 3D walkable museum (Three.js / React Three Fiber).
