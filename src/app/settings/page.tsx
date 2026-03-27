@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ParentGate } from '@/components/ui/ParentGate';
 import { resetCoachMarks } from '@/lib/coach';
+import { exportMuseum, importMuseum } from '@/lib/storage/backup';
 
 export default function SettingsPage() {
   const router = useRouter();
   const [isGateOpen, setIsGateOpen] = useState(true);
   const [pin, setPin] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   useEffect(() => {
     const storedPin = localStorage.getItem('tiny_museum_pin');
@@ -41,6 +43,52 @@ export default function SettingsPage() {
     localStorage.removeItem('tiny_museum_pin');
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleExport = async () => {
+    setIsMigrating(true);
+    try {
+      const data = await exportMuseum();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tiny-museum-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      alert('Export failed: ' + (err as Error).message);
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const confirmed = window.confirm(
+      '⚠️ WARNING: This will DELETE all current art and rooms in this browser and replace them with the backup. Continue?',
+    );
+    if (!confirmed) {
+      e.target.value = '';
+      return;
+    }
+
+    setIsMigrating(true);
+    try {
+      const text = await file.text();
+      await importMuseum(text);
+      setSaved(true);
+      alert('Success! Your museum has been restored. ✨');
+      window.location.reload();
+    } catch (err) {
+      alert('Import failed: ' + (err as Error).message);
+    } finally {
+      setIsMigrating(false);
+    }
   };
 
   if (isGateOpen) {
@@ -112,6 +160,33 @@ export default function SettingsPage() {
         </div>
 
         <div className="mb-6 text-left border-t border-gray-100 pt-6">
+          <h2 className="text-xl font-bold mb-2">Data Management</h2>
+          <p className="text-gray-500 mb-4 text-sm">
+            Move your museum to a different browser or phone. Export your data as a file
+            and import it elsewhere.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleExport}
+              disabled={isMigrating}
+              className="w-full py-3 bg-white border-2 border-kid-green text-kid-green rounded-kid font-bold active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {isMigrating ? '⏳ Working...' : '📥 Export Museum'}
+            </button>
+            <label className="w-full py-3 bg-white border-2 border-kid-purple text-kid-purple rounded-kid font-bold active:scale-95 transition-transform text-center cursor-pointer">
+              {isMigrating ? '⏳ Working...' : '📤 Import Museum'}
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                disabled={isMigrating}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="mb-6 text-left border-t border-gray-100 pt-6">
           <h2 className="text-xl font-bold mb-2">Tutorials</h2>
           <p className="text-gray-500 mb-4 text-sm">
             Want to see the guided tours again? Click below to reset them.
@@ -122,7 +197,7 @@ export default function SettingsPage() {
               setSaved(true);
               setTimeout(() => setSaved(false), 2000);
             }}
-            className="w-full py-3 bg-white border-2 border-kid-purple text-kid-purple rounded-kid font-bold active:scale-95 transition-transform"
+            className="w-full py-3 bg-white border-2 border-museum-frame text-museum-plaque rounded-kid font-bold active:scale-95 transition-transform"
           >
             ✨ Replay All Tutorials
           </button>

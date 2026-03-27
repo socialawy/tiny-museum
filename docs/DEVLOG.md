@@ -538,5 +538,15 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - **Install Prompt**: Implemented a custom deferred installation flow to encourage users to add Tiny Museum to their home screen without being intrusive.
 - **Layout Metadata**: Enhanced mobile viewport meta tags for a true "App-like" feel on iOS and Android. (PR #14)
 
+## [2026-03-27] Browser Migration Support ✅
+
+### Objective
+Implement Export/Import functionality to allow users to move their museum between browsers/devices.
+
+### Changes
+- Created `src/lib/storage/backup.ts` for database-wide serialization.
+- Added Export/Import UI to `Settings` page.
+
 ## Future (Phase 5)
+- Multi-user collaboration.
 - 3D walkable museum (Three.js / React Three Fiber).
