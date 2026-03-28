@@ -528,7 +528,7 @@ This sprint focused on making the first visit to Tiny Museum feel magic and guid
 - Consider dropping the `master` branch entirely to avoid future drift. All CI, PRs, and deploys should target `main`.
 
 ### (Pending) (On hold, sent to Jules)
-- [ ] Vercel Analytics + Speed Insights (#8), check if already done in another fix
+- [x] Vercel Analytics + Speed Insights (#8), check if already done in another fix
 
 ## Sprint 5.1 — PWA & Mobile Install ✅
 *Completed: 2026-03-26*

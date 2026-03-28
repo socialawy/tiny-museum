@@ -55,9 +55,21 @@ export async function seedDemoContent() {
         // Stars
         ctx.fillStyle = '#FECA57';
         const stars = [
-          [80, 40, 3], [200, 60, 2], [350, 30, 4], [500, 80, 2], [620, 45, 3],
-          [150, 120, 2], [450, 100, 3], [700, 70, 2], [50, 130, 2], [550, 140, 2],
-          [300, 90, 2], [100, 180, 1.5], [400, 50, 1.5], [250, 150, 1.5], [600, 120, 1.5],
+          [80, 40, 3],
+          [200, 60, 2],
+          [350, 30, 4],
+          [500, 80, 2],
+          [620, 45, 3],
+          [150, 120, 2],
+          [450, 100, 3],
+          [700, 70, 2],
+          [50, 130, 2],
+          [550, 140, 2],
+          [300, 90, 2],
+          [100, 180, 1.5],
+          [400, 50, 1.5],
+          [250, 150, 1.5],
+          [600, 120, 1.5],
         ];
         for (const [x, y, r] of stars) {
           ctx.beginPath();
@@ -66,7 +78,11 @@ export async function seedDemoContent() {
         }
 
         // Big sparkle stars (4-point)
-        const sparkles = [[120, 70, 8], [480, 55, 10], [680, 100, 7]];
+        const sparkles = [
+          [120, 70, 8],
+          [480, 55, 10],
+          [680, 100, 7],
+        ];
         for (const [x, y, s] of sparkles) {
           drawSparkle(ctx, x, y, s, '#FECA57');
         }
@@ -101,13 +117,33 @@ export async function seedDemoContent() {
       },
       fabricObjects: [
         // Moon
-        { type: 'Circle', originX: 'center', originY: 'center', left: 620, top: 100, radius: 40, fill: '#FECA57' },
+        {
+          type: 'Circle',
+          originX: 'center',
+          originY: 'center',
+          left: 620,
+          top: 100,
+          radius: 40,
+          fill: '#FECA57',
+        },
         // Stars as small circles
         ...[
-          [80, 40, 3], [200, 60, 2], [350, 30, 4], [500, 80, 2], [620, 45, 3],
-          [150, 120, 2], [450, 100, 3], [700, 70, 2],
+          [80, 40, 3],
+          [200, 60, 2],
+          [350, 30, 4],
+          [500, 80, 2],
+          [620, 45, 3],
+          [150, 120, 2],
+          [450, 100, 3],
+          [700, 70, 2],
         ].map(([x, y, r]) => ({
-          type: 'Circle', originX: 'center', originY: 'center', left: x, top: y, radius: r, fill: '#FECA57',
+          type: 'Circle',
+          originX: 'center',
+          originY: 'center',
+          left: x,
+          top: y,
+          radius: r,
+          fill: '#FECA57',
         })),
       ],
       background: '#0a1628',
@@ -180,7 +216,15 @@ export async function seedDemoContent() {
         drawButterfly(ctx, 500, h * 0.35, '#48DBFB');
       },
       fabricObjects: [
-        { type: 'Circle', originX: 'center', originY: 'center', left: 650, top: 80, radius: 50, fill: '#FECA57' },
+        {
+          type: 'Circle',
+          originX: 'center',
+          originY: 'center',
+          left: 650,
+          top: 80,
+          radius: 50,
+          fill: '#FECA57',
+        },
       ],
       background: '#87CEEB',
     });
@@ -230,8 +274,14 @@ export async function seedDemoContent() {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
         ctx.lineWidth = 1;
         const bubbles = [
-          [150, 100, 8], [300, 180, 5], [500, 120, 10], [650, 200, 6],
-          [100, 250, 4], [400, 80, 7], [580, 280, 5], [250, 300, 3],
+          [150, 100, 8],
+          [300, 180, 5],
+          [500, 120, 10],
+          [650, 200, 6],
+          [100, 250, 4],
+          [400, 80, 7],
+          [580, 280, 5],
+          [250, 300, 3],
         ];
         for (const [bx, by, br] of bubbles) {
           ctx.beginPath();
@@ -261,13 +311,23 @@ export async function seedDemoContent() {
   } catch (err) {
     console.error('Demo seed failed:', err);
     // Set flag anyway to prevent retry storm
-    try { localStorage.setItem(SEEDED_KEY, 'true'); } catch { /* silent */ }
+    try {
+      localStorage.setItem(SEEDED_KEY, 'true');
+    } catch {
+      /* silent */
+    }
   }
 }
 
 // ── Drawing helpers ──
 
-function drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
+function drawSparkle(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(x, y - size);
@@ -282,14 +342,24 @@ function drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: 
   ctx.fill();
 }
 
-function drawFlower(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
+function drawFlower(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
     ctx.beginPath();
     ctx.ellipse(
       x + Math.cos(a) * size * 0.6,
       y + Math.sin(a) * size * 0.6,
-      size * 0.5, size * 0.35, a, 0, Math.PI * 2,
+      size * 0.5,
+      size * 0.35,
+      a,
+      0,
+      Math.PI * 2,
     );
     ctx.fill();
   }
@@ -300,7 +370,12 @@ function drawFlower(ctx: CanvasRenderingContext2D, x: number, y: number, size: n
   ctx.fill();
 }
 
-function drawButterfly(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+function drawButterfly(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   // Left wing
   ctx.beginPath();
@@ -315,7 +390,12 @@ function drawButterfly(ctx: CanvasRenderingContext2D, x: number, y: number, colo
   ctx.fillRect(x - 1.5, y - 8, 3, 16);
 }
 
-function drawSeaweed(ctx: CanvasRenderingContext2D, x: number, baseY: number, height: number) {
+function drawSeaweed(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  baseY: number,
+  height: number,
+) {
   ctx.strokeStyle = '#00B894';
   ctx.lineWidth = 4;
   ctx.lineCap = 'round';
@@ -330,7 +410,14 @@ function drawSeaweed(ctx: CanvasRenderingContext2D, x: number, baseY: number, he
   ctx.stroke();
 }
 
-function drawFish(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string, flipX: boolean) {
+function drawFish(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  flipX: boolean,
+) {
   ctx.save();
   ctx.translate(x, y);
   if (flipX) ctx.scale(-1, 1);
@@ -362,7 +449,13 @@ function drawFish(ctx: CanvasRenderingContext2D, x: number, y: number, size: num
   ctx.restore();
 }
 
-function drawStarfish(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
+function drawStarfish(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   ctx.beginPath();
   for (let i = 0; i < 5; i++) {
@@ -376,7 +469,14 @@ function drawStarfish(ctx: CanvasRenderingContext2D, x: number, y: number, size:
   ctx.fill();
 }
 
-function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, outerR: number, innerR: number, color: string) {
+function drawStar(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  outerR: number,
+  innerR: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   ctx.beginPath();
   for (let i = 0; i < 10; i++) {
@@ -495,7 +595,14 @@ async function createDemoFlipbook() {
 
     // Glow behind star
     if (fd.glow) {
-      const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, 100 * fd.scale);
+      const grad = ctx.createRadialGradient(
+        W / 2,
+        H / 2,
+        0,
+        W / 2,
+        H / 2,
+        100 * fd.scale,
+      );
       grad.addColorStop(0, 'rgba(254, 202, 87, 0.3)');
       grad.addColorStop(1, 'rgba(254, 202, 87, 0)');
       ctx.fillStyle = grad;
@@ -512,9 +619,12 @@ async function createDemoFlipbook() {
     // Sparkles
     if (fd.sparkles) {
       const sparklePositions = [
-        [W / 2 - 100, H / 2 - 80], [W / 2 + 90, H / 2 - 70],
-        [W / 2 - 80, H / 2 + 90], [W / 2 + 100, H / 2 + 60],
-        [W / 2 + 10, H / 2 - 110], [W / 2 - 110, H / 2 + 20],
+        [W / 2 - 100, H / 2 - 80],
+        [W / 2 + 90, H / 2 - 70],
+        [W / 2 - 80, H / 2 + 90],
+        [W / 2 + 100, H / 2 + 60],
+        [W / 2 + 10, H / 2 - 110],
+        [W / 2 - 110, H / 2 + 20],
       ];
       for (const [sx, sy] of sparklePositions) {
         drawSparkle(ctx, sx, sy, 6 + Math.random() * 4, 'rgba(255, 255, 255, 0.7)');
@@ -523,7 +633,15 @@ async function createDemoFlipbook() {
 
     // Small background stars
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    const bgStars = [[100, 60], [300, 40], [600, 80], [700, 200], [120, 350], [650, 400], [400, 430]];
+    const bgStars = [
+      [100, 60],
+      [300, 40],
+      [600, 80],
+      [700, 200],
+      [120, 350],
+      [650, 400],
+      [400, 430],
+    ];
     for (const [sx, sy] of bgStars) {
       ctx.beginPath();
       ctx.arc(sx, sy, 2, 0, Math.PI * 2);
