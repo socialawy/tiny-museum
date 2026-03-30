@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { InstallPrompt } from '../InstallPrompt';
 
@@ -128,10 +128,19 @@ describe('InstallPrompt', () => {
     event.prompt = vi.fn();
     event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
 
-    fireEvent(window, event);
+    await act(async () => {
+      fireEvent(window, event);
+    });
 
     const installButton = screen.getByText('Install!');
-    fireEvent.click(installButton);
+    await act(async () => {
+      fireEvent.click(installButton);
+    });
+
+    // wait for promise to resolve to suppress unhandled state update warning in tests
+    await act(async () => {
+      await event.userChoice;
+    });
 
     expect(event.prompt).toHaveBeenCalled();
   });

@@ -41,12 +41,17 @@ describe('RootLayout', () => {
   });
 
   it('does not render Analytics and SpeedInsights when not in production', () => {
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      configurable: true,
+    });
 
+    document.documentElement.innerHTML = '';
     const { queryByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>
-      </RootLayout>
+      </RootLayout>,
+      { container: document },
     );
 
     expect(queryByTestId('child')).toBeInTheDocument();
@@ -55,12 +60,17 @@ describe('RootLayout', () => {
   });
 
   it('renders Analytics and SpeedInsights when in production', () => {
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'production',
+      configurable: true,
+    });
 
+    document.documentElement.innerHTML = '';
     const { getByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>
-      </RootLayout>
+      </RootLayout>,
+      { container: document },
     );
 
     expect(getByTestId('child')).toBeInTheDocument();
