@@ -34,6 +34,7 @@ describe('RootLayout', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...originalEnv };
+    document.documentElement.innerHTML = '';
   });
 
   afterEach(() => {
@@ -41,12 +42,16 @@ describe('RootLayout', () => {
   });
 
   it('does not render Analytics and SpeedInsights when not in production', () => {
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      configurable: true,
+    });
 
     const { queryByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>
-      </RootLayout>
+      </RootLayout>,
+      { container: document },
     );
 
     expect(queryByTestId('child')).toBeInTheDocument();
@@ -55,12 +60,16 @@ describe('RootLayout', () => {
   });
 
   it('renders Analytics and SpeedInsights when in production', () => {
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'production',
+      configurable: true,
+    });
 
     const { getByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>
-      </RootLayout>
+      </RootLayout>,
+      { container: document },
     );
 
     expect(getByTestId('child')).toBeInTheDocument();

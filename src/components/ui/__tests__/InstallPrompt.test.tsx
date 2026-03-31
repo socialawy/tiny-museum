@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { InstallPrompt } from '../InstallPrompt';
 
@@ -49,7 +49,9 @@ describe('InstallPrompt', () => {
       configurable: true,
     });
 
-    render(<InstallPrompt />);
+    act(() => {
+      render(<InstallPrompt />);
+    });
 
     expect(screen.getByText('Add to Home Screen!')).toBeInTheDocument();
     expect(
@@ -68,7 +70,9 @@ describe('InstallPrompt', () => {
     event.prompt = vi.fn();
     event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
 
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     expect(screen.getByText('Add to Home Screen!')).toBeInTheDocument();
     expect(
@@ -81,10 +85,14 @@ describe('InstallPrompt', () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     const laterButton = screen.getByText('Later');
-    fireEvent.click(laterButton);
+    act(() => {
+      fireEvent.click(laterButton);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
     expect(localStorage.getItem('pwa_prompt_dismissed')).toBe('true');
@@ -96,7 +104,9 @@ describe('InstallPrompt', () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
   });
@@ -113,7 +123,9 @@ describe('InstallPrompt', () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
   });
@@ -128,10 +140,14 @@ describe('InstallPrompt', () => {
     event.prompt = vi.fn();
     event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
 
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     const installButton = screen.getByText('Install!');
-    fireEvent.click(installButton);
+    await act(async () => {
+      fireEvent.click(installButton);
+    });
 
     expect(event.prompt).toHaveBeenCalled();
   });
