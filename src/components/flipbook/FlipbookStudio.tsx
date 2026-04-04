@@ -412,18 +412,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             />
           </div>
 
-          {!isLandscape && (
-            <div className="flex-shrink-0 flex justify-center py-0.5 bg-white/90 border-t border-gray-50">
-              <button
-                onClick={() => setShowBgPicker(true)}
-                className="kid-button-sm text-sm"
-                aria-label="Background"
-              >
-                🎨 BG
-              </button>
-            </div>
-          )}
-
           {isLandscape ? (
             <div className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-0.5 bg-gray-50 border-t border-gray-200">
               <BigButton size="sm" onClick={prevFrame} disabled={currentIndex === 0}>
@@ -462,7 +450,13 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                 />
               </div>
 
-              <div className="flex-shrink-0 flex items-center justify-between px-3 py-1 bg-white border-t-2 border-gray-100">
+              {/* Frame controls + speed merged into one row */}
+              <div
+                className="flex-shrink-0 flex items-center justify-between px-2 py-0.5 bg-white border-t-2 border-gray-100"
+                style={{
+                  paddingBottom: 'calc(0.125rem + env(safe-area-inset-bottom, 0px))',
+                }}
+              >
                 <div className="flex gap-1">
                   <BigButton size="sm" onClick={prevFrame} disabled={currentIndex === 0}>
                     ◀
@@ -474,8 +468,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   >
                     ▶
                   </BigButton>
-                </div>
-                <div className="flex gap-1">
                   <BigButton
                     size="sm"
                     onClick={() => setOnionSkin(!onionSkin)}
@@ -484,6 +476,23 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   >
                     👻
                   </BigButton>
+                  <BigButton size="sm" onClick={() => setShowBgPicker(true)} aria-label="Background">
+                    🎨
+                  </BigButton>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-400">🐢</span>
+                  <input
+                    type="range"
+                    min={2}
+                    max={12}
+                    value={fps}
+                    onChange={(e) => setFps(+e.target.value)}
+                    className="w-16 h-5 accent-kid-purple"
+                  />
+                  <span className="text-[10px] text-gray-400">🐇</span>
+                </div>
+                <div className="flex gap-1">
                   <BigButton size="sm" onClick={addFrame} data-coach="flip-add">
                     ＋
                   </BigButton>
@@ -492,27 +501,6 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   </BigButton>
                   {frames.length > 1 && <BigButton size="sm" onClick={removeFrame}>🗑️</BigButton>}
                 </div>
-              </div>
-
-              <div
-                className="flex-shrink-0 flex items-center gap-2 px-4 py-0.5 bg-white border-t border-gray-50"
-                style={{
-                  paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom, 0px))',
-                }}
-              >
-                <span className="text-[10px] text-gray-400">🐢</span>
-                <input
-                  type="range"
-                  min={2}
-                  max={12}
-                  value={fps}
-                  onChange={(e) => setFps(+e.target.value)}
-                  className="flex-1 h-5 accent-kid-purple"
-                />
-                <span className="text-[10px] text-gray-400">🐇</span>
-                <span className="text-[10px] font-bold text-kid-purple w-8 text-right">
-                  {fps} fps
-                </span>
               </div>
             </>
           )}

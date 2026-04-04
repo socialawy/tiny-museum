@@ -154,9 +154,10 @@ export function MiniToolbar({
     );
   }
 
-  // ── Normal: multi-row layout ──
+  // ── Normal: multi-row layout (2 rows: tools, then slider+colors) ──
   return (
     <div className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100">
+      {/* Row 1: undo/redo + drawing tools */}
       <div
         className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
@@ -169,7 +170,7 @@ export function MiniToolbar({
             <BigButton size="sm" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
               ↪️
             </BigButton>
-            <div className="w-px h-6 bg-gray-200 mx-0.5" />
+            <div className="w-px h-6 bg-gray-200 mx-0.5 shrink-0" />
           </>
         )}
         {(Object.keys(TOOLS) as BrushKey[]).map((k) => (
@@ -184,29 +185,26 @@ export function MiniToolbar({
           </BigButton>
         ))}
         {tool === 'eraser' && (
-          <span className="text-xs font-bold text-kid-red animate-pulse ml-1">
+          <span className="text-xs font-bold text-kid-red animate-pulse ml-1 shrink-0">
             Erasing
           </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2 px-4 landscape:hidden">
-        <span className="text-[10px] text-gray-400">thin</span>
+      {/* Row 2: brush size slider + color dots merged */}
+      <div
+        className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
+        style={{ scrollbarWidth: 'none' }}
+      >
         <input
           type="range"
           min={1}
           max={40}
           value={size}
           onChange={(e) => changeSize(+e.target.value)}
-          className="flex-1 h-5 accent-kid-purple"
+          className="w-20 shrink-0 h-5 accent-kid-purple"
         />
-        <span className="text-[10px] text-gray-400">thick</span>
-      </div>
-
-      <div
-        className="flex items-center gap-1.5 px-2 py-0.5 overflow-x-auto"
-        style={{ scrollbarWidth: 'none' }}
-      >
+        <div className="w-px h-5 bg-gray-200 mx-0.5 shrink-0" />
         {KID_PALETTE.map((c) => (
           <button
             key={c}

@@ -233,19 +233,16 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
+      {/* Row 1: tools — single scrollable row */}
       <div
-        className="flex items-center gap-1 px-2 py-1 overflow-x-auto"
+        className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
         data-coach="studio-brush"
       >
-        {/* Select/Move */}
         <BigButton size="sm" onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
           👆
         </BigButton>
-
-        <div className="w-px h-6 bg-gray-200 mx-0.5" />
-
-        {/* Drawing tools */}
+        <div className="w-px h-6 bg-gray-200 mx-0.5 shrink-0" />
         {(Object.keys(DRAW_TOOLS) as BrushKey[]).map((key) => (
           <BigButton
             size="sm"
@@ -257,10 +254,7 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
             {DRAW_TOOLS[key].emoji}
           </BigButton>
         ))}
-
-        <div className="w-px h-6 bg-gray-200 mx-0.5" />
-
-        {/* Extras */}
+        <div className="w-px h-6 bg-gray-200 mx-0.5 shrink-0" />
         <BigButton size="sm" onClick={onOpenShapes} aria-label="Shapes">
           ✨
         </BigButton>
@@ -270,49 +264,35 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
         <BigButton size="sm" onClick={onOpenBackground} aria-label="Background">
           🎨
         </BigButton>
-
-        {/* Eraser mode indicator */}
         {!isSelectMode && activeTool === 'eraser' && (
-          <span className="text-xs font-bold text-kid-red ml-2 animate-pulse">
-            Erasing
-          </span>
+          <span className="text-xs font-bold text-kid-red ml-1 animate-pulse shrink-0">Erasing</span>
         )}
-
-        {/* Delete selected */}
         {isSelectMode && (
-          <BigButton
-            size="sm"
-            onClick={deleteSelected}
-            aria-label="Delete selected"
-            className="ml-auto"
-          >
+          <BigButton size="sm" onClick={deleteSelected} aria-label="Delete selected" className="ml-auto">
             🗑️
           </BigButton>
         )}
       </div>
 
-      {/* Brush size — only in draw mode */}
-      {!isSelectMode && (
-        <div className="flex items-center gap-2 px-4">
-          <span className="text-[10px] font-bold text-gray-400">thin</span>
-          <input
-            type="range"
-            min={1}
-            max={40}
-            value={brushSize}
-            onChange={(e) => changeBrushSize(Number(e.target.value))}
-            className="flex-1 h-5 accent-kid-purple"
-          />
-          <span className="text-[10px] font-bold text-gray-400">thick</span>
-        </div>
-      )}
-
-      {/* Color strip */}
+      {/* Row 2: brush size slider + color dots — merged into one row */}
       <div
-        className="flex items-center gap-1.5 px-2 py-1 overflow-x-auto"
+        className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
         data-coach="studio-color"
       >
+        {!isSelectMode && (
+          <>
+            <input
+              type="range"
+              min={1}
+              max={40}
+              value={brushSize}
+              onChange={(e) => changeBrushSize(Number(e.target.value))}
+              className="w-20 shrink-0 h-5 accent-kid-purple"
+            />
+            <div className="w-px h-5 bg-gray-200 mx-0.5 shrink-0" />
+          </>
+        )}
         {KID_PALETTE.map((color) => (
           <button
             key={color}
