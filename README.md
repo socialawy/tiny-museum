@@ -2,8 +2,8 @@
 
 [![CI Pipeline](https://github.com/socialawy/tiny-museum/actions/workflows/pipeline.yml/badge.svg)](https://github.com/socialawy/tiny-museum/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 50 Passing](https://img.shields.io/badge/Tests-50%20Passing-brightgreen.svg)](https://github.com/socialawy/tiny-museum)
-[![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-blue.svg)](https://github.com/socialawy/tiny-museum)
+[![Tests: 87 Passing](https://img.shields.io/badge/Tests-87%20Passing-brightgreen.svg)](https://github.com/socialawy/tiny-museum)
+[![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-blue.svg)](https://github.com/socialawy/tiny-museum)
 
 **A creative, local-first studio for kids to create, curate, and animate.**
 
@@ -34,11 +34,12 @@ Tiny Museum fills a gap in the market by providing a cohesive **Creation → Cur
 
 ### 1. Create & Compose
 - **Core Studio**: Freehand drawing with high-touch, kid-friendly brushes (Crayon, Pencil, Marker, Spray).
+- **Mobile-Optimized Toolbar**: Compact 2-row layout on mobile for maximum canvas space.
 - **Collage & Import**: Bring in real-world art via camera or files, and enhance it with shapes and stickers.
 - **24-Color Palette**: A curated, vibrant palette designed for maximum delight.
 
 ### 2. Animate
-- **Flipbook Studio**: A simple, tactile frame-by-frame animator.
+- **Flipbook Studio**: A simple, tactile frame-by-frame animator with compact 4-row mobile layout.
 - **Onion Skinning**: See your previous frame faintly to guide your next move.
 - **GIF Export**: Turn your story into a shareable animation.
 

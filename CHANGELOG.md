@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-04-04
+
+### Added
+- **Mobile Toolbar Optimization**: Significantly reduced toolbar footprint for more canvas space:
+  - **Studio Canvas**: Reduced from 4 rows to 2 rows on mobile
+  - **Flipbook Studio**: Reduced from 6 rows to 4 rows on mobile
+- **Full-Screen Canvas Layout**: Split toolbar into top and bottom sections with canvas sandwiched between
+
+### Changed
+- **Auto-Save Interval**: Reduced from 30s to 5s for faster recovery
+- **Publish Safety**: Added parent gate to prevent accidental publishing from studio
+
+### Fixed
+- **Save on Unmount**: Fixed work loss when using browser back button on mobile PWA
+- **TypeScript Lint**: Fixed readonly process.env.NODE_ENV errors in tests
+
 ## [0.5.0] - 2026-03-27
 
 ### Added

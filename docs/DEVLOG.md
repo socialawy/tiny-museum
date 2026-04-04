@@ -565,7 +565,7 @@ Allow users to move their entire museum between browsers/devices via JSON export
 
 ### Auto-Save Improvements
 - **Interval reduced**: 30s → 5s for faster recovery from accidental loss.
-- **Save on unmount**: Added a cleanup effect that fires on back-navigation (component unmount). Uses refs (`canvasRef`, `artworkIdRef`) to read latest state from the cleanup closure. Skips save if canvas is empty.
+- **Save on unmount**: Added a cleanup effect that fires on back-navigation (component unmount). Uses refs (`canvasRef`, `artworkIdRef`) to read latest state from cleanup closure. Skips save if canvas is empty.
 - **Root cause**: On mobile PWA, tapping the browser back button unmounts the component before the interval fires — work was silently lost.
 
 ### Publish Safety
@@ -577,6 +577,26 @@ Allow users to move their entire museum between browsers/devices via JSON export
 - **Canvas sandwiched**: `StudioCanvas` now renders `ToolbarTop` → canvas (`flex-1 min-h-0`) → `ToolbarBottom`. Previously, the entire toolbar (top + bottom) rendered as one block above the canvas, wasting ~250px of vertical space on mobile.
 - **Tighter spacing**: Reduced padding, color dot size (40px → 36px), slider height, to maximize drawing area.
 - **Backwards-compatible**: The old `Toolbar` component still exists (deprecated) for any external consumers.
+
+## [2026-04-04] Mobile Toolbar Optimization
+*Completed: 2026-04-04*
+
+### Studio Canvas — Reduced from 4 rows to 2 rows
+- **Before**: Top bar + tools row + slider row + colors row
+- **After**: 
+  - Row 1: All tools (select, brushes, shapes, stickers, background)
+  - Row 2: Brush size slider + color dots (merged, scrollable)
+- **Impact**: ~50% reduction in bottom chrome height on mobile
+
+### Flipbook Studio — Reduced from 6 rows to 4 rows
+- **Before**: Top bar + mini tools + mini slider + mini colors + bg button + frame controls + speed
+- **After**:
+  - Row 1 (top bar): Back + frame count + play + gallery
+  - Row 2 (mini tools): Undo/redo + brushes
+  - Row 3 (mini slider+colors): Merged into single scrollable row
+  - Row 4 (frame controls): Prev/next + ghost + background + speed slider + add/dup/delete (all merged)
+- **Frame strip**: Maintained but with max-h-24 constraint
+- **Impact**: More canvas space while preserving all functionality
 
 ### Lint Fixes
 - Fixed TS2540 errors in `layout.test.tsx` — `process.env.NODE_ENV` is readonly in newer TypeScript. Cast to `Record<string, string>` for test overrides.
