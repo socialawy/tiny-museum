@@ -21,6 +21,7 @@ import { StickerPanel } from './StickerPanel';
 import { useSounds } from '@/hooks/useSounds';
 import { CoachMarkOverlay } from '@/components/ui/CoachMarkOverlay';
 import { isCoachSeen, markCoachSeen } from '@/lib/coach';
+import { ParentGate } from '@/components/ui/ParentGate';
 
 /** Returns true when the canvas has zero user content */
 function isCanvasEmpty(fabricCanvas: Record<string, unknown>): boolean {
@@ -51,6 +52,7 @@ export default function StudioCanvas() {
     editId ?? undefined,
   );
   const [activePanel, setActivePanel] = useState<Panel>('none');
+  const [showPublishGate, setShowPublishGate] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [showCoach, setShowCoach] = useState(false);
 
@@ -59,6 +61,12 @@ export default function StudioCanvas() {
   const [isSelectMode, setIsSelectMode] = useState(false);
 
   const { canvas, isReady, undo, redo, canUndo, canRedo } = useFabricCanvas(containerRef);
+
+  // Keep refs for save-on-unmount (closures capture stale state)
+  const canvasRef = useRef(canvas);
+  const artworkIdRef = useRef(currentArtworkId);
+  useEffect(() => { canvasRef.current = canvas; }, [canvas]);
+  useEffect(() => { artworkIdRef.current = currentArtworkId; }, [currentArtworkId]);
 
   // Load existing artwork
   useEffect(() => {
@@ -98,7 +106,7 @@ export default function StudioCanvas() {
     }
   }, [loaded]);
 
-  // Auto-save every 30 seconds — use idle callback to avoid jank
+  // Auto-save every 5 seconds — use idle callback to avoid jank
   useEffect(() => {
     if (!canvas || !isReady || !loaded) return;
 
@@ -123,10 +131,21 @@ export default function StudioCanvas() {
       } else {
         doSave();
       }
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [canvas, isReady, loaded, currentArtworkId]);
+
+  // Save on unmount (back navigation) so work is never lost
+  useEffect(() => {
+    return () => {
+      const c = canvasRef.current;
+      const id = artworkIdRef.current;
+      if (!c || !id) return;
+      if (isCanvasEmpty(c as unknown as Record<string, unknown>)) return;
+      saveArtwork(c as unknown as Record<string, unknown>, id).catch(() => {});
+    };
+  }, []);
 
   // When panels add objects, canvas exits drawing mode.
   // Sync our state to reflect that.
@@ -218,6 +237,11 @@ export default function StudioCanvas() {
     }
   }, [canvas, currentArtworkId, publishing, playSound]);
 
+  const handlePublishGated = useCallback(() => {
+    if (!canvas || !currentArtworkId || publishing) return;
+    setShowPublishGate(true);
+  }, [canvas, currentArtworkId, publishing]);
+
   const handleImport = useCallback(
     async (imageUrl: string) => {
       if (!canvas) return;
@@ -252,7 +276,7 @@ export default function StudioCanvas() {
         canRedo={canRedo}
         onSave={handleSave}
         onSendToGallery={handleSendToGallery}
-        onPublish={currentArtworkId ? handlePublish : undefined}
+        onPublish={currentArtworkId ? handlePublishGated : undefined}
         publishing={publishing}
         publishedLink={publishedLink}
         onOpenImport={() => setActivePanel('import')}
@@ -334,6 +358,16 @@ export default function StudioCanvas() {
             ✕
           </button>
         </div>
+      )}
+      {showPublishGate && (
+        <ParentGate
+          message="A grown-up needs to approve publishing online."
+          onUnlock={() => {
+            setShowPublishGate(false);
+            handlePublish();
+          }}
+          onCancel={() => setShowPublishGate(false)}
+        />
       )}
       {showCoach && (
         <CoachMarkOverlay
