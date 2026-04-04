@@ -34,6 +34,7 @@ describe('RootLayout', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...originalEnv };
+    document.documentElement.innerHTML = '';
   });
 
   afterEach(() => {
@@ -46,7 +47,6 @@ describe('RootLayout', () => {
       configurable: true,
     });
 
-    document.documentElement.innerHTML = '';
     const { queryByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>
@@ -65,7 +65,6 @@ describe('RootLayout', () => {
       configurable: true,
     });
 
-    document.documentElement.innerHTML = '';
     const { getByTestId } = render(
       <RootLayout>
         <div data-testid="child">App Content</div>

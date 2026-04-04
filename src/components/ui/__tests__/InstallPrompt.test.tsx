@@ -49,7 +49,9 @@ describe('InstallPrompt', () => {
       configurable: true,
     });
 
-    render(<InstallPrompt />);
+    act(() => {
+      render(<InstallPrompt />);
+    });
 
     expect(screen.getByText('Add to Home Screen!')).toBeInTheDocument();
     expect(
@@ -58,7 +60,7 @@ describe('InstallPrompt', () => {
     expect(screen.queryByText('Install!')).not.toBeInTheDocument(); // Install button is hidden on iOS
   });
 
-  it('shows Android/Chrome install prompt when beforeinstallprompt fires', () => {
+  it('shows Android/Chrome install prompt when beforeinstallprompt fires', async () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt') as Event & {
@@ -68,7 +70,9 @@ describe('InstallPrompt', () => {
     event.prompt = vi.fn();
     event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
 
-    fireEvent(window, event);
+    await act(async () => {
+      fireEvent(window, event);
+    });
 
     expect(screen.getByText('Add to Home Screen!')).toBeInTheDocument();
     expect(
@@ -77,31 +81,37 @@ describe('InstallPrompt', () => {
     expect(screen.getByText('Install!')).toBeInTheDocument();
   });
 
-  it('hides the prompt when dismissed and sets localStorage flag', () => {
+  it('hides the prompt when dismissed and sets localStorage flag', async () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     const laterButton = screen.getByText('Later');
-    fireEvent.click(laterButton);
+    act(() => {
+      fireEvent.click(laterButton);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
     expect(localStorage.getItem('pwa_prompt_dismissed')).toBe('true');
   });
 
-  it('does not show if previously dismissed', () => {
+  it('does not show if previously dismissed', async () => {
     localStorage.setItem('pwa_prompt_dismissed', 'true');
 
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
   });
 
-  it('does not show if already running in standalone mode', () => {
+  it('does not show if already running in standalone mode', async () => {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query) => ({
@@ -113,7 +123,9 @@ describe('InstallPrompt', () => {
     render(<InstallPrompt />);
 
     const event = new Event('beforeinstallprompt');
-    fireEvent(window, event);
+    act(() => {
+      fireEvent(window, event);
+    });
 
     expect(screen.queryByText('Add to Home Screen!')).not.toBeInTheDocument();
   });
@@ -128,7 +140,7 @@ describe('InstallPrompt', () => {
     event.prompt = vi.fn();
     event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
 
-    await act(async () => {
+    act(() => {
       fireEvent(window, event);
     });
 
