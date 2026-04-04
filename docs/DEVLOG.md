@@ -41,7 +41,7 @@ Phase 2 expanded the creative possibilities with image imports, stickers, and sh
     - **Shapes**: Instant circles, squares, stars, and hearts.
     - **Stickers**: A library of 24+ emoji-based stickers that can be added and scaled.
 - **Select & Transform**: Implemented a "Direct Select" (👆) mode to move, resize, and rotate objects on the canvas.
-- **Auto-Save**: Implemented a background auto-save system (30s interval) using `requestIdleCallback` to prevent jank.
+- **Auto-Save**: Implemented a background auto-save system (5s interval, updated from 30s) using `requestIdleCallback` to prevent jank. Saves on component unmount to handle back-navigation.
 - **Room Management**: Added the ability for kids (and parents) to create multiple rooms and organize art by theme.
 - **Performance Polish**: Migrated thumbnail and full-res storage to optimized Data URLs to eliminate "Blob URL expired" errors.
 
@@ -559,6 +559,32 @@ Allow users to move their entire museum between browsers/devices via JSON export
 ### Verification ✅
 - Manually tested locally: export → import → reload shows restored content only, no duplicate demo artworks.
 - 85 unit tests passing.
+
+## [2026-04-04] Studio Hardening — Auto-Save, Canvas Layout, Publish Safety
+*Completed: 2026-04-04*
+
+### Auto-Save Improvements
+- **Interval reduced**: 30s → 5s for faster recovery from accidental loss.
+- **Save on unmount**: Added a cleanup effect that fires on back-navigation (component unmount). Uses refs (`canvasRef`, `artworkIdRef`) to read latest state from the cleanup closure. Skips save if canvas is empty.
+- **Root cause**: On mobile PWA, tapping the browser back button unmounts the component before the interval fires — work was silently lost.
+
+### Publish Safety
+- **ParentGate on publish**: The 🌐 Publish button in the studio toolbar now triggers a ParentGate ("A grown-up needs to approve publishing online") before executing. Prevents kids from accidentally publishing to the public gallery.
+- Aligns with the existing pattern: delete and unpublish already require ParentGate.
+
+### Full-Screen Canvas on Mobile
+- **Split Toolbar**: Refactored `Toolbar.tsx` into `ToolbarTop` (undo/redo/save/publish) and `ToolbarBottom` (tools/colors/size). Both are `shrink-0`.
+- **Canvas sandwiched**: `StudioCanvas` now renders `ToolbarTop` → canvas (`flex-1 min-h-0`) → `ToolbarBottom`. Previously, the entire toolbar (top + bottom) rendered as one block above the canvas, wasting ~250px of vertical space on mobile.
+- **Tighter spacing**: Reduced padding, color dot size (40px → 36px), slider height, to maximize drawing area.
+- **Backwards-compatible**: The old `Toolbar` component still exists (deprecated) for any external consumers.
+
+### Lint Fixes
+- Fixed TS2540 errors in `layout.test.tsx` — `process.env.NODE_ENV` is readonly in newer TypeScript. Cast to `Record<string, string>` for test overrides.
+
+### Verification
+- 0 type errors, 87 unit tests passing.
+
+---
 
 ## Future (Phase 5)
 - Multi-user collaboration.

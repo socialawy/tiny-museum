@@ -353,7 +353,7 @@ Gallery
 
 Storage & Data
   ☐ Dexie.js schema v1
-  ☐ Auto-save every 30 seconds
+  ☐ Auto-save every 5 seconds + save on unmount
   ☐ Manual save
   ☐ Export as PNG (save to device)
   ☐ Thumbnail generation on save

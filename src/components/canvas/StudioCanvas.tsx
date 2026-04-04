@@ -13,7 +13,7 @@ import { publishArtwork } from '@/lib/cloud/publish';
 import { addImageToCanvas } from '@/lib/fabric/shapes';
 import { KID_PALETTE } from '@/lib/fabric/tools';
 import { useUIStore } from '@/stores/ui.store';
-import { Toolbar } from './Toolbar';
+import { useToolbarState, ToolbarTop, ToolbarBottom } from './Toolbar';
 import { ImportPanel } from './ImportPanel';
 import { ShapePanel } from './ShapePanel';
 import { BackgroundPicker } from './BackgroundPicker';
@@ -262,32 +262,34 @@ export default function StudioCanvas() {
 
   const showLoading = !isReady || (editId && !loaded);
 
+  const toolbarState = useToolbarState({
+    canvas,
+    activeColor,
+    onColorChange: setActiveColor,
+    isSelectMode,
+    onSelectModeChange: setIsSelectMode,
+    onUndo: undo,
+    onRedo: redo,
+    canUndo,
+    canRedo,
+    onSave: handleSave,
+    onSendToGallery: handleSendToGallery,
+    onPublish: currentArtworkId ? handlePublishGated : undefined,
+    publishing,
+    publishedLink,
+    onOpenImport: () => setActivePanel('import'),
+    onOpenShapes: () => setActivePanel('shapes'),
+    onOpenBackground: () => setActivePanel('background'),
+    onOpenStickers: () => setActivePanel('stickers'),
+  });
+
   return (
     <div className="relative flex flex-col h-[100dvh] bg-studio-bg">
-      <Toolbar
-        canvas={canvas}
-        activeColor={activeColor}
-        onColorChange={setActiveColor}
-        isSelectMode={isSelectMode}
-        onSelectModeChange={setIsSelectMode}
-        onUndo={undo}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onSave={handleSave}
-        onSendToGallery={handleSendToGallery}
-        onPublish={currentArtworkId ? handlePublishGated : undefined}
-        publishing={publishing}
-        publishedLink={publishedLink}
-        onOpenImport={() => setActivePanel('import')}
-        onOpenShapes={() => setActivePanel('shapes')}
-        onOpenBackground={() => setActivePanel('background')}
-        onOpenStickers={() => setActivePanel('stickers')}
-      />
+      <ToolbarTop state={toolbarState} />
 
       <div
         ref={containerRef}
-        className="flex-1 relative overflow-hidden"
+        className="flex-1 min-h-0 relative overflow-hidden"
         style={{ touchAction: 'none' }}
       >
         {showLoading && (
@@ -306,6 +308,8 @@ export default function StudioCanvas() {
           </div>
         )}
       </div>
+
+      <ToolbarBottom state={toolbarState} />
 
       {activePanel === 'import' && (
         <ImportPanel onImport={handleImport} onClose={() => setActivePanel('none')} />
