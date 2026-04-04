@@ -180,33 +180,34 @@ export function ToolbarTop({ state }: { state: ReturnType<typeof useToolbarState
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-1.5 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100 shrink-0"
+      className="flex items-center justify-between px-2 py-1 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100 shrink-0"
       style={{
-        paddingTop: 'calc(0.375rem + env(safe-area-inset-top, 0px))',
-        paddingLeft: 'calc(0.75rem + env(safe-area-inset-left, 0px))',
-        paddingRight: 'calc(0.75rem + env(safe-area-inset-right, 0px))',
+        paddingTop: 'calc(0.25rem + env(safe-area-inset-top, 0px))',
+        paddingLeft: 'calc(0.5rem + env(safe-area-inset-left, 0px))',
+        paddingRight: 'calc(0.5rem + env(safe-area-inset-right, 0px))',
       }}
     >
-      <div className="flex gap-1.5">
-        <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+      <div className="flex gap-1">
+        <BigButton size="sm" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
           ↩️
         </BigButton>
-        <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+        <BigButton size="sm" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
           ↪️
         </BigButton>
       </div>
-      <div className="flex gap-1.5">
-        <BigButton onClick={onOpenImport} aria-label="Import">
+      <div className="flex gap-1">
+        <BigButton size="sm" onClick={onOpenImport} aria-label="Import">
           📥
         </BigButton>
-        <BigButton onClick={onSave} aria-label="Save" data-coach="studio-save">
+        <BigButton size="sm" onClick={onSave} aria-label="Save" data-coach="studio-save">
           💾
         </BigButton>
-        <BigButton onClick={onSendToGallery} aria-label="Gallery">
+        <BigButton size="sm" onClick={onSendToGallery} aria-label="Gallery">
           🏛️
         </BigButton>
         {onPublish && (
           <BigButton
+            size="sm"
             onClick={onPublish}
             disabled={publishing}
             aria-label="Publish online"
@@ -233,20 +234,21 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
       }}
     >
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto"
+        className="flex items-center gap-1 px-2 py-1 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
         data-coach="studio-brush"
       >
         {/* Select/Move */}
-        <BigButton onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
+        <BigButton size="sm" onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
           👆
         </BigButton>
 
-        <div className="w-px h-8 bg-gray-200 mx-1" />
+        <div className="w-px h-6 bg-gray-200 mx-0.5" />
 
         {/* Drawing tools */}
         {(Object.keys(DRAW_TOOLS) as BrushKey[]).map((key) => (
           <BigButton
+            size="sm"
             key={key}
             onClick={() => enterDrawMode(key)}
             active={!isSelectMode && activeTool === key}
@@ -256,16 +258,16 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
           </BigButton>
         ))}
 
-        <div className="w-px h-8 bg-gray-200 mx-1" />
+        <div className="w-px h-6 bg-gray-200 mx-0.5" />
 
         {/* Extras */}
-        <BigButton onClick={onOpenShapes} aria-label="Shapes">
+        <BigButton size="sm" onClick={onOpenShapes} aria-label="Shapes">
           ✨
         </BigButton>
-        <BigButton onClick={onOpenStickers} aria-label="Stickers">
+        <BigButton size="sm" onClick={onOpenStickers} aria-label="Stickers">
           🎯
         </BigButton>
-        <BigButton onClick={onOpenBackground} aria-label="Background">
+        <BigButton size="sm" onClick={onOpenBackground} aria-label="Background">
           🎨
         </BigButton>
 
@@ -279,6 +281,7 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
         {/* Delete selected */}
         {isSelectMode && (
           <BigButton
+            size="sm"
             onClick={deleteSelected}
             aria-label="Delete selected"
             className="ml-auto"
@@ -290,23 +293,23 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
 
       {/* Brush size — only in draw mode */}
       {!isSelectMode && (
-        <div className="flex items-center gap-3 px-6 pb-0.5">
-          <span className="text-xs font-bold text-gray-400">thin</span>
+        <div className="flex items-center gap-2 px-4">
+          <span className="text-[10px] font-bold text-gray-400">thin</span>
           <input
             type="range"
             min={1}
             max={40}
             value={brushSize}
             onChange={(e) => changeBrushSize(Number(e.target.value))}
-            className="flex-1 h-6 accent-kid-purple"
+            className="flex-1 h-5 accent-kid-purple"
           />
-          <span className="text-xs font-bold text-gray-400">thick</span>
+          <span className="text-[10px] font-bold text-gray-400">thick</span>
         </div>
       )}
 
       {/* Color strip */}
       <div
-        className="flex items-center gap-2 px-3 pb-2 overflow-x-auto"
+        className="flex items-center gap-1.5 px-2 py-1 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
         data-coach="studio-color"
       >
@@ -317,10 +320,10 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
             className="flex-shrink-0 rounded-full transition-transform duration-100"
             style={{
               backgroundColor: color,
-              width: 36,
-              height: 36,
+              width: 28,
+              height: 28,
               border: activeColor === color ? '3px solid #2D3436' : '2px solid #E0E0E0',
-              transform: activeColor === color ? 'scale(1.25)' : 'scale(1)',
+              transform: activeColor === color ? 'scale(1.15)' : 'scale(1)',
             }}
           />
         ))}

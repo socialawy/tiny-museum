@@ -321,25 +321,25 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
     <div className="flex flex-col h-[100dvh] bg-studio-bg">
       {loaded && (
         <div
-          className="flex items-center justify-between px-3 py-2 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
+          className="flex items-center justify-between px-2 py-1 bg-white/90 backdrop-blur-sm border-b-2 border-gray-100"
           style={{
-            paddingTop: 'calc(0.5rem + env(safe-area-inset-top, 0px))',
-            paddingLeft: 'calc(0.75rem + env(safe-area-inset-left, 0px))',
-            paddingRight: 'calc(0.75rem + env(safe-area-inset-right, 0px))',
+            paddingTop: 'calc(0.25rem + env(safe-area-inset-top, 0px))',
+            paddingLeft: 'calc(0.5rem + env(safe-area-inset-left, 0px))',
+            paddingRight: 'calc(0.5rem + env(safe-area-inset-right, 0px))',
           }}
         >
-          <div className="flex items-center gap-2">
-            <BigButton onClick={handleBack} aria-label="Back">
+          <div className="flex items-center gap-1.5">
+            <BigButton size="sm" onClick={handleBack} aria-label="Back">
               ←
             </BigButton>
-            <span className="text-sm font-bold text-gray-500">
+            <span className="text-xs font-bold text-gray-500">
               🎬{' '}
               {isLandscape
                 ? `${currentIndex + 1}/${frames.length}`
                 : `Frame ${currentIndex + 1}/${frames.length}`}
             </span>
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-1">
             {isLandscape && (
               <div className="flex items-center gap-1 mr-2">
                 <span className="text-[10px]">🐢</span>
@@ -355,6 +355,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               </div>
             )}
             <BigButton
+              size="sm"
               onClick={startPlayback}
               aria-label="Play"
               className="bg-kid-green text-white"
@@ -362,7 +363,7 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
             >
               ▶️
             </BigButton>
-            <BigButton onClick={sendToGallery} aria-label="Save to Gallery">
+            <BigButton size="sm" onClick={sendToGallery} aria-label="Save to Gallery">
               🏛️
             </BigButton>
           </div>
@@ -412,43 +413,44 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
           </div>
 
           {!isLandscape && (
-            <div className="flex-shrink-0 flex justify-center py-1 bg-white/90 border-t border-gray-50">
+            <div className="flex-shrink-0 flex justify-center py-0.5 bg-white/90 border-t border-gray-50">
               <button
                 onClick={() => setShowBgPicker(true)}
-                className="kid-button text-sm"
+                className="kid-button-sm text-sm"
                 aria-label="Background"
               >
-                🎨 Background
+                🎨 BG
               </button>
             </div>
           )}
 
           {isLandscape ? (
-            <div className="flex-shrink-0 flex items-center justify-center gap-2 px-3 py-1 bg-gray-50 border-t border-gray-200">
-              <BigButton onClick={prevFrame} disabled={currentIndex === 0}>
+            <div className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-0.5 bg-gray-50 border-t border-gray-200">
+              <BigButton size="sm" onClick={prevFrame} disabled={currentIndex === 0}>
                 ◀
               </BigButton>
-              <span className="text-xs font-bold text-gray-500 min-w-[60px] text-center">
+              <span className="text-xs font-bold text-gray-500 min-w-[50px] text-center">
                 {currentIndex + 1} / {frames.length}
               </span>
-              <BigButton onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>
+              <BigButton size="sm" onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>
                 ▶
               </BigButton>
-              <div className="w-px h-6 bg-gray-200 mx-1" />
+              <div className="w-px h-6 bg-gray-200 mx-0.5" />
               <BigButton
+                size="sm"
                 onClick={() => setOnionSkin(!onionSkin)}
                 active={onionSkin}
                 data-coach="flip-ghost"
               >
                 👻
               </BigButton>
-              <BigButton onClick={addFrame} data-coach="flip-add">
+              <BigButton size="sm" onClick={addFrame} data-coach="flip-add">
                 ＋
               </BigButton>
-              <BigButton onClick={dupFrame} data-coach="flip-dup">
+              <BigButton size="sm" onClick={dupFrame} data-coach="flip-dup">
                 📋
               </BigButton>
-              {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
+              {frames.length > 1 && <BigButton size="sm" onClick={removeFrame}>🗑️</BigButton>}
             </div>
           ) : (
             <>
@@ -460,53 +462,55 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                 />
               </div>
 
-              <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white border-t-2 border-gray-100">
-                <div className="flex gap-1.5">
-                  <BigButton onClick={prevFrame} disabled={currentIndex === 0}>
+              <div className="flex-shrink-0 flex items-center justify-between px-3 py-1 bg-white border-t-2 border-gray-100">
+                <div className="flex gap-1">
+                  <BigButton size="sm" onClick={prevFrame} disabled={currentIndex === 0}>
                     ◀
                   </BigButton>
                   <BigButton
+                    size="sm"
                     onClick={nextFrame}
                     disabled={currentIndex >= frames.length - 1}
                   >
                     ▶
                   </BigButton>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1">
                   <BigButton
+                    size="sm"
                     onClick={() => setOnionSkin(!onionSkin)}
                     active={onionSkin}
                     data-coach="flip-ghost"
                   >
                     👻
                   </BigButton>
-                  <BigButton onClick={addFrame} data-coach="flip-add">
+                  <BigButton size="sm" onClick={addFrame} data-coach="flip-add">
                     ＋
                   </BigButton>
-                  <BigButton onClick={dupFrame} data-coach="flip-dup">
+                  <BigButton size="sm" onClick={dupFrame} data-coach="flip-dup">
                     📋
                   </BigButton>
-                  {frames.length > 1 && <BigButton onClick={removeFrame}>🗑️</BigButton>}
+                  {frames.length > 1 && <BigButton size="sm" onClick={removeFrame}>🗑️</BigButton>}
                 </div>
               </div>
 
               <div
-                className="flex-shrink-0 flex items-center gap-3 px-6 py-1.5 bg-white border-t border-gray-50"
+                className="flex-shrink-0 flex items-center gap-2 px-4 py-0.5 bg-white border-t border-gray-50"
                 style={{
-                  paddingBottom: 'calc(0.375rem + env(safe-area-inset-bottom, 0px))',
+                  paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom, 0px))',
                 }}
               >
-                <span className="text-xs text-gray-400">🐢</span>
+                <span className="text-[10px] text-gray-400">🐢</span>
                 <input
                   type="range"
                   min={2}
                   max={12}
                   value={fps}
                   onChange={(e) => setFps(+e.target.value)}
-                  className="flex-1 h-6 accent-kid-purple"
+                  className="flex-1 h-5 accent-kid-purple"
                 />
-                <span className="text-xs text-gray-400">🐇</span>
-                <span className="text-xs font-bold text-kid-purple w-10 text-right">
+                <span className="text-[10px] text-gray-400">🐇</span>
+                <span className="text-[10px] font-bold text-kid-purple w-8 text-right">
                   {fps} fps
                 </span>
               </div>

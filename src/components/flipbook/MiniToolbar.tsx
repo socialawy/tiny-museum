@@ -109,15 +109,15 @@ export function MiniToolbar({
     return (
       <div className="bg-white/95 backdrop-blur-sm border-t border-gray-100">
         <div
-          className="flex items-center gap-1 px-2 py-1 overflow-x-auto"
+          className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
           style={{ scrollbarWidth: 'none' }}
         >
           {onUndo && (
             <>
-              <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+              <BigButton size="sm" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
                 ↩️
               </BigButton>
-              <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+              <BigButton size="sm" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
                 ↪️
               </BigButton>
               <div className="w-px h-6 bg-gray-200 mx-0.5 flex-shrink-0" />
@@ -125,6 +125,7 @@ export function MiniToolbar({
           )}
           {(Object.keys(TOOLS) as BrushKey[]).map((k) => (
             <BigButton
+              size="sm"
               key={k}
               onClick={() => selectTool(k)}
               active={tool === k}
@@ -141,8 +142,8 @@ export function MiniToolbar({
               className="flex-shrink-0 rounded-full transition-transform duration-100"
               style={{
                 backgroundColor: c,
-                width: 28,
-                height: 28,
+                width: 24,
+                height: 24,
                 border: color === c ? '3px solid #2D3436' : '2px solid #E0E0E0',
                 transform: color === c ? 'scale(1.15)' : 'scale(1)',
               }}
@@ -157,22 +158,23 @@ export function MiniToolbar({
   return (
     <div className="bg-white/95 backdrop-blur-sm border-t-2 border-gray-100">
       <div
-        className="flex items-center gap-1 px-2 py-1 overflow-x-auto"
+        className="flex items-center gap-1 px-2 py-0.5 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
       >
         {onUndo && (
           <>
-            <BigButton onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+            <BigButton size="sm" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
               ↩️
             </BigButton>
-            <BigButton onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+            <BigButton size="sm" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
               ↪️
             </BigButton>
-            <div className="w-px h-7 bg-gray-200 mx-0.5" />
+            <div className="w-px h-6 bg-gray-200 mx-0.5" />
           </>
         )}
         {(Object.keys(TOOLS) as BrushKey[]).map((k) => (
           <BigButton
+            size="sm"
             key={k}
             onClick={() => selectTool(k)}
             active={tool === k}
@@ -188,7 +190,7 @@ export function MiniToolbar({
         )}
       </div>
 
-      <div className="flex items-center gap-2 px-5 pb-0.5 landscape:hidden">
+      <div className="flex items-center gap-2 px-4 landscape:hidden">
         <span className="text-[10px] text-gray-400">thin</span>
         <input
           type="range"
@@ -202,7 +204,7 @@ export function MiniToolbar({
       </div>
 
       <div
-        className="flex items-center gap-1.5 px-2 pb-1.5 overflow-x-auto"
+        className="flex items-center gap-1.5 px-2 py-0.5 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
       >
         {KID_PALETTE.map((c) => (
@@ -212,10 +214,10 @@ export function MiniToolbar({
             className="flex-shrink-0 rounded-full transition-transform duration-100"
             style={{
               backgroundColor: c,
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               border: color === c ? '3px solid #2D3436' : '2px solid #E0E0E0',
-              transform: color === c ? 'scale(1.2)' : 'scale(1)',
+              transform: color === c ? 'scale(1.15)' : 'scale(1)',
             }}
           />
         ))}
