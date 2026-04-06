@@ -420,7 +420,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               <span className="text-xs font-bold text-gray-500 min-w-[50px] text-center">
                 {currentIndex + 1} / {frames.length}
               </span>
-              <BigButton size="sm" onClick={nextFrame} disabled={currentIndex >= frames.length - 1}>
+              <BigButton
+                size="sm"
+                onClick={nextFrame}
+                disabled={currentIndex >= frames.length - 1}
+              >
                 ▶
               </BigButton>
               <div className="w-px h-6 bg-gray-200 mx-0.5" />
@@ -438,7 +442,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
               <BigButton size="sm" onClick={dupFrame} data-coach="flip-dup">
                 📋
               </BigButton>
-              {frames.length > 1 && <BigButton size="sm" onClick={removeFrame}>🗑️</BigButton>}
+              {frames.length > 1 && (
+                <BigButton size="sm" onClick={removeFrame}>
+                  🗑️
+                </BigButton>
+              )}
             </div>
           ) : (
             <>
@@ -476,7 +484,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   >
                     👻
                   </BigButton>
-                  <BigButton size="sm" onClick={() => setShowBgPicker(true)} aria-label="Background">
+                  <BigButton
+                    size="sm"
+                    onClick={() => setShowBgPicker(true)}
+                    aria-label="Background"
+                  >
                     🎨
                   </BigButton>
                 </div>
@@ -499,7 +511,11 @@ export default function FlipbookStudio({ flipbookId }: FlipbookStudioProps) {
                   <BigButton size="sm" onClick={dupFrame} data-coach="flip-dup">
                     📋
                   </BigButton>
-                  {frames.length > 1 && <BigButton size="sm" onClick={removeFrame}>🗑️</BigButton>}
+                  {frames.length > 1 && (
+                    <BigButton size="sm" onClick={removeFrame}>
+                      🗑️
+                    </BigButton>
+                  )}
                 </div>
               </div>
             </>
