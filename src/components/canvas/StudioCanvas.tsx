@@ -65,8 +65,12 @@ export default function StudioCanvas() {
   // Keep refs for save-on-unmount (closures capture stale state)
   const canvasRef = useRef(canvas);
   const artworkIdRef = useRef(currentArtworkId);
-  useEffect(() => { canvasRef.current = canvas; }, [canvas]);
-  useEffect(() => { artworkIdRef.current = currentArtworkId; }, [currentArtworkId]);
+  useEffect(() => {
+    canvasRef.current = canvas;
+  }, [canvas]);
+  useEffect(() => {
+    artworkIdRef.current = currentArtworkId;
+  }, [currentArtworkId]);
 
   // Load existing artwork
   useEffect(() => {

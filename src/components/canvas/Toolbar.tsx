@@ -37,13 +37,7 @@ const DRAW_TOOLS: Record<BrushKey, { emoji: string; label: string }> = {
 };
 
 export function useToolbarState(props: ToolbarProps) {
-  const {
-    canvas,
-    activeColor,
-    onColorChange,
-    isSelectMode,
-    onSelectModeChange,
-  } = props;
+  const { canvas, activeColor, onColorChange, isSelectMode, onSelectModeChange } = props;
 
   const [activeTool, setActiveTool] = useState<BrushKey>('crayon');
   const [brushSizes, setBrushSizes] = useState<Record<BrushKey, number>>({
@@ -173,9 +167,16 @@ export function useToolbarState(props: ToolbarProps) {
 export function ToolbarTop({ state }: { state: ReturnType<typeof useToolbarState> }) {
   const { props } = state;
   const {
-    onUndo, onRedo, canUndo, canRedo,
-    onSave, onSendToGallery, onPublish,
-    publishing, publishedLink, onOpenImport,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
+    onSave,
+    onSendToGallery,
+    onPublish,
+    publishing,
+    publishedLink,
+    onOpenImport,
   } = props;
 
   return (
@@ -221,7 +222,17 @@ export function ToolbarTop({ state }: { state: ReturnType<typeof useToolbarState
 }
 
 export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarState> }) {
-  const { props, activeTool, brushSize, isSelectMode, enterDrawMode, enterSelectMode, selectColor, changeBrushSize, deleteSelected } = state;
+  const {
+    props,
+    activeTool,
+    brushSize,
+    isSelectMode,
+    enterDrawMode,
+    enterSelectMode,
+    selectColor,
+    changeBrushSize,
+    deleteSelected,
+  } = state;
   const { activeColor, onOpenShapes, onOpenStickers, onOpenBackground } = props;
 
   return (
@@ -239,7 +250,12 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
         style={{ scrollbarWidth: 'none' }}
         data-coach="studio-brush"
       >
-        <BigButton size="sm" onClick={enterSelectMode} active={isSelectMode} aria-label="Select">
+        <BigButton
+          size="sm"
+          onClick={enterSelectMode}
+          active={isSelectMode}
+          aria-label="Select"
+        >
           👆
         </BigButton>
         <div className="w-px h-6 bg-gray-200 mx-0.5 shrink-0" />
@@ -265,10 +281,17 @@ export function ToolbarBottom({ state }: { state: ReturnType<typeof useToolbarSt
           🎨
         </BigButton>
         {!isSelectMode && activeTool === 'eraser' && (
-          <span className="text-xs font-bold text-kid-red ml-1 animate-pulse shrink-0">Erasing</span>
+          <span className="text-xs font-bold text-kid-red ml-1 animate-pulse shrink-0">
+            Erasing
+          </span>
         )}
         {isSelectMode && (
-          <BigButton size="sm" onClick={deleteSelected} aria-label="Delete selected" className="ml-auto">
+          <BigButton
+            size="sm"
+            onClick={deleteSelected}
+            aria-label="Delete selected"
+            className="ml-auto"
+          >
             🗑️
           </BigButton>
         )}
